@@ -1,0 +1,38 @@
+# Rust
+/target/
+Cargo.lock
+**/*.rs.bk
+*.pdb
+*.o
+*.so
+*.dll
+*.dylib
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Build outputs
+.wasm/
+/dist/
+/build/
+
+# Protocol buffer generated code
+Source/Protocol/Generated/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+/tests/**/*.rs.bk
+
+# Environment
+.env
+.env.local

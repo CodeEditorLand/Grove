@@ -1,0 +1,36 @@
+# Grove Cargo Configuration
+# This file contains build and configuration settings for Grove
+
+[build]
+# Number of parallel jobs
+jobs = 8
+
+# Target settings
+[target.wasm32-wasi]
+# Wasmtime linker for WASM builds
+rustflags = [
+    "-C", "link-arg=-zstack-size=1048576",
+]
+
+[target.x86_64-apple-darwin]
+rustflags = [
+    "-C", "link-arg=-undefined",
+    "-C", "link-arg=dynamic_lookup",
+]
+
+[target.aarch64-apple-darwin]
+rustflags = [
+    "-C", "link-arg=-undefined",
+    "-C", "link-arg=dynamic_lookup",
+]
+
+[net]
+# Git fetch with retry
+git-fetch-with-cli = true
+
+[http]
+# HTTP timeout
+timeout = 60
+
+[registries.crates-io]
+protocol = "sparse"

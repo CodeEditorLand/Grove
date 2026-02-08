@@ -1,0 +1,87 @@
+[package]
+name = "grove"
+version = "0.1.0"
+edition = "2021"
+authors = ["Grove Contributors"]
+description = "Rust/WASM Extension Host for VS Code extensions"
+license = "MIT"
+repository = "https://github.com/CodeEditorLand/Element/Grove"
+keywords = ["vscode", "extension", "wasm", "rust", "host"]
+categories = ["development-tools", "wasm"]
+
+[lib]
+name = "grove"
+path = "Source/lib.rs"
+crate-type = ["cdylib", "rlib"]
+
+[[bin]]
+name = "grove"
+path = "Source/main.rs"
+
+[dependencies]
+# Async runtime
+tokio = { version = "1.35", features = ["full"] }
+tokio-util = { version = "0.7", features = ["codec"] }
+
+# WASM runtime
+wasmtime = { version = "19.0", features = ["async", "wasi", "debug-builtins"] }
+wasmtime-wasi = { version = "19.0" }
+wasi-common = { version = "19.0" }
+
+# gRPC
+prost = "0.12"
+tonic = { version = "0.11", features = ["tls"] }
+tonic-build = "0.11"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde_bytes = "0.11"
+
+# Error handling
+anyhow = "1.0"
+thiserror = "1.0"
+
+# tracing/logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# CLI
+clap = { version = "4.4", features = ["derive"] }
+
+# Utilities
+bytes = "1.5"
+futures = "0.3"
+async-trait = "0.1"
+
+# IPC (for macOS/Linux)
+[target.'cfg(unix)'.dependencies]
+nix = "0.27"
+
+# Protocol buffers (build-only)
+[build-dependencies]
+tonic-build = "0.11"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true
+panic = "abort"
+
+[profile.dev]
+opt-level = 0
+debug = true
+
+[profile.wasm-release]
+inherits = "release"
+opt-level = "s"
+lto = true
+strip = "debuginfo"
+
+[features]
+default = ["grpc", "wasm"]
+grpc = ["tonic", "prost"]
+wasm = ["wasmtime"]
+ipc = ["nix"]
+all = ["grpc", "wasm", "ipc"]
