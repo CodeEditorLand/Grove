@@ -1,0 +1,263 @@
+// Grove Protocol Definition
+// This file defines the gRPC protocol used by Grove extension host
+// for communication with Mountain and other services
+
+syntax = "proto3";
+
+package grove.v1;
+
+import "google/protobuf/empty.proto";
+
+// ===================================================================
+// Grove Service
+// Service definition for Grove extension host operations
+// ===================================================================
+
+service GroveService {
+  // Extension lifecycle
+  rpc LoadExtension(LoadExtensionRequest) returns (LoadExtensionResponse);
+  rpc UnloadExtension(UnloadExtensionRequest) returns (google.protobuf.Empty);
+  
+  // Activation
+  rpc ActivateExtension(ActivationRequest) returns (ActivationResponse);
+  rpc DeactivateExtension(DeactivationRequest) returns (google.protobuf.Empty);
+  
+  // Extension queries
+  rpc GetExtensionStatus(ExtensionStatusRequest) returns (ExtensionStatusResponse);
+  rpc ListExtensions(ListExtensionsRequest) returns (ListExtensionsResponse);
+  
+  // API calls from extension to host
+  rpc ExtensionApiCall(ApiCallRequest) returns (ApiCallResponse);
+  
+  // Configuration
+  rpc GetConfiguration(ConfigurationRequest) returns (ConfigurationResponse);
+  rpc UpdateConfiguration(UpdateConfigurationRequest) returns (google.protobuf.Empty);
+  
+  // WASM operations
+  rpc LoadWasmModule(WasmModuleRequest) returns (WasmModuleResponse);
+  rpc UnloadWasmModule(WasmModuleRequest) returns (google.protobuf.Empty);
+  
+  // Health check
+  rpc HealthCheck(google.protobuf.Empty) returns (HealthCheckResponse);
+}
+
+// ===================================================================
+// Extension Types
+// Types for extension identification and management
+// ===================================================================
+
+message ExtensionIdentifier {
+  string id = 1;                    // Extension identifier (e.g., "publisher.extension-name")
+  string version = 2;               // Extension version (e.g., "1.0.0")
+}
+
+message ExtensionMetadata {
+  ExtensionIdentifier identifier = 1;
+  string display_name = 2;
+  string description = 3;
+  repeated string activation_events = 4;
+  repeated string contributes = 5;  // Extension contributions
+  bool engines_vscode = 6;          // Requires VS Code engine
+  string min_vscode_version = 7;    // Minimum VS Code version required
+  map<string, string> capabilities = 8;  // Extension capabilities
+}
+
+message ExtensionManifest {
+  ExtensionMetadata metadata = 1;
+  string entry_point = 2;           // Main entry point file
+  map<string, string> configuration = 3; // Default configuration
+  bytes binary_data = 4;            // Extension binary data (WASM or native)
+}
+
+// ===================================================================
+// Load/Unload Extension
+// Extension loading and unloading operations
+// ===================================================================
+
+message LoadExtensionRequest {
+  ExtensionManifest manifest = 1;
+  string transport = 2;             // "wasm", "native", "ipc"
+  bool lazy = 3;                    // Load lazily on activation
+}
+
+message LoadExtensionResponse {
+  bool success = 1;
+  string message = 2;
+  ExtensionIdentifier extension_id = 3;
+}
+
+message UnloadExtensionRequest {
+  ExtensionIdentifier extension_id = 1;
+}
+
+// ===================================================================
+// Activation/Deactivation
+// Extension activation and deactivation operations
+// ===================================================================
+
+message ActivationContext {
+  string workspace_path = 1;        // Workspace root path
+  map<string, string> environment = 2; // Environment variables
+  bytes startup_options = 3;        // Startup options (JSON)
+  repeated string activated_extensions = 4; // Already activated extensions
+}
+
+message ActivationRequest {
+  ExtensionIdentifier extension_id = 1;
+  repeated string activation_events = 2;
+  ActivationContext context = 3;
+}
+
+message ActivationResponse {
+  bool activated = 1;
+  string message = 2;
+  int64 activation_time_ms = 3;     // Time taken to activate in milliseconds
+  repeated string api_subscriptions = 4; // API events subscribed to
+}
+
+message DeactivationRequest {
+  ExtensionIdentifier extension_id = 1;
+}
+
+// ===================================================================
+// Extension Status
+// Query extension status
+// ===================================================================
+
+message ExtensionStatusRequest {
+  ExtensionIdentifier extension_id = 1;
+}
+
+message ExtensionStatus {
+  enum State {
+    UNKNOWN = 0;
+    LOADED = 1;
+    ACTIVATED = 2;
+    DEACTIVATED = 3;
+    ERROR = 4;
+  }
+  
+  State state = 1;
+  string error_message = 2;         // Error message if in ERROR state
+  int64 activation_time_ms = 3;     // Time since activation
+  string transport = 4;             // Transport method used
+}
+
+message ExtensionStatusResponse {
+  ExtensionStatus status = 1;
+  ExtensionMetadata metadata = 2;   // Extension metadata
+}
+
+message ListExtensionsRequest {
+  // Empty - no specific filtering for now
+}
+
+message ListExtensionsResponse {
+  repeated ExtensionManifest extensions = 1;
+  repeated ExtensionStatus statuses = 2;
+}
+
+// ===================================================================
+// API Calls
+// Extension-to-host API calls
+// ===================================================================
+
+message ApiCallRequest {
+  ExtensionIdentifier extension_id = 1;
+  string api_method = 2;            // API method being called
+  bytes arguments = 3;              // Method arguments (JSON or binary)
+  string correlation_id = 4;        // Correlation ID for async calls
+}
+
+message ApiCallResponse {
+  bool success = 1;
+  bytes response_data = 2;          // Response data (JSON or binary)
+  string error_message = 3;         // Error message if failed
+  string correlation_id = 4;        // Echoes the request correlation ID
+}
+
+// ===================================================================
+// Configuration
+// Extension configuration management
+// ===================================================================
+
+message ConfigurationRequest {
+  ExtensionIdentifier extension_id = 1;
+  repeated string keys = 2;         // Configuration keys to retrieve (empty = all)
+}
+
+message ConfigurationResponse {
+  map<string, string> configuration = 1;
+}
+
+message UpdateConfigurationRequest {
+  ExtensionIdentifier extension_id = 1;
+  map<string, string> configuration = 2;
+  bool merge = 3;                   // True to merge, false to replace
+}
+
+// ===================================================================
+// WASM Operations
+// WebAssembly-specific operations
+// ===================================================================
+
+message WasmModuleRequest {
+  ExtensionIdentifier extension_id = 1;
+  bytes wasm_bytes = 2;            // WASM binary data
+  uint64 memory_limit_mb = 3;       // Memory limit in MB
+  bool enable_wasi = 4;            // Enable WASI support
+  uint64 max_execution_time_ms = 5; // Max execution time limit
+}
+
+message WasmModuleResponse {
+  bool loaded = 1;
+  string module_id = 2;            // Unique module identifier
+  uint64 memory_used_mb = 3;       // Memory footprint
+  repeated string exported_functions = 4; // Exported functions list
+  string error_message = 5;        // Error message if failed
+}
+
+// ===================================================================
+// Health Check
+// Health check for monitoring
+// ===================================================================
+
+message HealthCheckResponse {
+  bool healthy = 1;
+  string version = 2;              // Grove version
+  string status_message = 3;
+  int32 extensions_loaded = 4;    // Number of loaded extensions
+  int32 extensions_active = 5;    // Number of active extensions
+  uint64 uptime_seconds = 6;      // Uptime in seconds
+}
+
+// ===================================================================
+// Events
+// Server-sent events for extension communication
+// ===================================================================
+
+message ExtensionEvent {
+  enum EventType {
+    ACTIVATED = 0;
+    DEACTIVATED = 1;
+    ERROR = 2;
+    API_CALL = 3;
+    CONFIGURATION_CHANGED = 4;
+  }
+  
+  EventType event_type = 1;
+  ExtensionIdentifier extension_id = 2;
+  bytes event_data = 3;            // Event data (JSON)
+  int64 timestamp_ms = 4;         // Event timestamp
+  string correlation_id = 5;
+}
+
+// GroveEventStream - streaming endpoint for extension events
+service GroveEventStream {
+  rpc SubscribeEvents(SubscribeRequest) returns (stream ExtensionEvent);
+}
+
+message SubscribeRequest {
+  repeated ExtensionIdentifier extensions = 1; // Specific extensions (empty = all)
+  repeated string event_types = 2;            // Event types to subscribe to
+}
