@@ -159,8 +159,8 @@ WebAssembly runtime integration:
 
 Communication strategies:
 - `Strategy`: Transport strategy trait
-- `GrpcTransport`: gRPC-based communication with Mountain
-- `IpcTransport`: Inter-process communication
+- `gRPCTransport`: gRPC-based communication with Mountain
+- `IPCTransport`: Inter-process communication
 - `WasmTransport`: Direct WASM communication
 
 ### API

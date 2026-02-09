@@ -3,353 +3,329 @@
 //! This is the entry point for running Grove as a standalone extension host.
 //! It can operate independently or connect to Mountain via gRPC.
 
+use std::path::PathBuf;
+
 use anyhow::{Context, Result};
 use clap::{Parser, Subcommand};
-use grove::Binary::{Main::Entry, Build::{RuntimeBuild, ServiceRegister}};
-use grove::Transport;
-use std::path::PathBuf;
+use grove::{
+	Binary::{
+		Build::{RuntimeBuild, ServiceRegister},
+		Main::Entry,
+	},
+	Transport,
+};
 use tracing::{error, info, warn};
 
 /// Grove - Rust/WASM Extension Host for VS Code
 ///
-/// Grove provides a secure, sandboxed environment for running VS Code extensions
-/// compiled to WebAssembly or native Rust.
+/// Grove provides a secure, sandboxed environment for running VS Code
+/// extensions compiled to WebAssembly or native Rust.
 #[derive(Parser, Debug)]
 #[command(name = "grove")]
 #[command(author = "Grove Contributors")]
 #[command(version = env!("CARGO_PKG_VERSION"))]
 #[command(about = "Rust/WASM Extension Host for VS Code", long_about = None)]
 struct Cli {
-    /// Mode of operation
-    #[command(subcommand)]
-    mode: Mode,
+	/// Mode of operation
+	#[command(subcommand)]
+	mode:Mode,
 
-    /// Verbosity level (-v, -vv, -vvv)
-    #[arg(short, long, action = clap::ArgAction::Count)]
-    verbose: u8,
+	/// Verbosity level (-v, -vv, -vvv)
+	#[arg(short, long, action = clap::ArgAction::Count)]
+	verbose:u8,
 
-    /// Log format (plain, json)
-    #[arg(long, default_value = "plain")]
-    log_format: String,
+	/// Log format (plain, json)
+	#[arg(long, default_value = "plain")]
+	log_format:String,
 }
 
 /// Grove operation modes
 #[derive(Subcommand, Debug)]
 enum Mode {
-    /// Run Grove in standalone mode
-    Standalone {
-        /// Path to extension directory or manifest
-        #[arg(short, long)]
-        extension: Option<PathBuf>,
+	/// Run Grove in standalone mode
+	Standalone {
+		/// Path to extension directory or manifest
+		#[arg(short, long)]
+		extension:Option<PathBuf>,
 
-        /// Transport type (grpc, ipc, wasm)
-        #[arg(short, long, default_value = "wcs")]
-        transport: String,
+		/// Transport type (grpc, ipc, wasm)
+		#[arg(short, long, default_value = "wcs")]
+		transport:String,
 
-        /// Listen address for gRPC server
-        #[arg(long, default_value = "127.0.0.1:50051")]
-        grpc_address: String,
+		/// Listen address for gRPC server
+		#[arg(long, default_value = "127.0.0.1:50051")]
+		grpc_address:String,
 
-        /// Enable WASM WASI support
-        #[arg(long)]
-        wasi: bool,
+		/// Enable WASM WASI support
+		#[arg(long)]
+		wasi:bool,
 
-        /// Memory limit in MB for WASM modules
-        #[arg(long, default_value = "512")]
-        memory_limit_mb: u64,
+		/// Memory limit in MB for WASM modules
+		#[arg(long, default_value = "512")]
+		memory_limit_mb:u64,
 
-        /// Maximum execution time in milliseconds
-        #[arg(long, default_value = "30000")]
-        max_execution_time_ms: u64,
-    },
+		/// Maximum execution time in milliseconds
+		#[arg(long, default_value = "30000")]
+		max_execution_time_ms:u64,
+	},
 
-    /// Run Grove as a service connected to Mountain
-    Service {
-        /// Mountain gRPC address
-        #[arg(short, long, default_value = "127.0.0.1:50050")]
-        mountain_address: String,
+	/// Run Grove as a service connected to Mountain
+	Service {
+		/// Mountain gRPC address
+		#[arg(short, long, default_value = "127.0.0.1:50050")]
+		mountain_address:String,
 
-        /// Service name identification
-        #[arg(long)]
-        service_name: Option<String>,
+		/// Service name identification
+		#[arg(long)]
+		service_name:Option<String>,
 
-        /// Enable auto-reconnect
-        #[arg(long)]
-        auto_reconnect: bool,
-    },
+		/// Enable auto-reconnect
+		#[arg(long)]
+		auto_reconnect:bool,
+	},
 
-    /// Load and validate an extension without activating
-    Validate {
-        /// Path to extension manifest
-        manifest_path: PathBuf,
+	/// Load and validate an extension without activating
+	Validate {
+		/// Path to extension manifest
+		manifest_path:PathBuf,
 
-        /// Detailed validation output
-        #[arg(short, long)]
-        detailed: bool,
-    },
+		/// Detailed validation output
+		#[arg(short, long)]
+		detailed:bool,
+	},
 
-    /// Build WASM module from Rust source
-    Build {
-        /// Source directory
-        #[arg(short, long)]
-        source: PathBuf,
+	/// Build WASM module from Rust source
+	Build {
+		/// Source directory
+		#[arg(short, long)]
+		source:PathBuf,
 
-        /// Output path for WASM module
-        #[arg(short, long)]
-        output: PathBuf,
+		/// Output path for WASM module
+		#[arg(short, long)]
+		output:PathBuf,
 
-        /// Optimization level (0-3, s, z)
-        #[arg(short, long, default_value = "3")]
-        opt_level: String,
+		/// Optimization level (0-3, s, z)
+		#[arg(short, long, default_value = "3")]
+		opt_level:String,
 
-        /// Target triple (e.g., wasm32-wasi)
-        #[arg(long)]
-        target: Option<String>,
-    },
+		/// Target triple (e.g., wasm32-wasi)
+		#[arg(long)]
+		target:Option<String>,
+	},
 
-    /// List all loaded extensions
-    List {
-        /// Show detailed information
-        #[arg(short, long)]
-        detailed: bool,
-    },
+	/// List all loaded extensions
+	List {
+		/// Show detailed information
+		#[arg(short, long)]
+		detailed:bool,
+	},
 }
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let cli = Cli::parse();
+	let cli = Cli::parse();
 
-    // Initialize logging
-    init_logging(cli.verbose, &cli.log_format)?;
+	// Initialize logging
+	init_logging(cli.verbose, &cli.log_format)?;
 
-    // Start based on mode
-    match cli.mode {
-        Mode::Standalone {
-            extension,
-            transport,
-            grpc_address,
-            wasi,
-            memory_limit_mb,
-            max_execution_time_ms,
-        } => {
-            run_standalone(extension, transport, grpc_address, wasi, memory_limit_mb, max_execution_time_ms).await
-        }
+	// Start based on mode
+	match cli.mode {
+		Mode::Standalone { extension, transport, grpc_address, wasi, memory_limit_mb, max_execution_time_ms } => {
+			run_standalone(extension, transport, grpc_address, wasi, memory_limit_mb, max_execution_time_ms).await
+		},
 
-        Mode::Service {
-            mountain_address,
-            service_name,
-            auto_reconnect,
-        } => {
-            run_service(mountain_address, service_name, auto_reconnect).await
-        }
+		Mode::Service { mountain_address, service_name, auto_reconnect } => {
+			run_service(mountain_address, service_name, auto_reconnect).await
+		},
 
-        Mode::Validate {
-            manifest_path,
-            detailed,
-        } => {
-            run_validation(manifest_path, detailed).await
-        }
+		Mode::Validate { manifest_path, detailed } => run_validation(manifest_path, detailed).await,
 
-        Mode::Build {
-            source,
-            output,
-            opt_level,
-            target,
-        } => {
-            run_build(source, output, opt_level, target).await
-        }
+		Mode::Build { source, output, opt_level, target } => run_build(source, output, opt_level, target).await,
 
-        Mode::List { detailed } => {
-            run_list(detailed).await
-        }
-    }
+		Mode::List { detailed } => run_list(detailed).await,
+	}
 }
 
 /// Initialize logging with appropriate level and format
-fn init_logging(verbose: u8, format: &str) -> Result<()> {
-    let level = match verbose {
-        0 => tracing::Level::WARN,
-        1 => tracing::Level::INFO,
-        2 => tracing::Level::DEBUG,
-        _ => tracing::Level::TRACE,
-    };
+fn init_logging(verbose:u8, format:&str) -> Result<()> {
+	let level = match verbose {
+		0 => tracing::Level::WARN,
+		1 => tracing::Level::INFO,
+		2 => tracing::Level::DEBUG,
+		_ => tracing::Level::TRACE,
+	};
 
-    let env_filter = tracing_subscriber::EnvFilter::builder()
-        .with_default_directive(level.into())
-        .from_env_lossy();
+	let env_filter = tracing_subscriber::EnvFilter::builder()
+		.with_default_directive(level.into())
+		.from_env_lossy();
 
-    if format == "json" {
-        tracing_subscriber::fmt()
-            .json()
-            .with_env_filter(env_filter)
-            .try_init()
-            .context("Failed to initialize JSON logging")?;
-    } else {
-        tracing_subscriber::fmt()
-            .with_env_filter(env_filter)
-            .with_target(false)
-            .try_init()
-            .context("Failed to initialize logging")?;
-    }
+	if format == "json" {
+		tracing_subscriber::fmt()
+			.json()
+			.with_env_filter(env_filter)
+			.try_init()
+			.context("Failed to initialize JSON logging")?;
+	} else {
+		tracing_subscriber::fmt()
+			.with_env_filter(env_filter)
+			.with_target(false)
+			.try_init()
+			.context("Failed to initialize logging")?;
+	}
 
-    Ok(())
+	Ok(())
 }
 
 /// Run Grove in standalone mode
 async fn run_standalone(
-    extension: Option<PathBuf>,
-    transport_type: String,
-    grpc_address: String,
-    wasi: bool,
-    memory_limit_mb: u64,
-    max_execution_time_ms: u64,
+	extension:Option<PathBuf>,
+	transport_type:String,
+	grpc_address:String,
+	wasi:bool,
+	memory_limit_mb:u64,
+	max_execution_time_ms:u64,
 ) -> Result<()> {
-    info!("Starting Grove in standalone mode...");
+	info!("Starting Grove in standalone mode...");
 
-    let transport = match transport_type.as_str() {
-        "grpc" => Transport::Grpc(groove::Transport::GrpcTransport::new(&grpc_address)?),
-        "ipc" => Transport::Ipc(groove::Transport::IpcTransport::new()?),
-        "wasm" => Transport::Wasm(groove::Transport::WasmTransport::new(wasi, memory_limit_mb, max_execution_time_ms)?),
-        _ => Transport::default(),
-    };
+	let transport = match transport_type.as_str() {
+		"grpc" => Transport::Grpc(groove::Transport::gRPCTransport::new(&grpc_address)?),
+		"ipc" => Transport::Ipc(groove::Transport::IPCTransport::new()?),
+		"wasm" => {
+			Transport::Wasm(groove::Transport::WasmTransport::new(
+				wasi,
+				memory_limit_mb,
+				max_execution_time_ms,
+			)?)
+		},
+		_ => Transport::default(),
+	};
 
-    info!("Using transport: {:?}", transport_type);
+	info!("Using transport: {:?}", transport_type);
 
-    let host = RuntimeBuild::build_host(transport, wasi, memory_limit_mb, max_execution_time_ms).await?;
+	let host = RuntimeBuild::build_host(transport, wasi, memory_limit_mb, max_execution_time_ms).await?;
 
-    if let Some(path) = extension {
-        info!("Loading extension from: {:?}", path);
-        let result = host.load_extension(&path).await;
-        match result {
-            Ok(_) => {
-                info!("Extension loaded successfully");
-                host.activate().await?;
-                info!("Extension activated");
-            }
-            Err(e) => {
-                error!("Failed to load extension: {}", e);
-                return Err(e);
-            }
-        }
-    } else {
-        info!("No extension specified, running in daemon mode");
-        keep_running().await;
-    }
+	if let Some(path) = extension {
+		info!("Loading extension from: {:?}", path);
+		let result = host.load_extension(&path).await;
+		match result {
+			Ok(_) => {
+				info!("Extension loaded successfully");
+				host.activate().await?;
+				info!("Extension activated");
+			},
+			Err(e) => {
+				error!("Failed to load extension: {}", e);
+				return Err(e);
+			},
+		}
+	} else {
+		info!("No extension specified, running in daemon mode");
+		keep_running().await;
+	}
 
-    Ok(())
+	Ok(())
 }
 
 /// Run Grove as a service connected to Mountain
-async fn run_service(
-    mountain_address: String,
-    service_name: Option<String>,
-    auto_reconnect: bool,
-) -> Result<()> {
-    info!("Starting Grove as service...");
+async fn run_service(mountain_address:String, service_name:Option<String>, auto_reconnect:bool) -> Result<()> {
+	info!("Starting Grove as service...");
 
-    let name = service_name.unwrap_or_else(|| "grove-host".to_string());
-    info!("Service name: {}", name);
-    info!("Mountain address: {}", mountain_address);
+	let name = service_name.unwrap_or_else(|| "grove-host".to_string());
+	info!("Service name: {}", name);
+	info!("Mountain address: {}", mountain_address);
 
-    // Register with Mountain
-    ServiceRegister::register_with_mountain(&name, &mountain_address, auto_reconnect).await?;
+	// Register with Mountain
+	ServiceRegister::register_with_mountain(&name, &mountain_address, auto_reconnect).await?;
 
-    keep_running().await;
+	keep_running().await;
 
-    Ok(())
+	Ok(())
 }
 
 /// Validate an extension manifest
-async fn run_validation(manifest_path: PathBuf, detailed: bool) -> Result<()> {
-    info!("Validating extension manifest: {:?}", manifest_path);
+async fn run_validation(manifest_path:PathBuf, detailed:bool) -> Result<()> {
+	info!("Validating extension manifest: {:?}", manifest_path);
 
-    let result = Entry::validate_extension(&manifest_path, detailed).await?;
+	let result = Entry::validate_extension(&manifest_path, detailed).await?;
 
-    if result.is_valid() {
-        info!("Extension manifest is valid");
-        if detailed {
-            println!("{:#?}", result);
-        }
-    } else {
-        error!("Extension manifest validation failed");
-        Err(anyhow::anyhow!("Validation failed"))
-    }
+	if result.is_valid() {
+		info!("Extension manifest is valid");
+		if detailed {
+			println!("{:#?}", result);
+		}
+	} else {
+		error!("Extension manifest validation failed");
+		Err(anyhow::anyhow!("Validation failed"))
+	}
 
-    Ok(())
+	Ok(())
 }
 
 /// Build a WASM module from Rust source
-async fn run_build(
-    source: PathBuf,
-    output: PathBuf,
-    opt_level: String,
-    target: Option<String>,
-) -> Result<()> {
-    info!("Building WASM module from: {:?}", source);
-    info!("Output path: {:?}", output);
-    info!("Optimization level: {}", opt_level);
+async fn run_build(source:PathBuf, output:PathBuf, opt_level:String, target:Option<String>) -> Result<()> {
+	info!("Building WASM module from: {:?}", source);
+	info!("Output path: {:?}", output);
+	info!("Optimization level: {}", opt_level);
 
-    let result = Entry::build_wasm_module(source, output, opt_level, target).await?;
+	let result = Entry::build_wasm_module(source, output, opt_level, target).await?;
 
-    if result.success() {
-        info!("WASM module built successfully");
-    } else {
-        error!("WASM module build failed");
-        Err(anyhow::anyhow!("Build failed"))
-    }
+	if result.success() {
+		info!("WASM module built successfully");
+	} else {
+		error!("WASM module build failed");
+		Err(anyhow::anyhow!("Build failed"))
+	}
 
-    Ok(())
+	Ok(())
 }
 
 /// List all loaded extensions
-async fn run_list(detailed: bool) -> Result<()> {
-    info!("Listing extensions...");
+async fn run_list(detailed:bool) -> Result<()> {
+	info!("Listing extensions...");
 
-    let extensions = Entry::list_extensions(detailed).await?;
+	let extensions = Entry::list_extensions(detailed).await?;
 
-    if extensions.is_empty() {
-        info!("No extensions loaded");
-    } else {
-        println!("Loaded extensions:");
-        for ext in extensions {
-            if detailed {
-                println!("  {:#?}", ext);
-            } else {
-                println!("  {} ({})", ext.name, ext.version);
-            }
-        }
-    }
+	if extensions.is_empty() {
+		info!("No extensions loaded");
+	} else {
+		println!("Loaded extensions:");
+		for ext in extensions {
+			if detailed {
+				println!("  {:#?}", ext);
+			} else {
+				println!("  {} ({})", ext.name, ext.version);
+			}
+		}
+	}
 
-    Ok(())
+	Ok(())
 }
 
 /// Keep the process running
 async fn keep_running() {
-    info!("Grove is running. Press Ctrl+C to stop.");
+	info!("Grove is running. Press Ctrl+C to stop.");
 
-    tokio::signal::ctrl_c()
-        .await
-        .expect("Failed to listen for ctrl+c");
+	tokio::signal::ctrl_c().await.expect("Failed to listen for ctrl+c");
 
-    info!("Shutting down Grove...");
+	info!("Shutting down Grove...");
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+	use super::*;
 
-    #[test]
-    fn test_cli_parsing() {
-        let cli = Cli::try_parse_from(["grove", "standalone", "--extension", "/tmp/ext", "--transport", "wasm"]);
-        assert!(cli.is_ok());
-    }
+	#[test]
+	fn test_cli_parsing() {
+		let cli = Cli::try_parse_from(["grove", "standalone", "--extension", "/tmp/ext", "--transport", "wasm"]);
+		assert!(cli.is_ok());
+	}
 
-    #[test]
-    fn test_logging_levels() {
-        // Test that logging can be initialized at different levels
-        let _ = init_logging(0, "plain");
-        let _ = init_logging(1, "plain");
-        let _ = init_logging(2, "plain");
-        let _ = init_logging(3, "plain");
-    }
+	#[test]
+	fn test_logging_levels() {
+		// Test that logging can be initialized at different levels
+		let _ = init_logging(0, "plain");
+		let _ = init_logging(1, "plain");
+		let _ = init_logging(2, "plain");
+		let _ = init_logging(3, "plain");
+	}
 }

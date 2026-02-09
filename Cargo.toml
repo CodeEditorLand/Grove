@@ -24,13 +24,12 @@ tokio = { version = "1.35", features = ["full"] }
 tokio-util = { version = "0.7", features = ["codec"] }
 
 # WASM runtime
-wasmtime = { version = "19.0", features = ["async", "wasi", "debug-builtins"] }
-wasmtime-wasi = { version = "19.0" }
-wasi-common = { version = "19.0" }
+wasmtime = { version = "20", features = ["async", "component-model", "runtime", "cranelift"], optional = true }
+wasmtime-wasi = { version = "20", optional = true }
 
 # gRPC
-prost = "0.12"
-tonic = { version = "0.11", features = ["tls"] }
+prost = { version = "0.12", optional = true }
+tonic = { version = "0.11", features = ["tls"], optional = true }
 tonic-build = "0.11"
 
 # Serialization
@@ -53,6 +52,8 @@ clap = { version = "4.4", features = ["derive"] }
 bytes = "1.5"
 futures = "0.3"
 async-trait = "0.1"
+semver = "1"
+chrono = "0.4"
 
 # Metrics
 metrics = "0.23"
@@ -66,11 +67,12 @@ tracing-opentelemetry = { version = "0.24", optional = true }
 
 # IPC (for macOS/Linux)
 [target.'cfg(unix)'.dependencies]
-nix = "0.27"
+nix = { version = "0.27", optional = true }
 
 # Protocol buffers (build-only)
 [build-dependencies]
 tonic-build = "0.11"
+anyhow = "1.0"
 
 [profile.release]
 opt-level = 3

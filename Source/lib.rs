@@ -1,33 +1,34 @@
 //! Grove - Rust/WASM Extension Host for VS Code
 //!
-//! Grove provides a secure, sandboxed environment for running VS Code extensions
-//! compiled to WebAssembly or native Rust. It complements Cocoon (Node.js) by
-//! offering a native extension host with full WASM support.
+//! Grove provides a secure, sandboxed environment for running VS Code
+//! extensions compiled to WebAssembly or native Rust. It complements Cocoon
+//! (Node.js) by offering a native extension host with full WASM support.
 //!
 //! # Architecture
 //!
 //! ```text
-//! ┌─────────────────────────────────────────┐
-//! │          Extension Host                 │
-//! ├─────────────────────────────────────────┤
-//! │  Extension Manager  →  Activation Engine │
-//! │  API Bridge         →  VS Code API      │
-//! └───────────────────┬─────────────────────┘
-//!                     │
-//! ┌───────────────────▼─────────────────────┐
-//! │          WASM Runtime (Wasmtime)        │
-//! │  Module Loader  →  Host Bridge         │
-//! └───────────────────┬─────────────────────┘
-//!                     │
-//! ┌───────────────────▼─────────────────────┐
-//! │        Transport Layer                  │
-//! │  gRPC  |  IPC  |  Direct WASM          │
-//! └─────────────────────────────────────────┘
+//! +++++++++++++++++++++++++++++++++++++++++++
+//! +          Extension Host                 +
+//! +++++++++++++++++++++++++++++++++++++++++++
+//! +  Extension Manager  →  Activation Engine +
+//! +  API Bridge         →  VS Code API      +
+//! +++++++++++++++++++++++++++++++++++++++++++
+//!                     +
+//! ++++++++++++++++++++▼++++++++++++++++++++++
+//! +          WASM Runtime (Wasmtime)        +
+//! +  Module Loader  →  Host Bridge         +
+//! +++++++++++++++++++++++++++++++++++++++++++
+//!                     +
+//! ++++++++++++++++++++▼++++++++++++++++++++++
+//! +        Transport Layer                  +
+//! +  gRPC  |  IPC  |  Direct WASM          +
+//! +++++++++++++++++++++++++++++++++++++++++++
 //! ```
 //!
 //! # Features
 //!
-//! - **Standalone Operation**: Run independently or connect to Mountain via gRPC
+//! - **Standalone Operation**: Run independently or connect to Mountain via
+//!   gRPC
 //! - **WASM Support**: Full WebAssembly runtime with Wasmtime
 //! - **Multiple Transport**: gRPC, IPC, and direct WASM communication
 //! - **Secure Sandboxing**: Wasmtime-based isolation for untrusted extensions
@@ -40,10 +41,10 @@
 //!
 //! #[tokio::main]
 //! async fn main() -> anyhow::Result<()> {
-//!     let host = ExtensionHost::new(Transport::default()).await?;
-//!     host.load_extension("/path/to/extension").await?;
-//!     host.activate().await?;
-//!     Ok(())
+//! 	let host = ExtensionHost::new(Transport::default()).await?;
+//! 	host.load_extension("/path/to/extension").await?;
+//! 	host.activate().await?;
+//! 	Ok(())
 //! }
 //! ```
 //!
@@ -72,47 +73,37 @@ pub mod Transport;
 pub mod WASM;
 
 // Re-exports for convenience
-pub use API::vscode;
-pub use API::types;
-pub use Common::error::{GroveError, GroveResult};
-pub use Common::traits::ExtensionContext;
-pub use Host::ExtensionHost;
-pub use Host::ExtensionManager;
-pub use Transport::Strategy;
-pub use Transport::Transport;
+pub use API::{types, vscode};
+pub use Common::{
+	error::{GroveError, GroveResult},
+	traits::ExtensionContext,
+};
+pub use Host::{ExtensionHost, ExtensionManager};
+pub use Transport::{Strategy, Transport};
 pub use WASM::Runtime;
 
 // Library version
-const VERSION: &str = env!("CARGO_PKG_VERSION");
+const VERSION:&str = env!("CARGO_PKG_VERSION");
 
 /// Grove library information
 #[derive(Debug, Clone)]
 pub struct GroveInfo {
-    /// Version string
-    pub version: &'static str,
-    /// Build timestamp
-    build_timestamp: String,
+	/// Version string
+	pub version:&'static str,
+	/// Build timestamp
+	build_timestamp:String,
 }
 
 impl GroveInfo {
-    /// Create new GroveInfo with current build information
-    pub fn new() -> Self {
-        Self {
-            version: VERSION,
-            build_timestamp: env!("VERGEN_BUILD_TIMESTAMP").to_string(),
-        }
-    }
+	/// Create new GroveInfo with current build information
+	pub fn new() -> Self { Self { version:VERSION, build_timestamp:env!("VERGEN_BUILD_TIMESTAMP").to_string() } }
 
-    /// Get the Grove version
-    pub fn version(&self) -> &'static str {
-        self.version
-    }
+	/// Get the Grove version
+	pub fn version(&self) -> &'static str { self.version }
 }
 
 impl Default for GroveInfo {
-    fn default() -> Self {
-        Self::new()
-    }
+	fn default() -> Self { Self::new() }
 }
 
 /// Initialize Grove library
@@ -120,34 +111,33 @@ impl Default for GroveInfo {
 /// This sets up logging and other global state.
 /// Call once at application startup.
 pub fn init() -> anyhow::Result<()> {
-    // Initialize tracing subscriber with environment-based filtering
-    let filter = tracing_subscriber::EnvFilter::from_default_env()
-        .add_directive(tracing::Level::INFO.into());
+	// Initialize tracing subscriber with environment-based filtering
+	let filter = tracing_subscriber::EnvFilter::from_default_env().add_directive(tracing::Level::INFO.into());
 
-    tracing_subscriber::fmt()
-        .with_env_filter(filter)
-        .with_target(false)
-        .try_init()
-        .map_err(|e| anyhow::anyhow!("Failed to initialize tracing: {}", e))?;
+	tracing_subscriber::fmt()
+		.with_env_filter(filter)
+		.with_target(false)
+		.try_init()
+		.map_err(|e| anyhow::anyhow!("Failed to initialize tracing: {}", e))?;
 
-    tracing::info!("Grove v{} initialized", VERSION);
+	tracing::info!("Grove v{} initialized", VERSION);
 
-    Ok(())
+	Ok(())
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+	use super::*;
 
-    #[test]
-    fn test_version() {
-        assert!(!VERSION.is_empty());
-        assert!(VERSION.contains('.'));
-    }
+	#[test]
+	fn test_version() {
+		assert!(!VERSION.is_empty());
+		assert!(VERSION.contains('.'));
+	}
 
-    #[test]
-    fn test_grove_info() {
-        let info = GroveInfo::new();
-        assert_eq!(info.version(), VERSION);
-    }
+	#[test]
+	fn test_grove_info() {
+		let info = GroveInfo::new();
+		assert_eq!(info.version(), VERSION);
+	}
 }

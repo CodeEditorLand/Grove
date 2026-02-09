@@ -20,7 +20,7 @@ use crate::Transport::{
 
 /// gRPC transport for communication with Mountain and other gRPC services
 #[derive(Clone)]
-pub struct gRPCTransport {
+pub struct GrpcTransport {
 	/// Connection endpoint
 	endpoint:String,
 	/// gRPC channel
@@ -33,7 +33,7 @@ pub struct gRPCTransport {
 	stats:Arc<RwLock<TransportStats>>,
 }
 
-impl gRPCTransport {
+impl GrpcTransport {
 	/// Create a new gRPC transport with the given address
 	///
 	/// # Arguments
@@ -43,9 +43,9 @@ impl gRPCTransport {
 	/// # Example
 	///
 	/// ```rust,no_run
-	/// use grove::Transport::gRPCTransport;
+	/// use grove::Transport::GrpcTransport;
 	///
-	/// let transport = gRPCTransport::new("127.0.0.1:50050")?;
+	/// let transport = GrpcTransport::new("127.0.0.1:50050")?;
 	/// # Ok::<(), anyhow::Error>(())
 	/// ```
 	pub fn new(address:&str) -> anyhow::Result<Self> {
@@ -96,8 +96,8 @@ impl gRPCTransport {
 }
 
 #[async_trait]
-impl super::super::Strategy::TransportStrategy for gRPCTransport {
-	type Error = gRPCTransportError;
+impl super::super::Strategy::TransportStrategy for GrpcTransport {
+	type Error = GrpcTransportError;
 
 	#[instrument(skip(self))]
 	async fn connect(&self) -> Result<(), Self::Error> {
@@ -105,12 +105,12 @@ impl super::super::Strategy::TransportStrategy for gRPCTransport {
 
 		let endpoint = self
 			.build_endpoint()
-			.map_err(|e| gRPCTransportError::ConnectionFailed(e.to_string()))?;
+			.map_err(|e| GrpcTransportError::ConnectionFailed(e.to_string()))?;
 
 		let channel = endpoint
 			.connect()
 			.await
-			.map_err(|e| gRPCTransportError::ConnectionFailed(e.to_string()))?;
+			.map_err(|e| GrpcTransportError::ConnectionFailed(e.to_string()))?;
 
 		*self.channel.write().await = Some(channel);
 		*self.connected.write().await = true;
@@ -126,7 +126,7 @@ impl super::super::Strategy::TransportStrategy for gRPCTransport {
 		let start = std::time::Instant::now();
 
 		if !self.is_connected() {
-			return Err(gRPCTransportError::NotConnected);
+			return Err(GrpcTransportError::NotConnected);
 		}
 
 		debug!("Sending gRPC request ({} bytes)", request.len());
@@ -150,7 +150,7 @@ impl super::super::Strategy::TransportStrategy for gRPCTransport {
 	#[instrument(skip(self, data))]
 	async fn send_no_response(&self, data:&[u8]) -> Result<(), Self::Error> {
 		if !self.is_connected() {
-			return Err(gRPCTransportError::NotConnected);
+			return Err(GrpcTransportError::NotConnected);
 		}
 
 		debug!("Sending gRPC request without response ({} bytes)", data.len());
@@ -180,7 +180,7 @@ impl super::super::Strategy::TransportStrategy for gRPCTransport {
 
 /// gRPC transport errors
 #[derive(Debug, thiserror::Error)]
-pub enum gRPCTransportError {
+pub enum GrpcTransportError {
 	#[error("Connection failed: {0}")]
 	ConnectionFailed(String),
 
@@ -200,12 +200,12 @@ pub enum gRPCTransportError {
 	GrpcError(String),
 }
 
-impl From<tonic::transport::Error> for gRPCTransportError {
-	fn from(err:tonic::transport::Error) -> Self { gRPCTransportError::ConnectionFailed(err.to_string()) }
+impl From<tonic::transport::Error> for GrpcTransportError {
+	fn from(err:tonic::transport::Error) -> Self { GrpcTransportError::ConnectionFailed(err.to_string()) }
 }
 
-impl From<tonic::Status> for gRPCTransportError {
-	fn from(status:tonic::Status) -> Self { gRPCTransportError::GrpcError(status.to_string()) }
+impl From<tonic::Status> for GrpcTransportError {
+	fn from(status:tonic::Status) -> Self { GrpcTransportError::GrpcError(status.to_string()) }
 }
 
 #[cfg(test)]
@@ -214,7 +214,7 @@ mod tests {
 
 	#[test]
 	fn test_grpc_transport_creation() {
-		let result = gRPCTransport::new("127.0.0.1:50050");
+		let result = GrpcTransport::new("127.0.0.1:50050");
 		assert!(result.is_ok());
 		let transport = result.unwrap();
 		assert_eq!(transport.endpoint(), "127.0.0.1:50050");
@@ -223,19 +223,19 @@ mod tests {
 	#[test]
 	fn test_grpc_transport_with_config() {
 		let config = TransportConfig::default().with_max_retries(5);
-		let result = gRPCTransport::with_config("127.0.0.1:50050", config);
+		let result = GrpcTransport::with_config("127.0.0.1:50050", config);
 		assert!(result.is_ok());
 	}
 
 	#[tokio::test]
 	async fn test_grpc_transport_not_connected() {
-		let transport = gRPCTransport::new("127.0.0.1:50050").unwrap();
+		let transport = GrpcTransport::new("127.0.0.1:50050").unwrap();
 		assert!(!transport.is_connected());
 	}
 
 	#[tokio::test]
 	async fn test_grpc_transport_stats() {
-		let transport = gRPCTransport::new("127.0.0.1:50050").unwrap();
+		let transport = GrpcTransport::new("127.0.0.1:50050").unwrap();
 		let stats = transport.stats().await;
 		assert_eq!(stats.messages_sent, 0);
 		assert_eq!(stats.messages_received, 0);
