@@ -271,6 +271,10 @@ impl super::super::Strategy::TransportStrategy for IPCTransport {
 	}
 
 	fn is_connected(&self) -> bool { self.connected.blocking_read().to_owned() }
+
+	fn transport_type(&self) -> super::super::Strategy::TransportType {
+		super::super::Strategy::TransportType::IPC
+	}
 }
 
 /// IPC transport errors

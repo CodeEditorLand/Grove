@@ -176,6 +176,10 @@ impl super::super::Strategy::TransportStrategy for GrpcTransport {
 	}
 
 	fn is_connected(&self) -> bool { self.connected.blocking_read().to_owned() }
+
+	fn transport_type(&self) -> super::super::Strategy::TransportType {
+		super::super::Strategy::TransportType::Grpc
+	}
 }
 
 /// gRPC transport errors

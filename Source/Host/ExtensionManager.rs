@@ -4,7 +4,7 @@
 //! Provides query and monitoring capabilities for extensions.
 
 use crate::Host::HostConfig;
-use crate::WASM::Runtime::WasmRuntime;
+use crate::WASM::Runtime::WASMRuntime;
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -16,7 +16,7 @@ use tracing::{debug, info, instrument, warn};
 /// Extension manager for handling extension lifecycle
 pub struct ExtensionManager {
     /// WASM runtime for executing extensions
-    wasm_runtime: Arc<WasmRuntime>,
+    wasm_runtime: Arc<WASMRuntime>,
     /// Host configuration
     config: HostConfig,
     /// Loaded extensions
@@ -64,7 +64,7 @@ pub struct ExtensionInfo {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum ExtensionType {
     /// WebAssembly extension
-    Wasm,
+    WASM,
     /// Native Rust extension
     Native,
     /// JavaScript/TypeScript extension (via Cocoon compatibility)
@@ -103,7 +103,7 @@ pub struct ExtensionStats {
 
 impl ExtensionManager {
     /// Create a new extension manager
-    pub fn new(wasm_runtime: Arc<WasmRuntime>, config: HostConfig) -> Self {
+    pub fn new(wasm_runtime: Arc<WASMRuntime>, config: HostConfig) -> Self {
         Self {
             wasm_runtime,
             config,
@@ -369,7 +369,7 @@ impl ExtensionManager {
         // Check for WASM file
         let wasm_path = path.join("extension.wasm");
         if wasm_path.exists() {
-            return Ok(ExtensionType::Wasm);
+            return Ok(ExtensionType::WASM);
         }
 
         // Check for Rust project
@@ -380,7 +380,7 @@ impl ExtensionManager {
 
         // Check for JavaScript/TypeScript
         let main = manifest.get("main").and_then(|v| v.as_str());
-        if let Some(main) = {
+        if let Some(main) = main {
             let main_path = path.join(main);
             if main_path.exists() && (main.ends_with(".js") || main.ends_with(".ts")) {
                 return Ok(ExtensionType::JavaScript);
@@ -432,7 +432,7 @@ mod tests {
 
     #[test]
     fn test_extension_type() {
-        assert_eq!(ExtensionType::Wasm, ExtensionType::Wasm);
+        assert_eq!(ExtensionType::WASM, ExtensionType::WASM);
         assert_eq!(ExtensionType::Native, ExtensionType::Native);
         assert_eq!(ExtensionType::JavaScript, ExtensionType::JavaScript);
     }
@@ -450,8 +450,8 @@ mod tests {
         let wasm_runtime = Arc::new(
             tokio::runtime::Runtime::new()
                 .unwrap()
-                .block_on(crate::WASM::Runtime::WasmRuntime::new(
-                    crate::WASM::Runtime::WasmConfig::default(),
+                .block_on(crate::WASM::Runtime::WASMRuntime::new(
+                    crate::WASM::Runtime::WASMConfig::default(),
                 ))
                 .unwrap()
         );

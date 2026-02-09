@@ -4,11 +4,19 @@
 //! - Proto file compilation with tonic-build
 //! - WASM-specific build configuration
 //! - Feature-based conditional compilation
+//! - Build timestamp generation with vergen
 
 use std::env;
 use std::path::PathBuf;
 
 fn main() -> anyhow::Result<()> {
+    // Generate build timestamp and other vergen environment variables
+    vergen::EmitBuilder::builder()
+        .all_build()
+        .all_cargo()
+        .all_git()
+        .all_rustc()
+        .emit()?;
     let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
     let proto_dir = manifest_dir.join("Proto");
     

@@ -15,7 +15,7 @@
 //! +++++++++++++++++++++++++++++++++++++++++++
 //!                     +
 //! ++++++++++++++++++++▼++++++++++++++++++++++
-//! +          WASM Runtime (Wasmtime)        +
+//! +          WASM Runtime (WASMtime)        +
 //! +  Module Loader  →  Host Bridge         +
 //! +++++++++++++++++++++++++++++++++++++++++++
 //!                     +
@@ -29,9 +29,9 @@
 //!
 //! - **Standalone Operation**: Run independently or connect to Mountain via
 //!   gRPC
-//! - **WASM Support**: Full WebAssembly runtime with Wasmtime
+//! - **WASM Support**: Full WebAssembly runtime with WASMtime
 //! - **Multiple Transport**: gRPC, IPC, and direct WASM communication
-//! - **Secure Sandboxing**: Wasmtime-based isolation for untrusted extensions
+//! - **Secure Sandboxing**: WASMtime-based isolation for untrusted extensions
 //! - **Cocoon Compatible**: Shares API surface with Node.js host
 //!
 //! # Example: Standalone Usage

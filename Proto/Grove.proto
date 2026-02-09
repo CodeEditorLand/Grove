@@ -34,8 +34,8 @@ service GroveService {
   rpc UpdateConfiguration(UpdateConfigurationRequest) returns (google.protobuf.Empty);
   
   // WASM operations
-  rpc LoadWasmModule(WasmModuleRequest) returns (WasmModuleResponse);
-  rpc UnloadWasmModule(WasmModuleRequest) returns (google.protobuf.Empty);
+  rpc LoadWASMModule(WASMModuleRequest) returns (WASMModuleResponse);
+  rpc UnloadWASMModule(WASMModuleRequest) returns (google.protobuf.Empty);
   
   // Health check
   rpc HealthCheck(google.protobuf.Empty) returns (HealthCheckResponse);
@@ -201,7 +201,7 @@ message UpdateConfigurationRequest {
 // WebAssembly-specific operations
 // ===================================================================
 
-message WasmModuleRequest {
+message WASMModuleRequest {
   ExtensionIdentifier extension_id = 1;
   bytes wasm_bytes = 2;            // WASM binary data
   uint64 memory_limit_mb = 3;       // Memory limit in MB
@@ -209,7 +209,7 @@ message WasmModuleRequest {
   uint64 max_execution_time_ms = 5; // Max execution time limit
 }
 
-message WasmModuleResponse {
+message WASMModuleResponse {
   bool loaded = 1;
   string module_id = 2;            // Unique module identifier
   uint64 memory_used_mb = 3;       // Memory footprint

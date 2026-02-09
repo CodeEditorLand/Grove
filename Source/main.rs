@@ -188,10 +188,10 @@ async fn run_standalone(
 	info!("Starting Grove in standalone mode...");
 
 	let transport = match transport_type.as_str() {
-		"grpc" => Transport::Grpc(groove::Transport::gRPCTransport::new(&grpc_address)?),
-		"ipc" => Transport::Ipc(groove::Transport::IPCTransport::new()?),
+		"grpc" => Transport::gRPC(groove::Transport::gRPCTransport::new(&grpc_address)?),
+		"ipc" => Transport::IPC(groove::Transport::IPCTransport::new()?),
 		"wasm" => {
-			Transport::Wasm(groove::Transport::WasmTransport::new(
+			Transport::WASM(groove::Transport::WASMTransport::new(
 				wasi,
 				memory_limit_mb,
 				max_execution_time_ms,

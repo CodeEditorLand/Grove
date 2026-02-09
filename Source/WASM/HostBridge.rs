@@ -119,7 +119,7 @@ impl AsyncCallback {
 
 /// Message from host to WASM
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
-pub struct WasmMessage {
+pub struct WASMMessage {
 	/// Target function in WASM
 	pub function:String,
 	/// Arguments
@@ -150,9 +150,9 @@ pub struct HostBridge {
 	/// Registry of host functions exported to WASM
 	host_functions:Arc<RwLock<HashMap<String, HostFunction>>>,
 	/// Channel for receiving messages from WASM
-	wasm_to_host_rx:mpsc::UnboundedReceiver<WasmMessage>,
+	wasm_to_host_rx:mpsc::UnboundedReceiver<WASMMessage>,
 	/// Channel for sending messages to WASM
-	host_to_wasm_tx:mpsc::UnboundedSender<WasmMessage>,
+	host_to_wasm_tx:mpsc::UnboundedSender<WASMMessage>,
 	/// Active async callbacks
 	async_callbacks:Arc<RwLock<HashMap<u64, AsyncCallback>>>,
 	/// Next callback token
@@ -258,14 +258,14 @@ impl HostBridge {
 
 	/// Send a message to WASM
 	#[instrument(skip(self, message))]
-	pub async fn send_to_wasm(&self, message:WasmMessage) -> BridgeResult<()> {
+	pub async fn send_to_wasm(&self, message:WASMMessage) -> BridgeResult<()> {
 		self.host_to_wasm_tx.send(message).map_err(|_| BridgeError::BridgeClosed)?;
 		debug!("Message sent to WASM: {}", message.function);
 		Ok(())
 	}
 
 	/// Receive a message from WASM (blocking)
-	pub async fn receive_from_wasm(&mut self) -> Option<WasmMessage> { self.wasm_to_host_rx.recv().await }
+	pub async fn receive_from_wasm(&mut self) -> Option<WASMMessage> { self.wasm_to_host_rx.recv().await }
 
 	/// Create async callback
 	#[instrument(skip(self))]

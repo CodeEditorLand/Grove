@@ -55,6 +55,12 @@ async-trait = "0.1"
 semver = "1"
 chrono = "0.4"
 
+# Additional missing dependencies
+uuid = { version = "1.8", features = ["v4", "serde"] }
+shellexpand = "3.1"
+reqwest = { version = "0.11", features = ["json"], optional = true }
+base64 = "0.22"
+
 # Metrics
 metrics = "0.23"
 metrics-exporter-prometheus = { version = "0.13", optional = true }
@@ -73,6 +79,7 @@ nix = { version = "0.27", optional = true }
 [build-dependencies]
 tonic-build = "0.11"
 anyhow = "1.0"
+vergen = { version = "8.3", features = ["build", "cargo", "git", "gitcl", "rustc", "si"] }
 
 [profile.release]
 opt-level = 3

@@ -12,7 +12,7 @@ use crate::{
 	Binary::Main::CliArgs,
 	Host::{ExtensionHost, HostConfig},
 	Transport::Transport,
-	WASM::Runtime::{WasmConfig, WasmRuntime},
+	WASM::Runtime::{WASMConfig, WASMRuntime},
 };
 
 /// Grove entry point manager
@@ -185,19 +185,19 @@ impl Entry {
 	fn create_transport(args:&CliArgs) -> Result<Transport> {
 		match args.transport.as_str() {
 			"grpc" => {
-				Ok(Transport::Grpc(
+				Ok(Transport::gRPC(
 					crate::Transport::gRPCTransport::new(&args.grpc_address)
 						.context("Failed to create gRPC transport")?,
 				))
 			},
 			"ipc" => {
-				Ok(Transport::Ipc(
+				Ok(Transport::IPC(
 					crate::Transport::IPCTransport::new().context("Failed to create IPC transport")?,
 				))
 			},
 			"wasm" => {
-				Ok(Transport::Wasm(
-					crate::Transport::WasmTransport::new(args.wasi, args.memory_limit_mb, args.max_execution_time_ms)
+				Ok(Transport::WASM(
+					crate::Transport::WASMTransport::new(args.wasi, args.memory_limit_mb, args.max_execution_time_ms)
 						.context("Failed to create WASM transport")?,
 				))
 			},

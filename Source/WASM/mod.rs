@@ -1,6 +1,6 @@
 //! WebAssembly Runtime Module
 //!
-//! This module provides WebAssembly runtime support using Wasmtime,
+//! This module provides WebAssembly runtime support using WASMtime,
 //! enabling Grove to execute VS Code extensions compiled to WebAssembly.
 //!
 //! # Architecture
@@ -30,7 +30,7 @@
 //!
 //! # Key Components
 //!
-//! - [`Runtime`] - Wasmtime engine and store management
+//! - [`Runtime`] - WASMtime engine and store management
 //! - [`ModuleLoader`] - WASM module compilation and instantiation
 //! - [`MemoryManager`] - WASM memory allocation and management
 //! - [`HostBridge`] - Host-WASM function communication bridge
@@ -43,8 +43,8 @@ pub mod ModuleLoader;
 pub mod Runtime;
 
 // Re-exports for convenience
-pub use Runtime::{WasmConfig, WasmRuntime};
-pub use ModuleLoader::{ModuleLoader, WasmModule};
+pub use Runtime::{WASMConfig, WASMRuntime};
+pub use ModuleLoader::{ModuleLoader, WASMModule};
 pub use MemoryManager::{MemoryLimits, MemoryManager};
 pub use HostBridge::{BridgeError, HostBridge};
 pub use FunctionExport::{FunctionExport, HostFunctionRegistry};
@@ -57,7 +57,7 @@ pub const DEFAULT_TABLE_SIZE:u32 = 1024;
 
 /// WASM runtime statistics
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
-pub struct WasmStats {
+pub struct WASMStats {
 	/// Number of loaded modules
 	pub modules_loaded:usize,
 	/// Number of active instances
@@ -70,7 +70,7 @@ pub struct WasmStats {
 	pub function_calls:u64,
 }
 
-impl Default for WasmStats {
+impl Default for WASMStats {
 	fn default() -> Self {
 		Self {
 			modules_loaded:0,
@@ -94,7 +94,7 @@ impl Default for WasmStats {
 /// # Ok(())
 /// # }
 /// ```
-pub async fn init_wasm_runtime() -> Result<WasmRuntime> { WasmRuntime::new(WasmConfig::default()).await }
+pub async fn init_wasm_runtime() -> Result<WASMRuntime> { WASMRuntime::new(WASMConfig::default()).await }
 
 #[cfg(test)]
 mod tests {
@@ -102,13 +102,13 @@ mod tests {
 
 	#[test]
 	fn test_default_config() {
-		let config = WasmConfig::default();
+		let config = WASMConfig::default();
 		assert_eq!(config.memory_limit_mb, DEFAULT_MEMORY_LIMIT_MB);
 	}
 
 	#[test]
 	fn test_stats_default() {
-		let stats = WasmStats::default();
+		let stats = WASMStats::default();
 		assert_eq!(stats.modules_loaded, 0);
 		assert_eq!(stats.active_instances, 0);
 	}

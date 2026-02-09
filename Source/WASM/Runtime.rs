@@ -1,6 +1,6 @@
 //! WASM Runtime Module
 //!
-//! Provides Wasmtime engine and store management for executing WebAssembly
+//! Provides WASMtime engine and store management for executing WebAssembly
 //! modules. This module handles the core WASM runtime infrastructure.
 
 use std::sync::Arc;
@@ -9,7 +9,7 @@ use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 use tokio::sync::RwLock;
 use tracing::{debug, info, instrument, warn};
-use wasmtime::{Engine, Instance, Linker, Module, Store, StoreLimits, StoreLimitsBuilder, WasmBacktraceDetails};
+use wasmtime::{Engine, Instance, Linker, Module, Store, StoreLimits, StoreLimitsBuilder, WASMBacktraceDetails};
 
 use crate::WASM::{
 	DEFAULT_MAX_EXECUTION_TIME_MS,
@@ -19,7 +19,7 @@ use crate::WASM::{
 
 /// Configuration for the WASM runtime
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct WasmConfig {
+pub struct WASMConfig {
 	/// Memory limit in MB for WASM modules
 	pub memory_limit_mb:u64,
 	/// Maximum execution time in milliseconds
@@ -36,7 +36,7 @@ pub struct WasmConfig {
 	pub enable_fuel_metering:bool,
 }
 
-impl Default for WasmConfig {
+impl Default for WASMConfig {
 	fn default() -> Self {
 		Self {
 			memory_limit_mb:DEFAULT_MEMORY_LIMIT_MB,
@@ -50,13 +50,13 @@ impl Default for WasmConfig {
 	}
 }
 
-impl WasmConfig {
+impl WASMConfig {
 	/// Create a new WASM configuration with custom settings
 	pub fn new(memory_limit_mb:u64, max_execution_time_ms:u64, enable_wasi:bool) -> Self {
 		Self { memory_limit_mb, max_execution_time_ms, enable_wasi, ..Default::default() }
 	}
 
-	/// Apply this configuration to a Wasmtime engine builder
+	/// Apply this configuration to a WASMtime engine builder
 	fn apply_to_engine_builder(&self, mut builder:wasmtime::Config) -> Result<wasmtime::Config> {
 		// Enable WASM
 		builder.wasm_component_model(false);
@@ -89,32 +89,32 @@ impl WasmConfig {
 		// Enable debugging in debug builds
 		if self.enable_debug {
 			builder.debug_info(true);
-			builder.wasm_backtrace_details(WasmBacktraceDetails::Enable);
+			builder.wasm_backtrace_details(WASMBacktraceDetails::Enable);
 		}
 
 		Ok(builder)
 	}
 }
 
-/// WASM Runtime - manages Wasmtime engine and stores
+/// WASM Runtime - manages WASMtime engine and stores
 #[derive(Clone)]
-pub struct WasmRuntime {
+pub struct WASMRuntime {
 	engine:Engine,
-	config:WasmConfig,
+	config:WASMConfig,
 	memory_manager:Arc<RwLock<MemoryManager>>,
 	instances:Arc<RwLock<Vec<String>>>,
 }
 
-impl WasmRuntime {
+impl WASMRuntime {
 	/// Create a new WASM runtime with the given configuration
 	#[instrument(skip(config))]
-	pub async fn new(config:WasmConfig) -> Result<Self> {
+	pub async fn new(config:WASMConfig) -> Result<Self> {
 		info!("Creating WASM runtime with config: {:?}", config);
 
-		// Build the Wasmtime engine
+		// Build the WASMtime engine
 		let engine_config = wasmtime::Config::new();
 		let engine_config = config.apply_to_engine_builder(engine_config)?;
-		let engine = Engine::new(&engine_config).context("Failed to create Wasmtime engine")?;
+		let engine = Engine::new(&engine_config).context("Failed to create WASMtime engine")?;
 
 		// Initialize memory manager
 		let memory_limits = MemoryLimits {
@@ -132,11 +132,11 @@ impl WasmRuntime {
 		Ok(Self { engine, config, memory_manager, instances:Arc::new(RwLock::new(Vec::new())) })
 	}
 
-	/// Get a reference to the Wasmtime engine
+	/// Get a reference to the WASMtime engine
 	pub fn engine(&self) -> &Engine { &self.engine }
 
 	/// Get the runtime configuration
-	pub fn config(&self) -> &WasmConfig { &self.config }
+	pub fn config(&self) -> &WASMConfig { &self.config }
 
 	/// Get the memory manager
 	pub fn memory_manager(&self) -> Arc<RwLock<MemoryManager>> { Arc::clone(&self.memory_manager) }
@@ -267,27 +267,27 @@ mod tests {
 
 	#[tokio::test]
 	async fn test_wasm_runtime_creation() {
-		let runtime = WasmRuntime::new(WasmConfig::default()).await;
+		let runtime = WASMRuntime::new(WASMConfig::default()).await;
 		assert!(runtime.is_ok());
 	}
 
 	#[tokio::test]
 	async fn test_wasm_config_default() {
-		let config = WasmConfig::default();
+		let config = WASMConfig::default();
 		assert!(config.enable_wasi);
 		assert_eq!(config.memory_limit_mb, 512);
 	}
 
 	#[tokio::test]
 	async fn test_create_store() {
-		let runtime = WasmRuntime::new(WasmConfig::default()).await.unwrap();
+		let runtime = WASMRuntime::new(WASMConfig::default()).await.unwrap();
 		let store = runtime.create_store();
 		assert!(store.is_ok());
 	}
 
 	#[tokio::test]
 	async fn test_instance_registration() {
-		let runtime = WasmRuntime::new(WasmConfig::default()).await.unwrap();
+		let runtime = WASMRuntime::new(WASMConfig::default()).await.unwrap();
 
 		runtime.register_instance("test-instance".to_string()).await.unwrap();
 		assert_eq!(runtime.instance_count().await, 1);
@@ -298,7 +298,7 @@ mod tests {
 
 	#[tokio::test]
 	async fn test_validate_module() {
-		let runtime = WasmRuntime::new(WasmConfig::default()).await.unwrap();
+		let runtime = WASMRuntime::new(WASMConfig::default()).await.unwrap();
 
 		// Simple WASM module (empty)
 		let empty_wasm = vec![
@@ -308,7 +308,7 @@ mod tests {
 
 		// This will fail validation because it's incomplete, but tests the method
 		let result = runtime.validate_module(&empty_wasm);
-		// We don't assert on the result since it depends on Wasmtime
+		// We don't assert on the result since it depends on WASMtime
 		// implementation
 	}
 }

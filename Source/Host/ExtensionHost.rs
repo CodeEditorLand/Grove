@@ -13,7 +13,7 @@ use tracing::{error, info, instrument, warn};
 use crate::{
 	Host::{Activation, ExtensionManager, HostConfig},
 	Transport::Transport,
-	WASM::Runtime::{WasmConfig, WasmRuntime},
+	WASM::Runtime::{WASMConfig, WASMRuntime},
 };
 
 /// Main extension host controller
@@ -27,7 +27,7 @@ pub struct ExtensionHost {
 	/// Activation engine
 	activation_engine:Arc<Activation::ActivationEngine>,
 	/// WASM runtime
-	wasm_runtime:Arc<WasmRuntime>,
+	wasm_runtime:Arc<WASMRuntime>,
 	/// Active extensions
 	active_extensions:Arc<RwLock<Vec<String>>>,
 	/// Host state
@@ -98,8 +98,8 @@ impl ExtensionHost {
 		transport.connect().await.context("Failed to connect transport")?;
 
 		// Create WASM runtime
-		let wasm_config = WasmConfig::new(512, 30000, true);
-		let wasm_runtime = Arc::new(WasmRuntime::new(wasm_config).await?);
+		let wasm_config = WASMConfig::new(512, 30000, true);
+		let wasm_runtime = Arc::new(WASMRuntime::new(wasm_config).await?);
 
 		// Create extension manager
 		let extension_manager = Arc::new(ExtensionManager::new(Arc::clone(&wasm_runtime), config.clone()));
@@ -279,7 +279,7 @@ impl ExtensionHost {
 	pub fn activation_engine(&self) -> &Arc<Activation::ActivationEngine> { &self.activation_engine }
 
 	/// Get the WASM runtime
-	pub fn wasm_runtime(&self) -> &Arc<WasmRuntime> { &self.wasm_runtime }
+	pub fn wasm_runtime(&self) -> &Arc<WASMRuntime> { &self.wasm_runtime }
 
 	/// Shutdown the host and clean up resources
 	#[instrument(skip(self))]

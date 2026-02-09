@@ -11,7 +11,7 @@ use tracing::{debug, info, instrument, warn};
 use crate::{
 	Host::{ExtensionHost, HostConfig},
 	Transport::Transport,
-	WASM::Runtime::{WasmConfig, WasmRuntime},
+	WASM::Runtime::{WASMConfig, WASMRuntime},
 };
 
 /// Runtime build utilities
@@ -22,7 +22,7 @@ impl RuntimeBuild {
 	#[instrument(skip(transport, wasm_runtime))]
 	pub async fn build_host(
 		transport:Transport,
-		wasm_runtime:Arc<WasmRuntime>,
+		wasm_runtime:Arc<WASMRuntime>,
 		host_config:HostConfig,
 	) -> Result<ExtensionHost> {
 		info!("Building Grove extension host");
@@ -48,8 +48,8 @@ impl RuntimeBuild {
 	) -> Result<ExtensionHost> {
 		info!("Building Grove extension host with defaults");
 
-		let wasm_config = WasmConfig::new(memory_limit_mb, max_execution_time_ms, wasi);
-		let wasm_runtime = Arc::new(WasmRuntime::new(wasm_config).await?);
+		let wasm_config = WASMConfig::new(memory_limit_mb, max_execution_time_ms, wasi);
+		let wasm_runtime = Arc::new(WASMRuntime::new(wasm_config).await?);
 
 		let host_config = HostConfig::default().with_activation_timeout(max_execution_time_ms);
 
@@ -63,8 +63,8 @@ impl RuntimeBuild {
 
 		let host_config = HostConfig::default().with_max_extensions(10).with_lazy_activation(true);
 
-		let wasm_config = WasmConfig::new(64, 10000, false);
-		let wasm_runtime = Arc::new(WasmRuntime::new(wasm_config).await?);
+		let wasm_config = WASMConfig::new(64, 10000, false);
+		let wasm_runtime = Arc::new(WASMRuntime::new(wasm_config).await?);
 
 		Self::build_host(transport, wasm_runtime, host_config).await
 	}

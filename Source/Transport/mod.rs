@@ -26,14 +26,14 @@
 //! - [`Strategy`] - Transport strategy trait
 //! - [`gRPCTransport`] - gRPC-based communication
 //! - [`IPCTransport`] - Inter-process communication
-//! - [`WasmTransport`] - Direct WASM module communication
+//! - [`WASMTransport`] - Direct WASM module communication
 
 
 
 pub mod gRPCTransport;
 pub mod IPCTransport;
 pub mod Strategy;
-pub mod WasmTransport;
+pub mod WASMTransport;
 
 // Re-exports for convenience
 use std::time::Duration;
@@ -41,7 +41,7 @@ use std::time::Duration;
 pub use Strategy::{Transport, TransportStrategy};
 pub use gRPCTransport::gRPCTransport;
 pub use IPCTransport::IPCTransport;
-pub use WasmTransport::WasmTransport;
+pub use WASMTransport::WASMTransport;
 use anyhow::Result;
 
 /// Default connection timeout
@@ -119,14 +119,14 @@ impl TransportConfig {
 pub fn create_default_transport() -> Transport { Transport::default() }
 
 /// Create a gRPC transport with the given address
-pub fn create_grpc_transport(address:&str) -> Result<Transport> { Ok(Transport::Grpc(gRPCTransport::new(address)?)) }
+pub fn create_grpc_transport(address:&str) -> Result<Transport> { Ok(Transport::gRPC(gRPCTransport::new(address)?)) }
 
 /// Create an IPC transport
-pub fn create_ipc_transport() -> Result<Transport> { Ok(Transport::Ipc(IPCTransport::new()?)) }
+pub fn create_ipc_transport() -> Result<Transport> { Ok(Transport::IPC(IPCTransport::new()?)) }
 
 /// Create a WASM transport with the given configuration
 pub fn create_wasm_transport(enable_wasi:bool, memory_limit_mb:u64, max_execution_time_ms:u64) -> Result<Transport> {
-	Ok(Transport::Wasm(WasmTransport::new(
+	Ok(Transport::WASM(WASMTransport::new(
 		enable_wasi,
 		memory_limit_mb,
 		max_execution_time_ms,
@@ -158,7 +158,7 @@ mod tests {
 		let transport = create_default_transport();
 		// Just test that it can be created
 		match transport {
-			Transport::Grpc(_) | Transport::Ipc(_) | Transport::Wasm(_) => {},
+			Transport::gRPC(_) | Transport::IPC(_) | Transport::WASM(_) => {},
 		}
 	}
 }

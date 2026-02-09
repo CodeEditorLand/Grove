@@ -18,12 +18,12 @@ use wasmtime::{Instance, Linker, Module, Store, StoreLimits};
 use crate::WASM::{
 	HostBridge,
 	MemoryManager,
-	Runtime::{WasmConfig, WasmRuntime},
+	Runtime::{WASMConfig, WASMRuntime},
 };
 
 /// WASM module wrapper with metadata
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct WasmModule {
+pub struct WASMModule {
 	/// Unique module identifier
 	pub id:String,
 	/// Module name (if available from name section)
@@ -113,7 +113,7 @@ impl Default for ModuleLoadOptions {
 }
 
 /// Module instance with store
-pub struct WasmInstance {
+pub struct WASMInstance {
 	/// The WASM instance
 	pub instance:Instance,
 	/// The associated store
@@ -126,15 +126,15 @@ pub struct WasmInstance {
 
 /// WASM Module Loader
 pub struct ModuleLoader {
-	runtime:Arc<WasmRuntime>,
-	config:WasmConfig,
+	runtime:Arc<WASMRuntime>,
+	config:WASMConfig,
 	linkers:Arc<RwLock<Vec<Linker<()>>>>,
-	loaded_modules:Arc<RwLock<Vec<WasmModule>>>,
+	loaded_modules:Arc<RwLock<Vec<WASMModule>>>,
 }
 
 impl ModuleLoader {
 	/// Create a new module loader
-	pub fn new(runtime:Arc<WasmRuntime>, config:WasmConfig) -> Self {
+	pub fn new(runtime:Arc<WASMRuntime>, config:WASMConfig) -> Self {
 		Self {
 			runtime,
 			config,
@@ -145,7 +145,7 @@ impl ModuleLoader {
 
 	/// Load a WASM module from a file
 	#[instrument(skip(self, path))]
-	pub async fn load_from_file(&self, path:&Path) -> Result<WasmModule> {
+	pub async fn load_from_file(&self, path:&Path) -> Result<WASMModule> {
 		info!("Loading WASM module from file: {:?}", path);
 
 		let wasm_bytes = fs::read(path).context(format!("Failed to read WASM file: {:?}", path))?;
@@ -160,7 +160,7 @@ impl ModuleLoader {
 
 	/// Load a WASM module from memory
 	#[instrument(skip(self, wasm_bytes))]
-	pub async fn load_from_memory(&self, wasm_bytes:&[u8], source_type:ModuleSourceType) -> Result<WasmModule> {
+	pub async fn load_from_memory(&self, wasm_bytes:&[u8], source_type:ModuleSourceType) -> Result<WASMModule> {
 		info!("Loading WASM module from memory ({} bytes)", wasm_bytes.len());
 
 		// Validate if option is set
@@ -177,7 +177,7 @@ impl ModuleLoader {
 		let module_info = self.extract_module_info(&module);
 
 		// Create module wrapper
-		let mut wasm_module = WasmModule {
+		let mut wasm_module = WASMModule {
 			id:generate_module_id(&module_info.name),
 			name:module_info.name,
 			path:None,
@@ -202,7 +202,7 @@ impl ModuleLoader {
 
 	/// Load a WASM module from a URL
 	#[instrument(skip(self, url))]
-	pub async fn load_from_url(&self, url:&str) -> Result<WasmModule> {
+	pub async fn load_from_url(&self, url:&str) -> Result<WASMModule> {
 		info!("Loading WASM module from URL: {}", url);
 
 		// Fetch the module
@@ -221,7 +221,7 @@ impl ModuleLoader {
 
 	/// Instantiate a loaded module
 	#[instrument(skip(self, module))]
-	pub async fn instantiate(&self, module:&Module, mut store:Store<StoreLimits>) -> Result<WasmInstance> {
+	pub async fn instantiate(&self, module:&Module, mut store:Store<StoreLimits>) -> Result<WASMInstance> {
 		debug!("Instantiating WASM module");
 
 		// Create linker
@@ -236,14 +236,14 @@ impl ModuleLoader {
 
 		debug!("WASM module instantiated: {}", instance_id);
 
-		Ok(WasmInstance { instance, store, id:instance_id, module:Arc::new(module.clone()) })
+		Ok(WASMInstance { instance, store, id:instance_id, module:Arc::new(module.clone()) })
 	}
 
 	/// Get all loaded modules
-	pub async fn get_loaded_modules(&self) -> Vec<WasmModule> { self.loaded_modules.read().await.clone() }
+	pub async fn get_loaded_modules(&self) -> Vec<WASMModule> { self.loaded_modules.read().await.clone() }
 
 	/// Get a loaded module by ID
-	pub async fn get_module_by_id(&self, id:&str) -> Option<WasmModule> {
+	pub async fn get_module_by_id(&self, id:&str) -> Option<WASMModule> {
 		let loaded = self.loaded_modules.read().await;
 		loaded.iter().find(|m| m.id == id).cloned()
 	}
@@ -343,8 +343,8 @@ mod tests {
 
 	#[tokio::test]
 	async fn test_module_loader_creation() {
-		let runtime = Arc::new(WasmRuntime::new(WasmConfig::default()).await.unwrap());
-		let config = WasmConfig::default();
+		let runtime = Arc::new(WASMRuntime::new(WASMConfig::default()).await.unwrap());
+		let config = WASMConfig::default();
 		let loader = ModuleLoader::new(runtime, config);
 
 		// Just test creation

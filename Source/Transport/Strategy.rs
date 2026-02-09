@@ -43,11 +43,11 @@ pub trait TransportStrategy: Send + Sync {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum TransportType {
 	/// gRPC transport
-	Grpc,
+	gRPC,
 	/// Inter-process communication
-	Ipc,
+	IPC,
 	/// Direct WASM module communication
-	Wasm,
+	WASM,
 	/// Unknown/unspecified transport
 	Unknown,
 }
@@ -55,9 +55,9 @@ pub enum TransportType {
 impl fmt::Display for TransportType {
 	fn fmt(&self, f:&mut fmt::Formatter<'_>) -> fmt::Result {
 		match self {
-			Self::Grpc => write!(f, "grpc"),
-			Self::Ipc => write!(f, "ipc"),
-			Self::Wasm => write!(f, "wasm"),
+			Self::gRPC => write!(f, "grpc"),
+			Self::IPC => write!(f, "ipc"),
+			Self::WASM => write!(f, "wasm"),
 			Self::Unknown => write!(f, "unknown"),
 		}
 	}
@@ -68,9 +68,9 @@ impl std::str::FromStr for TransportType {
 
 	fn from_str(s:&str) -> Result<Self, Self::Err> {
 		match s.to_lowercase().as_str() {
-			"grpc" => Ok(Self::Grpc),
-			"ipc" => Ok(Self::Ipc),
-			"wasm" => Ok(Self::Wasm),
+			"grpc" => Ok(Self::gRPC),
+			"ipc" => Ok(Self::IPC),
+			"wasm" => Ok(Self::WASM),
 			_ => Err(anyhow::anyhow!("Unknown transport type: {}", s)),
 		}
 	}
@@ -82,39 +82,39 @@ impl std::str::FromStr for TransportType {
 #[derive(Debug)]
 pub enum Transport {
 	/// gRPC-based transport
-	Grpc(super::gRPCTransport),
+	gRPC(super::gRPCTransport),
 	/// Inter-process communication transport
-	Ipc(super::IPCTransport),
+	IPC(super::IPCTransport),
 	/// Direct WASM module transport
-	Wasm(super::WasmTransport),
+	WASM(super::WASMTransport),
 }
 
 impl Transport {
 	/// Get the transport type
 	pub fn transport_type(&self) -> TransportType {
 		match self {
-			Self::Grpc(_) => TransportType::Grpc,
-			Self::Ipc(_) => TransportType::Ipc,
-			Self::Wasm(_) => TransportType::Wasm,
+			Self::gRPC(_) => TransportType::gRPC,
+			Self::IPC(_) => TransportType::IPC,
+			Self::WASM(_) => TransportType::WASM,
 		}
 	}
 
 	/// Connect to the transport
 	pub async fn connect(&self) -> anyhow::Result<()> {
 		match self {
-			Self::Grpc(transport) => {
+			Self::gRPC(transport) => {
 				transport
 					.connect()
 					.await
 					.map_err(|e| anyhow::anyhow!("gRPC connect error: {}", e))
 			},
-			Self::Ipc(transport) => {
+			Self::IPC(transport) => {
 				transport
 					.connect()
 					.await
 					.map_err(|e| anyhow::anyhow!("IPC connect error: {}", e))
 			},
-			Self::Wasm(transport) => {
+			Self::WASM(transport) => {
 				transport
 					.connect()
 					.await
@@ -126,19 +126,19 @@ impl Transport {
 	/// Send a request and receive a response
 	pub async fn send(&self, request:&[u8]) -> anyhow::Result<Vec<u8>> {
 		match self {
-			Self::Grpc(transport) => {
+			Self::gRPC(transport) => {
 				transport
 					.send(request)
 					.await
 					.map_err(|e| anyhow::anyhow!("gRPC send error: {}", e))
 			},
-			Self::Ipc(transport) => {
+			Self::IPC(transport) => {
 				transport
 					.send(request)
 					.await
 					.map_err(|e| anyhow::anyhow!("IPC send error: {}", e))
 			},
-			Self::Wasm(transport) => {
+			Self::WASM(transport) => {
 				transport
 					.send(request)
 					.await
@@ -150,19 +150,19 @@ impl Transport {
 	/// Send data without expecting a response
 	pub async fn send_no_response(&self, data:&[u8]) -> anyhow::Result<()> {
 		match self {
-			Self::Grpc(transport) => {
+			Self::gRPC(transport) => {
 				transport
 					.send_no_response(data)
 					.await
 					.map_err(|e| anyhow::anyhow!("gRPC send error: {}", e))
 			},
-			Self::Ipc(transport) => {
+			Self::IPC(transport) => {
 				transport
 					.send_no_response(data)
 					.await
 					.map_err(|e| anyhow::anyhow!("IPC send error: {}", e))
 			},
-			Self::Wasm(transport) => {
+			Self::WASM(transport) => {
 				transport
 					.send_no_response(data)
 					.await
@@ -174,25 +174,25 @@ impl Transport {
 	/// Close the transport
 	pub async fn close(&self) -> anyhow::Result<()> {
 		match self {
-			Self::Grpc(transport) => transport.close().await.map_err(|e| anyhow::anyhow!("gRPC close error: {}", e)),
-			Self::Ipc(transport) => transport.close().await.map_err(|e| anyhow::anyhow!("IPC close error: {}", e)),
-			Self::Wasm(transport) => transport.close().await.map_err(|e| anyhow::anyhow!("WASM close error: {}", e)),
+			Self::gRPC(transport) => transport.close().await.map_err(|e| anyhow::anyhow!("gRPC close error: {}", e)),
+			Self::IPC(transport) => transport.close().await.map_err(|e| anyhow::anyhow!("IPC close error: {}", e)),
+			Self::WASM(transport) => transport.close().await.map_err(|e| anyhow::anyhow!("WASM close error: {}", e)),
 		}
 	}
 
 	/// Check if the transport is connected
 	pub fn is_connected(&self) -> bool {
 		match self {
-			Self::Grpc(transport) => transport.is_connected(),
-			Self::Ipc(transport) => transport.is_connected(),
-			Self::Wasm(transport) => transport.is_connected(),
+			Self::gRPC(transport) => transport.is_connected(),
+			Self::IPC(transport) => transport.is_connected(),
+			Self::WASM(transport) => transport.is_connected(),
 		}
 	}
 
 	/// Get gRPC transport reference (if applicable)
 	pub fn as_grpc(&self) -> Option<&super::gRPCTransport> {
 		match self {
-			Self::Grpc(transport) => Some(transport),
+			Self::gRPC(transport) => Some(transport),
 			_ => None,
 		}
 	}
@@ -200,15 +200,15 @@ impl Transport {
 	/// Get IPC transport reference (if applicable)
 	pub fn as_ipc(&self) -> Option<&super::IPCTransport> {
 		match self {
-			Self::Ipc(transport) => Some(transport),
+			Self::IPC(transport) => Some(transport),
 			_ => None,
 		}
 	}
 
 	/// Get WASM transport reference (if applicable)
-	pub fn as_wasm(&self) -> Option<&super::WasmTransport> {
+	pub fn as_wasm(&self) -> Option<&super::WASMTransport> {
 		match self {
-			Self::Wasm(transport) => Some(transport),
+			Self::WASM(transport) => Some(transport),
 			_ => None,
 		}
 	}
@@ -217,7 +217,7 @@ impl Transport {
 impl Default for Transport {
 	fn default() -> Self {
 		// Default to gRPC with localhost address
-		Self::Grpc(super::gRPCTransport::new("127.0.0.1:50050").unwrap_or_else(|_| {
+		Self::gRPC(super::gRPCTransport::new("127.0.0.1:50050").unwrap_or_else(|_| {
 			super::gRPCTransport::new("0.0.0.0:50050").expect("Failed to create default gRPC transport")
 		}))
 	}
@@ -321,16 +321,16 @@ mod tests {
 
 	#[test]
 	fn test_transport_type_to_string() {
-		assert_eq!(TransportType::Grpc.to_string(), "grpc");
-		assert_eq!(TransportType::Ipc.to_string(), "ipc");
-		assert_eq!(TransportType::Wasm.to_string(), "wasm");
+		assert_eq!(TransportType::gRPC.to_string(), "grpc");
+		assert_eq!(TransportType::IPC.to_string(), "ipc");
+		assert_eq!(TransportType::WASM.to_string(), "wasm");
 	}
 
 	#[test]
 	fn test_transport_type_from_str() {
-		assert_eq!("grpc".parse::<TransportType>().unwrap(), TransportType::Grpc);
-		assert_eq!("ipc".parse::<TransportType>().unwrap(), TransportType::Ipc);
-		assert_eq!("wasm".parse::<TransportType>().unwrap(), TransportType::Wasm);
+		assert_eq!("grpc".parse::<TransportType>().unwrap(), TransportType::gRPC);
+		assert_eq!("ipc".parse::<TransportType>().unwrap(), TransportType::IPC);
+		assert_eq!("wasm".parse::<TransportType>().unwrap(), TransportType::WASM);
 		assert!("unknown".parse::<TransportType>().is_err());
 	}
 

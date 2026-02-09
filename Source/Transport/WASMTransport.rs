@@ -16,22 +16,22 @@ use crate::{
 	WASM::{
 		HostBridge,
 		MemoryManager::{MemoryLimits, MemoryManager},
-		Runtime::{WasmConfig, WasmRuntime},
-		WasmStats,
+		Runtime::{WASMConfig, WASMRuntime},
+		WASMStats,
 	},
 };
 
 /// WASM transport for direct module communication
 #[derive(Clone)]
-pub struct WasmTransport {
+pub struct WASMTransport {
 	/// WASM runtime
-	runtime:Arc<WasmRuntime>,
+	runtime:Arc<WASMRuntime>,
 	/// Memory manager
 	memory_manager:Arc<RwLock<MemoryManager>>,
 	/// Host bridge for communication
 	bridge:Arc<HostBridge>,
 	/// Loaded modules
-	modules:Arc<RwLock<HashMap<String, WasmModuleInfo>>>,
+	modules:Arc<RwLock<HashMap<String, WASMModuleInfo>>>,
 	/// Transport configuration
 	config:TransportConfig,
 	/// Connection state
@@ -42,7 +42,7 @@ pub struct WasmTransport {
 
 /// Information about a loaded WASM module
 #[derive(Debug, Clone)]
-pub struct WasmModuleInfo {
+pub struct WASMModuleInfo {
 	/// Module ID
 	pub id:String,
 	/// Module name (if available)
@@ -89,17 +89,17 @@ impl Default for FunctionCallStats {
 	fn default() -> Self { Self { call_count:0, total_time_us:0, last_call_at:None, error_count:0 } }
 }
 
-impl WasmTransport {
+impl WASMTransport {
 	/// Create a new WASM transport with default configuration
 	pub fn new(enable_wasi:bool, memory_limit_mb:u64, max_execution_time_ms:u64) -> anyhow::Result<Self> {
-		let config = WasmConfig::new(memory_limit_mb, max_execution_time_ms, enable_wasi);
+		let config = WASMConfig::new(memory_limit_mb, max_execution_time_ms, enable_wasi);
 
 		// Create runtime - this would normally be async, but for now we do it
 		// synchronously In production, this would need to be properly awaited
 		let runtime = Arc::new(
 			tokio::runtime::Runtime::new()
 				.map_err(|e| anyhow::anyhow!("Failed to create tokio runtime: {}", e))?
-				.block_on(WasmRuntime::new(config.clone())),
+				.block_on(WASMRuntime::new(config.clone())),
 		);
 
 		let memory_limits = MemoryLimits::new(memory_limit_mb, (memory_limit_mb as f64 * 0.75) as u64, 100);
@@ -118,11 +118,11 @@ impl WasmTransport {
 	}
 
 	/// Create a new WASM transport with custom configuration
-	pub fn with_config(wasm_config:WasmConfig, transport_config:TransportConfig) -> anyhow::Result<Self> {
+	pub fn with_config(wasm_config:WASMConfig, transport_config:TransportConfig) -> anyhow::Result<Self> {
 		let runtime = Arc::new(
 			tokio::runtime::Runtime::new()
 				.map_err(|e| anyhow::anyhow!("Failed to create tokio runtime: {}", e))?
-				.block_on(WasmRuntime::new(wasm_config.clone())),
+				.block_on(WASMRuntime::new(wasm_config.clone())),
 		);
 
 		let memory_limits = MemoryLimits::new(
@@ -145,7 +145,7 @@ impl WasmTransport {
 	}
 
 	/// Get a reference to the WASM runtime
-	pub fn runtime(&self) -> &Arc<WasmRuntime> { &self.runtime }
+	pub fn runtime(&self) -> &Arc<WASMRuntime> { &self.runtime }
 
 	/// Get a reference to the memory manager
 	pub fn memory_manager(&self) -> &Arc<RwLock<MemoryManager>> { &self.memory_manager }
@@ -154,14 +154,14 @@ impl WasmTransport {
 	pub fn bridge(&self) -> &Arc<HostBridge> { &self.bridge }
 
 	/// Get all loaded modules
-	pub async fn get_modules(&self) -> HashMap<String, WasmModuleInfo> { self.modules.read().await.clone() }
+	pub async fn get_modules(&self) -> HashMap<String, WASMModuleInfo> { self.modules.read().await.clone() }
 
 	/// Get WASM runtime statistics
-	pub async fn get_wasm_stats(&self) -> WasmStats {
+	pub async fn get_wasm_stats(&self) -> WASMStats {
 		let memory_manager = self.memory_manager.read().await;
 		let managers = self.modules.read().await;
 
-		WasmStats {
+		WASMStats {
 			modules_loaded:managers.len(),
 			active_instances:managers.len(), // In real implementation, track instances
 			total_memory_mb:memory_manager.current_usage_mb() as u64,
@@ -215,8 +215,8 @@ impl WasmTransport {
 }
 
 #[async_trait]
-impl super::super::Strategy::TransportStrategy for WasmTransport {
-	type Error = WasmTransportError;
+impl super::super::Strategy::TransportStrategy for WASMTransport {
+	type Error = WASMTransportError;
 
 	#[instrument(skip(self))]
 	async fn connect(&self) -> Result<(), Self::Error> {
@@ -235,7 +235,7 @@ impl super::super::Strategy::TransportStrategy for WasmTransport {
 		let start = std::time::Instant::now();
 
 		if !self.is_connected() {
-			return Err(WasmTransportError::NotConnected);
+			return Err(WASMTransportError::NotConnected);
 		}
 
 		debug!("Sending WASM transport request ({} bytes)", request.len());
@@ -243,11 +243,11 @@ impl super::super::Strategy::TransportStrategy for WasmTransport {
 		// Parse request - it should contain module ID and function name
 		// For simplicity, we use a minimal format: module_id:function_name:base64_args
 		let request_str =
-			std::str::from_utf8(request).map_err(|e| WasmTransportError::InvalidRequest(e.to_string()))?;
+			std::str::from_utf8(request).map_err(|e| WASMTransportError::InvalidRequest(e.to_string()))?;
 
 		let parts:Vec<&str> = request_str.splitn(3, ':').collect();
 		if parts.len() < 3 {
-			return Err(WasmTransportError::InvalidRequest("Invalid request format".to_string()));
+			return Err(WASMTransportError::InvalidRequest("Invalid request format".to_string()));
 		}
 
 		let module_id = parts[0];
@@ -256,14 +256,14 @@ impl super::super::Strategy::TransportStrategy for WasmTransport {
 
 		// Decode arguments from base64
 		let args = vec![Bytes::from(
-			base64::decode(args_base64).map_err(|e| WasmTransportError::InvalidRequest(e.to_string()))?,
+			base64::decode(args_base64).map_err(|e| WASMTransportError::InvalidRequest(e.to_string()))?,
 		)];
 
 		// Call the WASM function
 		let response = self
 			.call_wasm_function(module_id, function_name, args)
 			.await
-			.map_err(|e| WasmTransportError::FunctionCallFailed(e.to_string()))?;
+			.map_err(|e| WASMTransportError::FunctionCallFailed(e.to_string()))?;
 
 		// Convert response to Vec<u8>
 		let response_vec = response.to_vec();
@@ -278,7 +278,7 @@ impl super::super::Strategy::TransportStrategy for WasmTransport {
 	#[instrument(skip(self, data))]
 	async fn send_no_response(&self, data:&[u8]) -> Result<(), Self::Error> {
 		if !self.is_connected() {
-			return Err(WasmTransportError::NotConnected);
+			return Err(WASMTransportError::NotConnected);
 		}
 
 		debug!("Sending WASM transport request without response ({} bytes)", data.len());
@@ -300,11 +300,15 @@ impl super::super::Strategy::TransportStrategy for WasmTransport {
 	}
 
 	fn is_connected(&self) -> bool { self.connected.blocking_read().to_owned() }
+
+	fn transport_type(&self) -> super::super::Strategy::TransportType {
+		super::super::Strategy::TransportType::WASM
+	}
 }
 
 /// WASM transport errors
 #[derive(Debug, thiserror::Error)]
-pub enum WasmTransportError {
+pub enum WASMTransportError {
 	#[error("Module not found: {0}")]
 	ModuleNotFound(String),
 
@@ -339,7 +343,7 @@ mod tests {
 
 	#[test]
 	fn test_wasm_transport_creation() {
-		let result = WasmTransport::new(true, 512, 30000);
+		let result = WASMTransport::new(true, 512, 30000);
 		assert!(result.is_ok());
 		let transport = result.unwrap();
 		// WASM transport should always be connected
@@ -357,14 +361,14 @@ mod tests {
 
 	#[tokio::test]
 	async fn test_wasm_transport_not_connected_after_close() {
-		let transport = WasmTransport::new(true, 512, 30000).unwrap();
+		let transport = WASMTransport::new(true, 512, 30000).unwrap();
 		transport.close().await.unwrap();
 		assert!(!transport.is_connected());
 	}
 
 	#[tokio::test]
 	async fn test_get_wasm_stats() {
-		let transport = WasmTransport::new(true, 512, 30000).unwrap();
+		let transport = WASMTransport::new(true, 512, 30000).unwrap();
 		let stats = transport.get_wasm_stats().await;
 		assert_eq!(stats.modules_loaded, 0);
 		assert_eq!(stats.active_instances, 0);

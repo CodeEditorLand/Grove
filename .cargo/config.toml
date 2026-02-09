@@ -7,7 +7,7 @@ jobs = 8
 
 # Target settings
 [target.wasm32-wasi]
-# Wasmtime linker for WASM builds
+# WASMtime linker for WASM builds
 rustflags = [
     "-C", "link-arg=-zstack-size=1048576",
 ]

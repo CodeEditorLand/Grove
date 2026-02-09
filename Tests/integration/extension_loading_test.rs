@@ -44,8 +44,8 @@ async fn test_extension_manager_operations() {
     let wasm_runtime = std::sync::Arc::new(
         tokio::runtime::Runtime::new()
             .unwrap()
-            .block_on(grove::WASM::Runtime::WasmRuntime::new(
-                grove::WASM::Runtime::WasmConfig::default(),
+            .block_on(grove::WASM::Runtime::WASMRuntime::new(
+                grove::WASM::Runtime::WASMConfig::default(),
             ))
             .unwrap()
     );
@@ -63,8 +63,8 @@ async fn test_extension_manager_operations() {
 /// Test WASM runtime creation
 #[tokio::test]
 async fn test_wasm_runtime_creation() {
-    let runtime = grove::WASM::Runtime::WasmRuntime::new(
-        grove::WASM::Runtime::WasmConfig::default(),
+    let runtime = grove::WASM::Runtime::WASMRuntime::new(
+        grove::WASM::Runtime::WASMConfig::default(),
     )
     .await
     .unwrap();
@@ -82,9 +82,9 @@ async fn test_transport_creation() {
     let transport_type = transport.transport_type();
     // Should be one of the valid types
     assert!(
-        transport_type == grove::Transport::TransportType::Grpc
-            || transport_type == grove::Transport::TransportType::Ipc
-            || transport_type == grove::Transport::TransportType::Wasm
+        transport_type == grove::Transport::TransportType::gRPC
+            || transport_type == grove::Transport::TransportType::IPC
+            || transport_type == grove::Transport::TransportType::WASM
     );
 }
 

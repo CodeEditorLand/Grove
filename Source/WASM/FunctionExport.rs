@@ -156,7 +156,7 @@ impl FunctionExport {
 		Ok(())
 	}
 
-	/// Export all registered functions to a Wasmtime linker
+	/// Export all registered functions to a WASMtime linker
 	#[instrument(skip(self, linker))]
 	pub async fn export_to_linker<T>(&self, linker:&mut Linker<T>) -> Result<()>
 	where
@@ -262,7 +262,7 @@ impl FunctionExport {
 				}
 			};
 
-		// Define the function signature for Wasmtime
+		// Define the function signature for WASMtime
 		let wasmtime_signature = self.wasmtime_signature_from_signature(&func.signature)?;
 
 		// Define the function with the appropriate signature
@@ -286,10 +286,10 @@ impl FunctionExport {
 		Ok(())
 	}
 
-	/// Convert our signature to Wasmtime signature type
+	/// Convert our signature to WASMtime signature type
 	fn wasmtime_signature_from_signature(&self, sig:&FunctionSignature) -> Result<FuncType> {
 		// This is a placeholder - actual implementation depends on the exact types
-		// In production, this would map ParamType and ReturnType to Wasmtime types
+		// In production, this would map ParamType and ReturnType to WASMtime types
 		Ok(FuncType::new(self.registry.bridge.engine(), vec![], vec![]))
 	}
 
@@ -325,7 +325,7 @@ impl FunctionExport {
 	}
 }
 
-// Placeholder for Wasmtime types not directly available
+// Placeholder for WASMtime types not directly available
 // In actual implementation, these would be imported from wasmtime crate
 struct FuncType;
 struct ValType;

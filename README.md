@@ -9,12 +9,12 @@
 
 Grove provides a secure, sandboxed environment for running VS Code extensions compiled to WebAssembly or native Rust, offering:
 
-- **WASM Support**: Full WebAssembly runtime with Wasmtime
+- **WASM Support**: Full WebAssembly runtime with WASMtime
 - **Standalone Operation**: Can run independently or connect to Mountain via gRPC
 - **Cross-Platform**: Native support for macOS, Linux, and Windows
 - **Cocoon Compatible**: Shares API surface and semantics with Node.js Cocoon host
 - **Multiple Transport**: gRPC, IPC, and direct WASM transport strategies
-- **Secure Sandboxing**: Wasmtime-based isolation for untrusted extensions
+- **Secure Sandboxing**: WASMtime-based isolation for untrusted extensions
 
 ## Architecture
 
@@ -29,7 +29,7 @@ Grove provides a secure, sandboxed environment for running VS Code extensions co
 │         │                                              ▲     │
 │         ▼                                              │     │
 │  ┌─────────────────────────────────────────────────────┤     │
-│  │     WASM Runtime (Wasmtime)                         │     │
+│  │     WASM Runtime (WASMtime)                         │     │
 │  │  ┌──────────┐  ┌──────────┐  ┌──────────────────┐  │     │
 │  │  │Module    │  │ Memory   │  │   Host Bridge    │  │     │
 │  │  │ Loader   │  │ Manager  │  │   (Communication)│  │     │
@@ -149,7 +149,7 @@ Core extension hosting functionality:
 ### WASM
 
 WebAssembly runtime integration:
-- `Runtime`: Wasmtime engine and store management
+- `Runtime`: WASMtime engine and store management
 - `ModuleLoader`: WASM module compilation and instantiation
 - `MemoryManager`: WASM memory allocation and management
 - `HostBridge`: Host-WASM function communication
@@ -161,7 +161,7 @@ Communication strategies:
 - `Strategy`: Transport strategy trait
 - `gRPCTransport`: gRPC-based communication with Mountain
 - `IPCTransport`: Inter-process communication
-- `WasmTransport`: Direct WASM communication
+- `WASMTransport`: Direct WASM communication
 
 ### API
 
@@ -210,7 +210,7 @@ cargo clippy
 
 Grove provides security through:
 
-1. **WASM Sandboxing**: Isolated execution environment via Wasmtime
+1. **WASM Sandboxing**: Isolated execution environment via WASMtime
 2. **Memory Limits**: Configurable memory constraints for extensions
 3. **Resource Controls**: CPU and resource throttling
 4. **Type Safety**: Rust's ownership system ensures memory safety
