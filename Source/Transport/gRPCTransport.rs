@@ -11,12 +11,10 @@ use tokio::sync::RwLock;
 use tonic::transport::{Channel, Endpoint};
 use tracing::{debug, info, instrument, warn};
 
-use crate::Transport::{
-	DEFAULT_CONNECTION_TIMEOUT_MS,
-	DEFAULT_REQUEST_TIMEOUT_MS,
-	Strategy::{TransportStats, TransportStrategy},
-	TransportConfig,
-};
+use crate::Transport::TransportStrategy;
+use crate::Transport::TransportType;
+use crate::Transport::TransportStats;
+use crate::Transport::TransportConfig;
 
 /// gRPC transport for communication with Mountain and other gRPC services
 #[derive(Clone, Debug)]
@@ -96,7 +94,7 @@ impl GrpcTransport {
 }
 
 #[async_trait]
-impl super::super::Strategy::TransportStrategy for GrpcTransport {
+impl TransportStrategy for GrpcTransport {
 	type Error = GrpcTransportError;
 
 	#[instrument(skip(self))]
@@ -177,8 +175,8 @@ impl super::super::Strategy::TransportStrategy for GrpcTransport {
 
 	fn is_connected(&self) -> bool { self.connected.blocking_read().to_owned() }
 
-	fn transport_type(&self) -> super::super::Strategy::TransportType {
-		super::super::Strategy::TransportType::gRPC
+	fn transport_type(&self) -> TransportType {
+		TransportType::gRPC
 	}
 }
 

@@ -70,10 +70,15 @@ pub enum ParamType {
 /// Return types for WASM functions
 #[derive(Debug, Clone, Copy, serde::Serialize, serde::Deserialize, PartialEq, Eq)]
 pub enum ReturnType {
+	/// 32-bit signed integer
 	I32,
+	/// 64-bit signed integer
 	I64,
+	/// 32-bit floating point number
 	F32,
+	/// 64-bit floating point number
 	F64,
+	/// No return value
 	Void,
 }
 

@@ -5,16 +5,13 @@
 
 use std::path::PathBuf;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use clap::{Parser, Subcommand};
-use grove::{
-	Binary::{
-		Build::{RuntimeBuild, ServiceRegister},
-		Main::Entry,
-	},
-	Transport,
-};
-use tracing::{error, info, warn};
+use tracing::{error, info};
+use grove::Transport::{self, GrpcTransport, IPCTransportImpl, WASMTransportImpl};
+use grove::Transport::Transport as TransportEnum;
+use grove::Binary::Main::Entry::{Entry, ValidationResult, BuildResult, ExtensionInfo};
+use grove::Binary::Build::{RuntimeBuild, ServiceRegister};
 
 /// Grove - Rust/WASM Extension Host for VS Code
 ///
@@ -164,13 +161,13 @@ fn init_logging(verbose:u8, format:&str) -> Result<()> {
 			.json()
 			.with_env_filter(env_filter)
 			.try_init()
-			.context("Failed to initialize JSON logging")?;
+			.map_err(|e| anyhow::anyhow!("Failed to initialize JSON logging: {}", e))?;
 	} else {
 		tracing_subscriber::fmt()
 			.with_env_filter(env_filter)
 			.with_target(false)
 			.try_init()
-			.context("Failed to initialize logging")?;
+			.map_err(|e| anyhow::anyhow!("Failed to initialize logging: {}", e))?;
 	}
 
 	Ok(())
@@ -188,36 +185,30 @@ async fn run_standalone(
 	info!("Starting Grove in standalone mode...");
 
 	let transport = match transport_type.as_str() {
-		"grpc" => Transport::gRPC(groove::Transport::gRPCTransport::new(&grpc_address)?),
-		"ipc" => Transport::IPC(groove::Transport::IPCTransport::new()?),
-		"wasm" => {
-			Transport::WASM(groove::Transport::WASMTransport::new(
-				wasi,
-				memory_limit_mb,
-				max_execution_time_ms,
-			)?)
-		},
-		_ => Transport::default(),
+		"grpc" => TransportEnum::gRPC(GrpcTransport::new(&grpc_address)?),
+		"ipc" => TransportEnum::IPC(IPCTransportImpl::new()?),
+		"wasm" => TransportEnum::WASM(WASMTransportImpl::new(
+			wasi,
+			memory_limit_mb,
+			max_execution_time_ms,
+		)?),
+		_ => TransportEnum::default(),
 	};
 
 	info!("Using transport: {:?}", transport_type);
 
-	let host = RuntimeBuild::build_host(transport, wasi, memory_limit_mb, max_execution_time_ms).await?;
+	let host = RuntimeBuild::build_host_with_defaults(transport, wasi, memory_limit_mb, max_execution_time_ms).await?;
 
 	if let Some(path) = extension {
 		info!("Loading extension from: {:?}", path);
-		let result = host.load_extension(&path).await;
-		match result {
-			Ok(_) => {
-				info!("Extension loaded successfully");
-				host.activate().await?;
-				info!("Extension activated");
-			},
-			Err(e) => {
-				error!("Failed to load extension: {}", e);
-				return Err(e);
-			},
-		}
+		let ext_id = host.load_extension(&path).await.map_err(|e| {
+			error!("Failed to load extension: {}", e);
+			e
+		})?;
+		
+		info!("Extension loaded successfully with ID: {}", ext_id);
+		host.activate(&ext_id).await?;
+		info!("Extension activated");
 	} else {
 		info!("No extension specified, running in daemon mode");
 		keep_running().await;
@@ -246,16 +237,16 @@ async fn run_service(mountain_address:String, service_name:Option<String>, auto_
 async fn run_validation(manifest_path:PathBuf, detailed:bool) -> Result<()> {
 	info!("Validating extension manifest: {:?}", manifest_path);
 
-	let result = Entry::validate_extension(&manifest_path, detailed).await?;
+	let result:ValidationResult = Entry::validate_extension(&manifest_path, detailed).await?;
 
-	if result.is_valid() {
+	if result.is_valid {
 		info!("Extension manifest is valid");
 		if detailed {
 			println!("{:#?}", result);
 		}
 	} else {
 		error!("Extension manifest validation failed");
-		Err(anyhow::anyhow!("Validation failed"))
+		return Err(anyhow::anyhow!("Validation failed"));
 	}
 
 	Ok(())
@@ -267,13 +258,13 @@ async fn run_build(source:PathBuf, output:PathBuf, opt_level:String, target:Opti
 	info!("Output path: {:?}", output);
 	info!("Optimization level: {}", opt_level);
 
-	let result = Entry::build_wasm_module(source, output, opt_level, target).await?;
+	let result:BuildResult = Entry::build_wasm_module(source, output, opt_level, target).await?;
 
 	if result.success() {
 		info!("WASM module built successfully");
 	} else {
 		error!("WASM module build failed");
-		Err(anyhow::anyhow!("Build failed"))
+		return Err(anyhow::anyhow!("Build failed"));
 	}
 
 	Ok(())
@@ -283,7 +274,7 @@ async fn run_build(source:PathBuf, output:PathBuf, opt_level:String, target:Opti
 async fn run_list(detailed:bool) -> Result<()> {
 	info!("Listing extensions...");
 
-	let extensions = Entry::list_extensions(detailed).await?;
+	let extensions:Vec<ExtensionInfo> = Entry::list_extensions(detailed).await?;
 
 	if extensions.is_empty() {
 		info!("No extensions loaded");

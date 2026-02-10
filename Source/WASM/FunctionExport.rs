@@ -193,6 +193,7 @@ impl FunctionExportImpl {
 		};
 		
 		let func_name_for_debug = func_name.clone();
+		let func_name_inner = func_name.clone();
 
 		// Create a wrapper function that handles stats and error handling
 		let wrapped_callback =
@@ -230,7 +231,7 @@ impl FunctionExportImpl {
 					.collect();
 
 				let args_bytes = args_bytes.map_err(|_| {
-					warn!("Error converting arguments for function '{}'", func_name);
+					warn!("Error converting arguments for function '{}'", func_name_inner);
 					wasmtime::Trap::StackOverflow
 				})?;
 
@@ -242,7 +243,7 @@ impl FunctionExportImpl {
 						// Deserialize response
 						let result_val:serde_json::Value = serde_json::from_slice(&response_bytes)
 							.map_err(|_| {
-								warn!("Error deserializing response for function '{}'", func_name);
+								warn!("Error deserializing response for function '{}'", func_name_inner);
 								wasmtime::Trap::StackOverflow
 							})?;
 
@@ -253,12 +254,12 @@ impl FunctionExportImpl {
 								} else if let Some(f) = n.as_f64() {
 									wasmtime::Val::I64(f as i64)
 								} else {
-									warn!("Invalid number format for function '{}'", func_name);
+									warn!("Invalid number format for function '{}'", func_name_inner);
 									return Err(wasmtime::Trap::StackOverflow);
 								}
 							},
 							_ => {
-								warn!("Unsupported response type for function '{}'", func_name);
+								warn!("Unsupported response type for function '{}'", func_name_inner);
 								return Err(wasmtime::Trap::StackOverflow);
 							},
 						};
@@ -267,7 +268,7 @@ impl FunctionExportImpl {
 					},
 					Err(e) => {
 						// Error handling
-						debug!("Host function '{}' returned error: {}", func_name, e);
+						debug!("Host function '{}' returned error: {}", func_name_inner, e);
 						Err(wasmtime::Trap::StackOverflow)
 					},
 				}
@@ -276,23 +277,81 @@ impl FunctionExportImpl {
 		// Define the function signature for WASMtime
 		let _wasmparser_signature = wasmparser::FuncType::new([wasmparser::ValType::I32], [wasmparser::ValType::I32]);
 
-		// For now, use a simple wrapper that handles the basic case
-		// In production, this would need to properly handle the full signature
-		// TODO: Update to proper async function wrapping for Wasmtime 20.0.2
-		// TODO: Update to proper async function wrapping for Wasmtime 20.0.2
-		// Using synchronous wrapper as placeholder
-		// In Wasmtime 20.0.2, func_wrap requires module name, function name, and closure
-		// For now, skip registration until proper closure signature is determined
-		debug!("[FunctionExport] Host function '{}' registration skipped (pending closure signature fix)", func_name_for_debug);
-		// linker.func_wrap(
-		//     "_host", // Module name for host functions
-		//     &func_name,
-		//     move |mut caller:wasmtime::Caller<'_, StoreLimits>, _i32:i32| -> i32 {
-		//         // TODO: Implement actual host function call
-		//         // For now, return success (0)
-		//         0i32
-		//     },
-		// )?;
+		// Register host function with the linker using simple i32->i32 signature
+		// In Wasmtime 20, func_wrap expects parameters to be inferred from the closure signature
+		let func_name_for_logging = func_name.clone();
+		linker.func_wrap(
+			"_host", // Module name for host functions
+			&func_name,
+			move |mut caller:wasmtime::Caller<'_, T>, input_param:i32| -> i32 {
+				// Track function call for metrics
+				let start = std::time::Instant::now();
+
+				// Convert input parameter to bytes for callback
+				let args_bytes = match serde_json::to_vec(&input_param)
+					.map(bytes::Bytes::from) {
+					Ok(b) => b,
+					Err(e) => {
+						warn!("Serialization error for function '{}': {}", func_name_for_logging, e);
+						return -1i32;
+					}
+				};
+
+				// Call the registered callback
+				let result = callback(vec![args_bytes]);
+
+				match result {
+					Ok(response_bytes) => {
+						// Deserialize response
+						let result_val:serde_json::Value = match serde_json::from_slice(&response_bytes) {
+							Ok(v) => v,
+							Err(_) => {
+								warn!("Error deserializing response for function '{}'", func_name_for_logging);
+								return -1i32;
+							}
+						};
+
+						// Extract result value
+						let ret_val = match result_val {
+							serde_json::Value::Number(n) => {
+								if let Some(i) = n.as_i64() {
+									i as i32
+								} else if let Some(f) = n.as_f64() {
+									f as i32
+								} else {
+									warn!("Invalid number format for function '{}'", func_name_for_logging);
+									-1i32
+								}
+							},
+							serde_json::Value::Bool(b) => {
+								if b { 1i32 } else { 0i32 }
+							},
+							_ => {
+								warn!("Unsupported response type for function '{}', expected number or bool", func_name_for_logging);
+								-1i32
+							},
+						};
+
+						// Log successful call
+						let duration = start.elapsed();
+						debug!("[FunctionExport] Host function '{}' executed successfully in {}µs", func_name_for_logging, duration.as_micros());
+
+						ret_val
+					},
+					Err(e) => {
+						// Error handling - return error code to WASM caller
+						debug!("[FunctionExport] Host function '{}' returned error: {}", func_name_for_logging, e);
+						// Return -1 to indicate error to WASM caller
+						-1i32
+					},
+				}
+			},
+		).map_err(|e| {
+			warn!("[FunctionExport] Failed to wrap host function '{}': {}", func_name_for_debug, e);
+			e
+		})?;
+
+		debug!("[FunctionExport] Host function '{}' registered successfully", func_name_for_debug);
 
 		Ok(())
 	}

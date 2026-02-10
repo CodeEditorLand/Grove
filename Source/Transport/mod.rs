@@ -38,7 +38,7 @@ pub mod WASMTransport;
 // Re-exports for convenience
 use std::time::Duration;
 
-pub use Strategy::{Transport, TransportStrategy};
+pub use Strategy::{Transport, TransportStrategy, TransportType, TransportStats};
 pub use gRPCTransport::GrpcTransport;
 pub use IPCTransport::IPCTransportImpl;
 pub use WASMTransport::WASMTransportImpl;

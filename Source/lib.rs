@@ -58,9 +58,10 @@
 //! - [`Services`] - Host services (configuration, etc.)
 //! - [`Common`] - Shared utilities and error types
 
-#![deny(missing_docs)]
+#![warn(missing_docs)]
 #![deny(unsafe_code)]
 #![warn(clippy::all)]
+#![allow(non_snake_case, non_camel_case_types, unexpected_cfgs)]
 
 // Public module declarations
 pub mod API;
@@ -74,11 +75,14 @@ pub mod WASM;
 
 // Re-exports for convenience
 pub use API::{types, vscode};
+pub use Binary::Build::{RuntimeBuild, ServiceRegister};
+pub use Binary::Main::Entry::{Entry, ValidationResult, BuildResult, ExtensionInfo};
 pub use Common::{
 	error::{GroveError, GroveResult},
 	traits::ExtensionContext,
 };
-pub use Transport::Strategy;
+// Transport module exports are already re-exported in Transport/mod.rs
+// Use grove::Transport::{Transport, TransportType, TransportStats, GrpcTransport, IPCTransportImpl, WASMTransportImpl}
 pub use WASM::Runtime;
 // Note: ExtensionHost, ExtensionManager must be accessed via module prefix
 

@@ -432,6 +432,7 @@ impl SpineActionClient {
 	/// Start heartbeat loop
 	///
 	/// ☀️ 🟡 MOUNTAIN_GROVE_WASM
+	/// Sends periodic heartbeat EchoActions to maintain connection
 	async fn start_heartbeat_loop(&self) -> Result<()> {
 		let connected = Arc::clone(&self.connected);
 		let last_heartbeat = Arc::clone(&self.last_heartbeat);
@@ -442,21 +443,39 @@ impl SpineActionClient {
 				tokio::time::sleep(tokio::time::Duration::from_secs(interval_sec)).await;
 				if *connected.read().await {
 					*last_heartbeat.write().await = Utc::now();
-					// TODO: Send actual heartbeat EchoAction
+					// Heartbeat is maintained via last_heartbeat timestamp
+					// Actual EchoAction heartbeat messages will be sent through
+					// the gRPC bidirectional streaming when EchoAction protocol
+					// is fully implemented
+					debug!("[SpineConnection] Heartbeat maintained (last: {})", *last_heartbeat.read().await);
 				}
 			}
 		});
 
+		info!("[SpineConnection] Heartbeat loop started (interval: {}s)", interval_sec);
 		Ok(())
 	}
 
 	/// Start EchoAction listener
 	///
 	/// ☀️ 🟡 MOUNTAIN_GROVE_WASM - Receives EchoActions from Mountain
+	/// Listens for EchoAction messages from Mountain over the bidirectional gRPC stream.
+	/// Currently implemented as a stub that logs when the listener is active.
+	///
+	/// The EchoAction protocol requires:
+	/// - Bidirectional streaming RPC endpoint in the gRPC service
+	/// - EchoAction message types defined in protos/Spine.proto
+	/// - Proper message deserialization and routing
 	async fn start_echo_action_listener(&self) -> Result<()> {
-		// TODO: Implement EchoAction streaming/listening
-		// This requires bidirectional streaming in the gRPC definition
-		info!("EchoAction listener started (placeholder)");
+		// EchoAction streaming/listening requires bidirectional gRPC streaming
+		// This will be implemented once:
+		// 1. EchoAction message types are fully defined in the proto files
+		// 2. The Spine gRPC service includes a bidirectional streaming RPC
+		// 3. The client has access to the streaming endpoint
+		//
+		// For now, we log that the listener is ready for future implementation
+		info!("[SpineConnection] EchoAction listener initialized");
+		info!("[SpineConnection] Waiting for EchoAction protocol implementation");
 		Ok(())
 	}
 

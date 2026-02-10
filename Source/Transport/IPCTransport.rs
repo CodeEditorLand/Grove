@@ -13,7 +13,10 @@ use bytes::Bytes;
 use tokio::sync::RwLock;
 use tracing::{debug, info, instrument, warn};
 
-use crate::Transport::{Strategy::TransportStats, TransportConfig};
+use crate::Transport::TransportStrategy;
+use crate::Transport::TransportType;
+use crate::Transport::TransportStats;
+use crate::Transport::TransportConfig;
 
 /// IPC transport for local process communication
 #[derive(Clone, Debug)]
@@ -175,7 +178,7 @@ impl IPCTransportImpl {
 }
 
 #[async_trait]
-impl super::super::Strategy::TransportStrategy for IPCTransportImpl {
+impl TransportStrategy for IPCTransportImpl {
 	type Error = IPCTransportError;
 
 	#[instrument(skip(self))]
@@ -272,8 +275,8 @@ impl super::super::Strategy::TransportStrategy for IPCTransportImpl {
 
 	fn is_connected(&self) -> bool { self.connected.blocking_read().to_owned() }
 
-	fn transport_type(&self) -> super::super::Strategy::TransportType {
-		super::super::Strategy::TransportType::IPC
+	fn transport_type(&self) -> TransportType {
+		TransportType::IPC
 	}
 }
 

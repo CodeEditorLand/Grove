@@ -12,7 +12,10 @@ use tokio::sync::RwLock;
 use tracing::{debug, info, instrument, warn};
 
 use crate::{
-	Transport::{Strategy::TransportStats, TransportConfig},
+	Transport::TransportStrategy,
+	Transport::TransportType,
+	Transport::TransportStats,
+	Transport::TransportConfig,
 	WASM::{
 		HostBridge::HostBridgeImpl,
 		MemoryManager::{MemoryLimits, MemoryManagerImpl},
@@ -215,7 +218,7 @@ impl WASMTransportImpl {
 }
 
 #[async_trait]
-impl super::super::Strategy::TransportStrategy for WASMTransportImpl {
+impl TransportStrategy for WASMTransportImpl {
 	type Error = WASMTransportError;
 
 	#[instrument(skip(self))]
@@ -301,8 +304,8 @@ impl super::super::Strategy::TransportStrategy for WASMTransportImpl {
 
 	fn is_connected(&self) -> bool { self.connected.blocking_read().to_owned() }
 
-	fn transport_type(&self) -> super::super::Strategy::TransportType {
-		super::super::Strategy::TransportType::WASM
+	fn transport_type(&self) -> TransportType {
+		TransportType::WASM
 	}
 }
 

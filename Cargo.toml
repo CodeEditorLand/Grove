@@ -44,7 +44,7 @@ thiserror = "1.0"
 
 # tracing/logging
 tracing = "0.1"
-tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
 
 # CLI
 clap = { version = "4.4", features = ["derive"] }
