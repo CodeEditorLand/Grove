@@ -181,18 +181,21 @@ impl LifecycleManager {
 			.await
 			.ok_or_else(|| anyhow::anyhow!("Extension not found: {}", extension_id))?;
 
+		// Clone event for later use before moving it
+		let event_clone = event.clone();
+
 		// Determine new state based on event
 		let new_state = self.determine_next_state(current_state, event)?;
 
 		// Perform state transition (in real implementation, this would call extension)
-		self.perform_state_transition(extension_id, event, new_state).await?;
+		self.perform_state_transition(extension_id, event_clone.clone(), new_state).await?;
 
 		let elapsed_ms = start.elapsed().as_millis() as u64;
 
 		// Record event
 		let record = LifecycleEventRecord {
 			extension_id:extension_id.to_string(),
-			event:event.clone(),
+			event:event_clone,
 			previous_state:current_state,
 			new_state,
 			timestamp:std::time::SystemTime::now()
@@ -216,7 +219,7 @@ impl LifecycleManager {
 
 	/// Determine the next state based on current state and event
 	fn determine_next_state(&self, current_state:LifecycleState, event:LifecycleEvent) -> Result<LifecycleState> {
-		match (current_state, event) {
+		match (current_state, event.clone()) {
 			(LifecycleState::Created, LifecycleEvent::Initialize) => Ok(LifecycleState::Initializing),
 			(LifecycleState::Initializing, LifecycleEvent::Start) => Ok(LifecycleState::Running),
 			(LifecycleState::Running, LifecycleEvent::Suspend) => Ok(LifecycleState::Suspending),

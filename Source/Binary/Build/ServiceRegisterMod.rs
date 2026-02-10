@@ -7,7 +7,7 @@ use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 use tracing::{debug, info, instrument, warn};
 
-use crate::Protocol::{SpineConfig, SpineConnection};
+use crate::Protocol::{ProtocolConfig, SpineConnection::SpineConnectionImpl};
 
 /// Service register for managing Grove's registration with Mountain
 pub struct ServiceRegister;
@@ -66,13 +66,13 @@ impl ServiceRegister {
 		info!("Registering service '{}' with Mountain at {}", service_name, mountain_address);
 
 		// Create Spine configuration
-		let spine_config = SpineConfig::new(service_name.to_string()).with_auto_reconnect(auto_reconnect);
+		let spine_config = ProtocolConfig::new().with_mountain_endpoint(service_name.to_string());
 
 		// Create Spine connection
-		let connection = SpineConnection::new(spine_config);
+		let mut connection = SpineConnectionImpl::new(spine_config);
 
 		// Connect to Mountain
-		connection.connect().await.context("Failed to connect to Mountain")?;
+		connection.Connect().await.context("Failed to connect to Mountain")?;
 
 		// Prepare registration information
 		let registration = ServiceRegistration {
@@ -183,10 +183,11 @@ impl ServiceRegister {
 			service_id, interval_sec
 		);
 
+		let service_id_owned = service_id.to_string();
 		tokio::spawn(async move {
 			loop {
 				tokio::time::sleep(tokio::time::Duration::from_secs(interval_sec)).await;
-				if let Err(e) = Self::send_heartbeat(service_id).await {
+				if let Err(e) = Self::send_heartbeat(&service_id_owned).await {
 					warn!("Heartbeat failed: {}", e);
 				}
 			}

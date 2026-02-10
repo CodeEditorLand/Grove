@@ -78,9 +78,9 @@ pub use Common::{
 	error::{GroveError, GroveResult},
 	traits::ExtensionContext,
 };
-pub use Host::{ExtensionHost, ExtensionManager};
-pub use Transport::{Strategy, Transport};
+pub use Transport::Strategy;
 pub use WASM::Runtime;
+// Note: ExtensionHost, ExtensionManager must be accessed via module prefix
 
 // Library version
 const VERSION:&str = env!("CARGO_PKG_VERSION");

@@ -120,27 +120,6 @@ pub enum GroveError {
 	Other(String),
 }
 
-impl fmt::Display for GroveError {
-	fn fmt(&self, f:&mut fmt::Formatter<'_>) -> fmt::Result {
-		use GroveError::*;
-		match self {
-			ExtensionNotFound(id) => write!(f, "Extension not found: {}", id),
-			ActivationFailed(msg) => write!(f, "Extension activation failed: {}", msg),
-			DeactivationFailed(msg) => write!(f, "Extension deactivation failed: {}", msg),
-			TransportError(msg) => write!(f, "Transport error: {}", msg),
-			WASMError(msg) => write!(f, "WASM runtime error: {}", msg),
-			APIError(msg) => write!(f, "API error: {}", msg),
-			ConfigurationError(msg) => write!(f, "Configuration error: {}", msg),
-			IoError(err) => write!(f, "I/O error: {}", err),
-			SerializationError(msg) => write!(f, "Serialization error: {}", msg),
-			DeserializationError(msg) => write!(f, "Deserialization error: {}", msg),
-			Timeout => write!(f, "Operation timed out"),
-			InvalidArgument(msg) => write!(f, "Invalid argument: {}", msg),
-			NotImplemented(msg) => write!(f, "Not implemented: {}", msg),
-			Other(msg) => write!(f, "{}", msg),
-		}
-	}
-}
 
 /// Identifiable trait for objects with unique IDs
 pub trait Identifiable {
@@ -254,9 +233,9 @@ pub trait Versioned {
 /// Retryable trait for operations that can be retried
 pub trait Retryable {
 	/// Execute with retry
-	fn execute_with_retry<F, T, E>(&self, operation:F, max_retries:u32, delay_ms:u64) -> anyhow::Result<T>
+	fn execute_with_retry<F, T, E>(&self, mut operation:F, max_retries:u32, delay_ms:u64) -> anyhow::Result<T>
 	where
-		F: Fn() -> Result<T, E> + Send,
+		F: FnMut() -> Result<T, E> + Send,
 		E: std::fmt::Display + Send + 'static,
 		T: Send, {
 		let mut last_error = None;

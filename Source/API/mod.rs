@@ -35,7 +35,7 @@ pub fn is_api_version_supported(version:&str) -> bool {
 pub mod utils {
 	/// Convert a JSON Value to a specific type
 	pub fn from_json_value<T:serde::de::DeserializeOwned>(value:&serde_json::Value) -> Result<T, String> {
-		serde_json::from_value(value).map_err(|e| format!("Failed to deserialize JSON value: {}", e))
+		serde_json::from_value(value.clone()).map_err(|e| format!("Failed to deserialize JSON value: {}", e))
 	}
 
 	/// Convert a value to a JSON Value
@@ -78,10 +78,10 @@ mod tests {
 		}
 
 		let value = TestValue { value:42 };
-		let json = to_json_value(&value).unwrap();
+		let json = utils::to_json_value(&value).unwrap();
 		assert_eq!(json["value"], 42);
 
-		let recovered:TestValue = from_json_value(&json).unwrap();
+		let recovered:TestValue = utils::from_json_value(&json).unwrap();
 		assert_eq!(recovered, value);
 	}
 

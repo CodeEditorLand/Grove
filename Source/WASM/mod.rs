@@ -42,12 +42,9 @@ pub mod MemoryManager;
 pub mod ModuleLoader;
 pub mod Runtime;
 
-// Re-exports for convenience
+// Re-exports for convenience - use module prefix to avoid E0255 conflicts
 pub use Runtime::{WASMConfig, WASMRuntime};
-pub use ModuleLoader::{ModuleLoader, WASMModule};
-pub use MemoryManager::{MemoryLimits, MemoryManager};
-pub use HostBridge::{BridgeError, HostBridge};
-pub use FunctionExport::{FunctionExport, HostFunctionRegistry};
+// Note: ModuleLoader, MemoryManager, HostBridge, FunctionExport must be accessed via module prefix
 use anyhow::Result;
 
 /// Default configuration for WASM runtime

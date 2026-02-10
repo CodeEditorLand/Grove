@@ -39,9 +39,9 @@ pub mod WASMTransport;
 use std::time::Duration;
 
 pub use Strategy::{Transport, TransportStrategy};
-pub use gRPCTransport::gRPCTransport;
-pub use IPCTransport::IPCTransport;
-pub use WASMTransport::WASMTransport;
+pub use gRPCTransport::GrpcTransport;
+pub use IPCTransport::IPCTransportImpl;
+pub use WASMTransport::WASMTransportImpl;
 use anyhow::Result;
 
 /// Default connection timeout
@@ -119,14 +119,14 @@ impl TransportConfig {
 pub fn create_default_transport() -> Transport { Transport::default() }
 
 /// Create a gRPC transport with the given address
-pub fn create_grpc_transport(address:&str) -> Result<Transport> { Ok(Transport::gRPC(gRPCTransport::new(address)?)) }
+pub fn create_grpc_transport(address:&str) -> Result<Transport> { Ok(Transport::gRPC(GrpcTransport::new(address)?)) }
 
 /// Create an IPC transport
-pub fn create_ipc_transport() -> Result<Transport> { Ok(Transport::IPC(IPCTransport::new()?)) }
+pub fn create_ipc_transport() -> Result<Transport> { Ok(Transport::IPC(IPCTransportImpl::new()?)) }
 
 /// Create a WASM transport with the given configuration
 pub fn create_wasm_transport(enable_wasi:bool, memory_limit_mb:u64, max_execution_time_ms:u64) -> Result<Transport> {
-	Ok(Transport::WASM(WASMTransport::new(
+	Ok(Transport::WASM(WASMTransportImpl::new(
 		enable_wasi,
 		memory_limit_mb,
 		max_execution_time_ms,

@@ -106,14 +106,28 @@ pub struct HostResponse {
 /// Callback for async function responses
 #[derive(Clone)]
 pub struct AsyncCallback {
-	sender:oneshot::Sender<HostResponse>,
+	sender:Arc<tokio::sync::Mutex<Option<tokio::sync::oneshot::Sender<HostResponse>>>>,
 	message_id:String,
+}
+
+impl std::fmt::Debug for AsyncCallback {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		f.debug_struct("AsyncCallback")
+			.field("message_id", &self.message_id)
+			.finish()
+	}
 }
 
 impl AsyncCallback {
 	/// Send response through the callback
-	pub fn send(self, response:HostResponse) -> Result<()> {
-		self.sender.send(response).map_err(|_| BridgeError::BridgeClosed)
+	pub async fn send(self, response:HostResponse) -> Result<()> {
+		let mut sender_opt = self.sender.lock().await;
+		if let Some(sender) = sender_opt.take() {
+			sender.send(response).map_err(|_| BridgeError::BridgeClosed)?;
+			Ok(())
+		} else {
+			Err(BridgeError::BridgeClosed.into())
+		}
 	}
 }
 
@@ -134,19 +148,23 @@ pub type AsyncHostFunctionCallback =
 	fn(Vec<Bytes>) -> Box<dyn std::future::Future<Output = Result<Bytes>> + Send + Unpin>;
 
 /// Host function definition
+#[derive(Debug)]
 pub struct HostFunction {
 	/// Function name
 	pub name:String,
 	/// Function signature
 	pub signature:FunctionSignature,
-	/// Synchronous callback
+	/// Synchronous callback - not serializable (skip serde derive)
+	#[allow(dead_code)]
 	pub callback:Option<HostFunctionCallback>,
-	/// Async callback
+	/// Async callback - not serializable (skip serde derive)
+	#[allow(dead_code)]
 	pub async_callback:Option<AsyncHostFunctionCallback>,
 }
 
 /// Host Bridge for WASM communication
-pub struct HostBridge {
+#[derive(Debug)]
+pub struct HostBridgeImpl {
 	/// Registry of host functions exported to WASM
 	host_functions:Arc<RwLock<HashMap<String, HostFunction>>>,
 	/// Channel for receiving messages from WASM
@@ -159,7 +177,7 @@ pub struct HostBridge {
 	next_callback_token:Arc<std::sync::atomic::AtomicU64>,
 }
 
-impl HostBridge {
+impl HostBridgeImpl {
 	/// Create a new host bridge
 	pub fn new() -> Self {
 		let (wasm_to_host_tx, wasm_to_host_rx) = mpsc::unbounded_channel();
@@ -259,8 +277,9 @@ impl HostBridge {
 	/// Send a message to WASM
 	#[instrument(skip(self, message))]
 	pub async fn send_to_wasm(&self, message:WASMMessage) -> BridgeResult<()> {
+		let function_name = message.function.clone();
 		self.host_to_wasm_tx.send(message).map_err(|_| BridgeError::BridgeClosed)?;
-		debug!("Message sent to WASM: {}", message.function);
+		debug!("Message sent to WASM: {}", function_name);
 		Ok(())
 	}
 
@@ -271,11 +290,15 @@ impl HostBridge {
 	#[instrument(skip(self))]
 	pub async fn create_async_callback(&self, message_id:String) -> (AsyncCallback, u64) {
 		let token = self.next_callback_token.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-		let (tx, rx) = oneshot::channel();
+		let (tx, _rx) = oneshot::channel();
 
-		let callback = AsyncCallback { sender:tx, message_id };
+		// Create callback with Arc-wrapped sender
+		let callback = AsyncCallback {
+			sender:Arc::new(tokio::sync::Mutex::new(Some(tx))),
+			message_id:message_id.clone(),
+		};
 
-		self.async_callbacks.write().await.insert(token, callback);
+		self.async_callbacks.write().await.insert(token, callback.clone());
 
 		(callback, token)
 	}
@@ -308,7 +331,7 @@ impl HostBridge {
 	}
 }
 
-impl Default for HostBridge {
+impl Default for HostBridgeImpl {
 	fn default() -> Self { Self::new() }
 }
 
@@ -334,7 +357,7 @@ pub fn marshal_args(args:Vec<Bytes>) -> Result<Vec<wasmtime::Val>> {
 					if let Some(i) = n.as_i64() {
 						Ok(wasmtime::Val::I32(i as i32))
 					} else if let Some(f) = n.as_f64() {
-						Ok(wasmtime::Val::F64(f as f64))
+						Ok(wasmtime::Val::F64(f.to_bits()))
 					} else {
 						Err(anyhow::anyhow!("Invalid number value"))
 					}
@@ -387,13 +410,13 @@ mod tests {
 
 	#[tokio::test]
 	async fn test_host_bridge_creation() {
-		let bridge = HostBridge::new();
+		let bridge = HostBridgeImpl::new();
 		assert_eq!(bridge.get_host_functions().await.len(), 0);
 	}
 
 	#[tokio::test]
 	async fn test_register_host_function() {
-		let bridge = HostBridge::new();
+		let bridge = HostBridgeImpl::new();
 
 		let signature = FunctionSignature {
 			name:"echo".to_string(),

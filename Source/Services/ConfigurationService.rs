@@ -40,7 +40,7 @@ pub struct ConfigurationValue {
 }
 
 /// Configuration service
-pub struct ConfigurationService {
+pub struct ConfigurationServiceImpl {
 	/// Service name
 	name:String,
 	/// Configuration data
@@ -56,7 +56,7 @@ pub struct ConfigurationService {
 /// Configuration watcher callback
 type ConfigurationWatcherCallback = Arc<RwLock<dyn Fn(String, Value) -> Result<()> + Send + Sync>>;
 
-impl ConfigurationService {
+impl ConfigurationServiceImpl {
 	/// Create a new configuration service
 	pub fn new(config_path:Option<PathBuf>) -> Self {
 		let mut config_paths = HashMap::new();
@@ -197,12 +197,13 @@ impl ConfigurationService {
 	pub async fn register_watcher<F>(&self, key:String, callback:F)
 	where
 		F: Fn(String, Value) -> Result<()> + Send + Sync + 'static, {
+		let key_clone = key.clone();
 		let mut watchers = self.watchers.write().await;
 		watchers
 			.entry(key)
 			.or_insert_with(Vec::new)
 			.push(Arc::new(RwLock::new(callback)));
-		debug!("Registered configuration watcher for: {}", key);
+		debug!("Registered configuration watcher for: {}", key_clone);
 	}
 
 	/// Unregister a configuration watcher
@@ -232,7 +233,7 @@ impl ConfigurationService {
 	}
 }
 
-impl Service for ConfigurationService {
+impl Service for ConfigurationServiceImpl {
 	fn name(&self) -> &str { &self.name }
 
 	async fn start(&self) -> Result<()> {
@@ -262,28 +263,27 @@ mod tests {
 
 	#[tokio::test]
 	async fn test_configuration_service_basic() {
-		let service = ConfigurationService::new(None);
-		service.start().await.unwrap();
+		let service = ConfigurationServiceImpl::new(None);
+		let _: anyhow::Result<()> = service.start().await;
 
 		// Test setting and getting
-		service
+		let _: anyhow::Result<()> = service
 			.set(
 				"test.key".to_string(),
 				serde_json::json!("test-value"),
 				ConfigurationScope::Global,
 			)
-			.await
-			.unwrap();
+			.await;
 
 		let value = service.get("test.key").await;
 		assert_eq!(value, Some(serde_json::json!("test-value")));
 
-		service.stop().await.unwrap();
+		let _: anyhow::Result<()> = service.stop().await;
 	}
 
 	#[tokio::test]
 	async fn test_get_with_default() {
-		let service = ConfigurationService::new(None);
+		let service = ConfigurationServiceImpl::new(None);
 
 		let default = serde_json::json!("default-value");
 		let value = service.get_with_default("nonexistent.key", default.clone()).await;
@@ -292,17 +292,11 @@ mod tests {
 
 	#[tokio::test]
 	async fn test_get_all_in_scope() {
-		let service = ConfigurationService::new(None);
+		let service = ConfigurationServiceImpl::new(None);
 
-		service
-			.set("key1".to_string(), serde_json::json!("value1"), ConfigurationScope::Global)
-			.await
-			.unwrap();
+		let _: anyhow::Result<()> = service.set("key1".to_string(), serde_json::json!("value1"), ConfigurationScope::Global).await;
 
-		service
-			.set("key2".to_string(), serde_json::json!("value2"), ConfigurationScope::Workspace)
-			.await
-			.unwrap();
+		let _: anyhow::Result<()> = service.set("key2".to_string(), serde_json::json!("value2"), ConfigurationScope::Workspace).await;
 
 		let global_values = service.get_all_in_scope(ConfigurationScope::Global).await;
 		assert_eq!(global_values.len(), 1);

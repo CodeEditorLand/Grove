@@ -12,7 +12,8 @@ use tracing::{debug, info, instrument, warn};
 
 use crate::{
 	Common::traits::ExtensionContext,
-	Host::{ActivationResult, ExtensionManager, HostConfig},
+	Host::{ActivationResult, HostConfig},
+	Host::ExtensionManager::{ExtensionManagerImpl, ExtensionState, ExtensionInfo},
 };
 
 /// Extension activation event types
@@ -58,6 +59,7 @@ impl ActivationEvent {
 	/// Convert to string representation
 	pub fn to_string(&self) -> String {
 		match self {
+			Self::Startup => "onStartup".to_string(),
 			Self::Star => "*".to_string(),
 			Self::Command(cmd) => format!("onCommand:{}", cmd),
 			Self::Language(lang) => format!("onLanguage:{}", lang),
@@ -79,7 +81,7 @@ impl std::str::FromStr for ActivationEvent {
 /// Activation engine for managing extension activation
 pub struct ActivationEngine {
 	/// Extension manager
-	extension_manager:Arc<ExtensionManager>,
+	extension_manager:Arc<ExtensionManagerImpl>,
 	/// Host configuration
 	config:HostConfig,
 	/// Event handlers mapping
@@ -152,7 +154,7 @@ impl Default for ActivationContext {
 
 impl ActivationEngine {
 	/// Create a new activation engine
-	pub fn new(extension_manager:Arc<ExtensionManager>, config:HostConfig) -> Self {
+	pub fn new(extension_manager:Arc<ExtensionManagerImpl>, config:HostConfig) -> Self {
 		Self {
 			extension_manager,
 			config,
@@ -224,11 +226,14 @@ impl ActivationEngine {
 			error:None,
 		};
 
+		// Save timestamp for later use
+		let activation_timestamp = record.timestamp;
+
 		self.activation_history.write().await.push(record);
 
 		// Update extension state
 		self.extension_manager
-			.update_state(extension_id, crate::Host::ExtensionState::Activated)
+			.update_state(extension_id, ExtensionState::Activated)
 			.await?;
 
 		// Register handler
@@ -240,7 +245,7 @@ impl ActivationEngine {
 				events:activation_events,
 				activation_function:"activate".to_string(),
 				is_active:true,
-				last_activation:Some(record.timestamp),
+				last_activation:Some(activation_timestamp),
 			},
 		);
 
@@ -268,7 +273,7 @@ impl ActivationEngine {
 
 		// Update extension state
 		self.extension_manager
-			.update_state(extension_id, crate::Host::ExtensionState::Deactivated)
+			.update_state(extension_id, ExtensionState::Deactivated)
 			.await?;
 
 		info!("Extension deactivated: {}", extension_id);

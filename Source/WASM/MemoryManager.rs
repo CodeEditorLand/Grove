@@ -139,14 +139,15 @@ impl MemoryStats {
 }
 
 /// WASM Memory Manager
-pub struct MemoryManager {
+#[derive(Debug)]
+pub struct MemoryManagerImpl {
 	limits:MemoryLimits,
 	allocations:Vec<MemoryAllocation>,
 	stats:Arc<MemoryStats>,
 	peak_usage:Arc<AtomicU64>,
 }
 
-impl MemoryManager {
+impl MemoryManagerImpl {
 	/// Create a new memory manager with the given limits
 	pub fn new(limits:MemoryLimits) -> Self {
 		Self {
@@ -289,13 +290,14 @@ impl MemoryManager {
 			memory_id, instance_id, additional_bytes
 		);
 
+		// Calculate current usage before mutable borrow
+		let current_usage = self.current_usage_bytes();
+
 		let allocation = self
 			.allocations
 			.iter_mut()
 			.find(|a| a.instance_id == instance_id && a.id == memory_id)
 			.ok_or_else(|| anyhow::anyhow!("Memory allocation not found"))?;
-
-		let current_usage = self.current_usage_bytes();
 
 		// Validate against limits
 		self.limits
@@ -365,7 +367,7 @@ mod tests {
 	#[test]
 	fn test_memory_manager_creation() {
 		let limits = MemoryLimits::default();
-		let manager = MemoryManager::new(limits);
+		let manager = MemoryManagerImpl::new(limits);
 		assert_eq!(manager.current_usage_bytes(), 0);
 		assert_eq!(manager.allocations.len(), 0);
 	}
@@ -373,7 +375,7 @@ mod tests {
 	#[test]
 	fn test_memory_allocation() {
 		let limits = MemoryLimits::default();
-		let mut manager = MemoryManager::new(limits);
+		let mut manager = MemoryManagerImpl::new(limits);
 
 		let result = manager.allocate_memory("test-instance", "heap", 1024);
 		assert!(result.is_ok());
@@ -384,7 +386,7 @@ mod tests {
 	#[test]
 	fn test_memory_deallocation() {
 		let limits = MemoryLimits::default();
-		let mut manager = MemoryManager::new(limits);
+		let mut manager = MemoryManagerImpl::new(limits);
 
 		manager.allocate_memory("test-instance", "heap", 1024).unwrap();
 		let allocation = &manager.allocations[0];
@@ -411,7 +413,7 @@ mod tests {
 	#[test]
 	fn test_memory_usage_percentage() {
 		let limits = MemoryLimits::new(1000, 0, 0);
-		let mut manager = MemoryManager::new(limits);
+		let mut manager = MemoryManagerImpl::new(limits);
 
 		manager.allocate_memory("test", "heap", 500).unwrap();
 		assert_eq!(manager.usage_percentage(), 50.0);

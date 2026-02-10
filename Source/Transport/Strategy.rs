@@ -9,7 +9,7 @@ use async_trait::async_trait;
 use bytes::Bytes;
 use serde::{Deserialize, Serialize};
 
-use crate::Transport::TransportConfig;
+use crate::Transport::{TransportConfig, GrpcTransport, IPCTransportImpl, WASMTransportImpl};
 
 /// Transport strategy trait
 ///
@@ -82,11 +82,11 @@ impl std::str::FromStr for TransportType {
 #[derive(Debug)]
 pub enum Transport {
 	/// gRPC-based transport
-	gRPC(super::gRPCTransport),
+	gRPC(GrpcTransport),
 	/// Inter-process communication transport
-	IPC(super::IPCTransport),
+	IPC(IPCTransportImpl),
 	/// Direct WASM module transport
-	WASM(super::WASMTransport),
+	WASM(WASMTransportImpl),
 }
 
 impl Transport {
@@ -190,7 +190,7 @@ impl Transport {
 	}
 
 	/// Get gRPC transport reference (if applicable)
-	pub fn as_grpc(&self) -> Option<&super::gRPCTransport> {
+	pub fn as_grpc(&self) -> Option<&GrpcTransport> {
 		match self {
 			Self::gRPC(transport) => Some(transport),
 			_ => None,
@@ -198,7 +198,7 @@ impl Transport {
 	}
 
 	/// Get IPC transport reference (if applicable)
-	pub fn as_ipc(&self) -> Option<&super::IPCTransport> {
+	pub fn as_ipc(&self) -> Option<&IPCTransportImpl> {
 		match self {
 			Self::IPC(transport) => Some(transport),
 			_ => None,
@@ -206,7 +206,7 @@ impl Transport {
 	}
 
 	/// Get WASM transport reference (if applicable)
-	pub fn as_wasm(&self) -> Option<&super::WASMTransport> {
+	pub fn as_wasm(&self) -> Option<&WASMTransportImpl> {
 		match self {
 			Self::WASM(transport) => Some(transport),
 			_ => None,
@@ -217,8 +217,8 @@ impl Transport {
 impl Default for Transport {
 	fn default() -> Self {
 		// Default to gRPC with localhost address
-		Self::gRPC(super::gRPCTransport::new("127.0.0.1:50050").unwrap_or_else(|_| {
-			super::gRPCTransport::new("0.0.0.0:50050").expect("Failed to create default gRPC transport")
+		Self::gRPC(GrpcTransport::new("127.0.0.1:50050").unwrap_or_else(|_| {
+			GrpcTransport::new("0.0.0.0:50050").expect("Failed to create default gRPC transport")
 		}))
 	}
 }

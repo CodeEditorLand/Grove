@@ -125,14 +125,14 @@ pub struct WASMInstance {
 }
 
 /// WASM Module Loader
-pub struct ModuleLoader {
+pub struct ModuleLoaderImpl {
 	runtime:Arc<WASMRuntime>,
 	config:WASMConfig,
 	linkers:Arc<RwLock<Vec<Linker<()>>>>,
 	loaded_modules:Arc<RwLock<Vec<WASMModule>>>,
 }
 
-impl ModuleLoader {
+impl ModuleLoaderImpl {
 	/// Create a new module loader
 	pub fn new(runtime:Arc<WASMRuntime>, config:WASMConfig) -> Self {
 		Self {
@@ -224,8 +224,8 @@ impl ModuleLoader {
 	pub async fn instantiate(&self, module:&Module, mut store:Store<StoreLimits>) -> Result<WASMInstance> {
 		debug!("Instantiating WASM module");
 
-		// Create linker
-		let linker = self.runtime.create_linker::<()>(true)?;
+		// Create linker with StoreLimits type
+		let linker = self.runtime.create_linker::<StoreLimits>(true)?;
 
 		// Instantiate
 		let instance = linker
@@ -345,7 +345,7 @@ mod tests {
 	async fn test_module_loader_creation() {
 		let runtime = Arc::new(WASMRuntime::new(WASMConfig::default()).await.unwrap());
 		let config = WASMConfig::default();
-		let loader = ModuleLoader::new(runtime, config);
+		let loader = ModuleLoaderImpl::new(runtime, config);
 
 		// Just test creation
 		assert_eq!(loader.get_loaded_modules().await.len(), 0);

@@ -26,6 +26,7 @@ tokio-util = { version = "0.7", features = ["codec"] }
 # WASM runtime
 wasmtime = { version = "20", features = ["async", "component-model", "runtime", "cranelift"], optional = true }
 wasmtime-wasi = { version = "20", optional = true }
+wasmparser = { version = "0.218", optional = true }
 
 # gRPC
 prost = { version = "0.12", optional = true }
@@ -49,7 +50,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 clap = { version = "4.4", features = ["derive"] }
 
 # Utilities
-bytes = "1.5"
+bytes = { version = "1.5", features = ["serde"] }
 futures = "0.3"
 async-trait = "0.1"
 semver = "1"
@@ -101,7 +102,7 @@ strip = "debuginfo"
 [features]
 default = ["grpc", "wasm"]
 grpc = ["tonic", "prost"]
-wasm = ["wasmtime"]
+wasm = ["wasmtime", "wasmtime-wasi", "reqwest", "wasmparser"]
 ipc = ["nix"]
 telemetry = ["opentelemetry", "opentelemetry-otlp", "opentelemetry-semantic-conventions", "tracing-opentelemetry", "metrics-exporter-prometheus"]
 dev = ["telemetry"]

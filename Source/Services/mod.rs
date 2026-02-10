@@ -5,8 +5,8 @@
 
 pub mod ConfigurationService;
 
-// Re-exports for convenience
-pub use ConfigurationService::{ConfigurationScope, ConfigurationService, ConfigurationValue};
+// Re-exports for convenience - use module prefix to avoid E0255 conflicts
+// Note: ConfigurationService must be accessed via ConfigurationService::ConfigurationServiceImpl
 
 /// Service configuration
 #[derive(Debug, Clone)]

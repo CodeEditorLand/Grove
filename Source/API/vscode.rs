@@ -206,11 +206,11 @@ impl Languages {
 	pub fn new() -> Self { Self }
 
 	/// Register completion item provider
-	pub async fn register_completion_item_provider(
+	pub async fn register_completion_item_provider<T:CompletionItemProvider>(
 		&self,
-		selector:DocumentSelector,
-		provider:CompletionItemProvider,
-		trigger_characters:Option<Vec<String>>,
+		_selector:DocumentSelector,
+		_provider:T,
+		_trigger_characters:Option<Vec<String>>,
 	) -> Result<Disposable, String> {
 		Ok(Disposable::new())
 	}
@@ -382,9 +382,8 @@ mod tests {
 
 	#[test]
 	fn test_vscode_api_creation() {
-		let api = VSCodeAPI::new();
-		assert!(api.commands.is_some());
-		assert!(api.window.is_some());
+		let _api = VSCodeAPI::new();
+		// Arc fields are always initialized, so just verify creation works
 	}
 
 	#[test]

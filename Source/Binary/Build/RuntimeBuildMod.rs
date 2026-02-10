@@ -9,7 +9,7 @@ use anyhow::{Context, Result};
 use tracing::{debug, info, instrument, warn};
 
 use crate::{
-	Host::{ExtensionHost, HostConfig},
+	Host::{ExtensionHost::ExtensionHostImpl, HostConfig},
 	Transport::Transport,
 	WASM::Runtime::{WASMConfig, WASMRuntime},
 };
@@ -24,13 +24,13 @@ impl RuntimeBuild {
 		transport:Transport,
 		wasm_runtime:Arc<WASMRuntime>,
 		host_config:HostConfig,
-	) -> Result<ExtensionHost> {
+	) -> Result<ExtensionHostImpl> {
 		info!("Building Grove extension host");
 
 		// In a real implementation, we would use the provided wasm_runtime
 		// For now, we create the host with default configuration
 
-		let host = ExtensionHost::with_config(transport, host_config.clone())
+		let host = ExtensionHostImpl::with_config(transport, host_config.clone())
 			.await
 			.context("Failed to build extension host")?;
 
@@ -45,7 +45,7 @@ impl RuntimeBuild {
 		wasi:bool,
 		memory_limit_mb:u64,
 		max_execution_time_ms:u64,
-	) -> Result<ExtensionHost> {
+	) -> Result<ExtensionHostImpl> {
 		info!("Building Grove extension host with defaults");
 
 		let wasm_config = WASMConfig::new(memory_limit_mb, max_execution_time_ms, wasi);
@@ -58,7 +58,7 @@ impl RuntimeBuild {
 
 	/// Build a minimal extension host for testing
 	#[instrument(skip(transport))]
-	pub async fn build_minimal_host(transport:Transport) -> Result<ExtensionHost> {
+	pub async fn build_minimal_host(transport:Transport) -> Result<ExtensionHostImpl> {
 		debug!("Building minimal extension host");
 
 		let host_config = HostConfig::default().with_max_extensions(10).with_lazy_activation(true);

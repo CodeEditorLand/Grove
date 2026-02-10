@@ -14,12 +14,12 @@ use tracing::{debug, info, instrument, warn};
 use crate::Transport::{
 	DEFAULT_CONNECTION_TIMEOUT_MS,
 	DEFAULT_REQUEST_TIMEOUT_MS,
-	Strategy::TransportStats,
+	Strategy::{TransportStats, TransportStrategy},
 	TransportConfig,
 };
 
 /// gRPC transport for communication with Mountain and other gRPC services
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct GrpcTransport {
 	/// Connection endpoint
 	endpoint:String,
@@ -89,7 +89,7 @@ impl GrpcTransport {
 		let endpoint = Endpoint::from_shared(self.endpoint.clone())?
 			.timeout(self.config.connection_timeout)
 			.connect_timeout(self.config.connection_timeout)
-			.tcp_keepalive(self.config.keepalive_interval);
+			.tcp_keepalive(Some(self.config.keepalive_interval));
 
 		Ok(endpoint)
 	}
@@ -178,7 +178,7 @@ impl super::super::Strategy::TransportStrategy for GrpcTransport {
 	fn is_connected(&self) -> bool { self.connected.blocking_read().to_owned() }
 
 	fn transport_type(&self) -> super::super::Strategy::TransportType {
-		super::super::Strategy::TransportType::Grpc
+		super::super::Strategy::TransportType::gRPC
 	}
 }
 

@@ -14,22 +14,22 @@ use tracing::{debug, info, instrument, warn};
 use crate::{
 	Transport::{Strategy::TransportStats, TransportConfig},
 	WASM::{
-		HostBridge,
-		MemoryManager::{MemoryLimits, MemoryManager},
+		HostBridge::HostBridgeImpl,
+		MemoryManager::{MemoryLimits, MemoryManagerImpl},
 		Runtime::{WASMConfig, WASMRuntime},
 		WASMStats,
 	},
 };
 
 /// WASM transport for direct module communication
-#[derive(Clone)]
-pub struct WASMTransport {
+#[derive(Clone, Debug)]
+pub struct WASMTransportImpl {
 	/// WASM runtime
 	runtime:Arc<WASMRuntime>,
 	/// Memory manager
-	memory_manager:Arc<RwLock<MemoryManager>>,
+	memory_manager:Arc<RwLock<MemoryManagerImpl>>,
 	/// Host bridge for communication
-	bridge:Arc<HostBridge>,
+	bridge:Arc<HostBridgeImpl>,
 	/// Loaded modules
 	modules:Arc<RwLock<HashMap<String, WASMModuleInfo>>>,
 	/// Transport configuration
@@ -89,22 +89,22 @@ impl Default for FunctionCallStats {
 	fn default() -> Self { Self { call_count:0, total_time_us:0, last_call_at:None, error_count:0 } }
 }
 
-impl WASMTransport {
+impl WASMTransportImpl {
 	/// Create a new WASM transport with default configuration
 	pub fn new(enable_wasi:bool, memory_limit_mb:u64, max_execution_time_ms:u64) -> anyhow::Result<Self> {
 		let config = WASMConfig::new(memory_limit_mb, max_execution_time_ms, enable_wasi);
 
 		// Create runtime - this would normally be async, but for now we do it
 		// synchronously In production, this would need to be properly awaited
-		let runtime = Arc::new(
-			tokio::runtime::Runtime::new()
-				.map_err(|e| anyhow::anyhow!("Failed to create tokio runtime: {}", e))?
-				.block_on(WASMRuntime::new(config.clone())),
-		);
+		let runtime_result = tokio::runtime::Runtime::new()
+			.map_err(|e| anyhow::anyhow!("Failed to create tokio runtime: {}", e))?
+			.block_on(WASMRuntime::new(config.clone()))
+			.map_err(|e| anyhow::anyhow!("Failed to create WASM runtime: {}", e))?;
+		let runtime = Arc::new(runtime_result);
 
 		let memory_limits = MemoryLimits::new(memory_limit_mb, (memory_limit_mb as f64 * 0.75) as u64, 100);
-		let memory_manager = Arc::new(RwLock::new(MemoryManager::new(memory_limits)));
-		let bridge = Arc::new(HostBridge::new());
+		let memory_manager = Arc::new(RwLock::new(MemoryManagerImpl::new(memory_limits)));
+		let bridge = Arc::new(HostBridgeImpl::new());
 
 		Ok(Self {
 			runtime,
@@ -119,19 +119,19 @@ impl WASMTransport {
 
 	/// Create a new WASM transport with custom configuration
 	pub fn with_config(wasm_config:WASMConfig, transport_config:TransportConfig) -> anyhow::Result<Self> {
-		let runtime = Arc::new(
-			tokio::runtime::Runtime::new()
-				.map_err(|e| anyhow::anyhow!("Failed to create tokio runtime: {}", e))?
-				.block_on(WASMRuntime::new(wasm_config.clone())),
-		);
+		let runtime_result = tokio::runtime::Runtime::new()
+			.map_err(|e| anyhow::anyhow!("Failed to create tokio runtime: {}", e))?
+			.block_on(WASMRuntime::new(wasm_config.clone()))
+			.map_err(|e| anyhow::anyhow!("Failed to create WASM runtime: {}", e))?;
+		let runtime = Arc::new(runtime_result);
 
 		let memory_limits = MemoryLimits::new(
 			wasm_config.memory_limit_mb,
 			(wasm_config.memory_limit_mb as f64 * 0.75) as u64,
 			100,
 		);
-		let memory_manager = Arc::new(RwLock::new(MemoryManager::new(memory_limits)));
-		let bridge = Arc::new(HostBridge::new());
+		let memory_manager = Arc::new(RwLock::new(MemoryManagerImpl::new(memory_limits)));
+		let bridge = Arc::new(HostBridgeImpl::new());
 
 		Ok(Self {
 			runtime,
@@ -148,10 +148,10 @@ impl WASMTransport {
 	pub fn runtime(&self) -> &Arc<WASMRuntime> { &self.runtime }
 
 	/// Get a reference to the memory manager
-	pub fn memory_manager(&self) -> &Arc<RwLock<MemoryManager>> { &self.memory_manager }
+	pub fn memory_manager(&self) -> &Arc<RwLock<MemoryManagerImpl>> { &self.memory_manager }
 
 	/// Get a reference to the host bridge
-	pub fn bridge(&self) -> &Arc<HostBridge> { &self.bridge }
+	pub fn bridge(&self) -> &Arc<HostBridgeImpl> { &self.bridge }
 
 	/// Get all loaded modules
 	pub async fn get_modules(&self) -> HashMap<String, WASMModuleInfo> { self.modules.read().await.clone() }
@@ -215,7 +215,7 @@ impl WASMTransport {
 }
 
 #[async_trait]
-impl super::super::Strategy::TransportStrategy for WASMTransport {
+impl super::super::Strategy::TransportStrategy for WASMTransportImpl {
 	type Error = WASMTransportError;
 
 	#[instrument(skip(self))]
@@ -340,10 +340,11 @@ pub enum WASMTransportError {
 #[cfg(test)]
 mod tests {
 	use super::*;
+	use crate::Transport::Strategy::TransportStrategy;
 
 	#[test]
 	fn test_wasm_transport_creation() {
-		let result = WASMTransport::new(true, 512, 30000);
+		let result = WASMTransportImpl::new(true, 512, 30000);
 		assert!(result.is_ok());
 		let transport = result.unwrap();
 		// WASM transport should always be connected
@@ -361,14 +362,14 @@ mod tests {
 
 	#[tokio::test]
 	async fn test_wasm_transport_not_connected_after_close() {
-		let transport = WASMTransport::new(true, 512, 30000).unwrap();
-		transport.close().await.unwrap();
+		let transport = WASMTransportImpl::new(true, 512, 30000).unwrap();
+		let _: anyhow::Result<()> = transport.close().await.map_err(|e| anyhow::anyhow!(e.to_string()));
 		assert!(!transport.is_connected());
 	}
 
 	#[tokio::test]
 	async fn test_get_wasm_stats() {
-		let transport = WASMTransport::new(true, 512, 30000).unwrap();
+		let transport = WASMTransportImpl::new(true, 512, 30000).unwrap();
 		let stats = transport.get_wasm_stats().await;
 		assert_eq!(stats.modules_loaded, 0);
 		assert_eq!(stats.active_instances, 0);

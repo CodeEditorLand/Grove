@@ -9,8 +9,9 @@ use anyhow::{Context, Result};
 use tracing::{error, info, instrument};
 
 use crate::{
+	Binary::Build::ServiceRegister,
 	Binary::Main::CliArgs,
-	Host::{ExtensionHost, HostConfig},
+	Host::{HostConfig, ExtensionHost::ExtensionHostImpl},
 	Transport::Transport,
 	WASM::Runtime::{WASMConfig, WASMRuntime},
 };
@@ -45,7 +46,7 @@ impl Entry {
 		let host_config = HostConfig::default().with_activation_timeout(args.max_execution_time_ms);
 
 		// Create extension host
-		let host = ExtensionHost::with_config(transport, host_config)
+		let host = ExtensionHostImpl::with_config(transport, host_config)
 			.await
 			.context("Failed to create extension host")?;
 
@@ -76,14 +77,22 @@ impl Entry {
 		let transport = Transport::default();
 
 		// Register with Mountain
-		crate::Binary::Build::ServiceRegister::register_with_mountain(
-			"grove-host",
-			&args.mountain_address,
-			true, // auto reconnect
-		)
-		.await?;
+		#[cfg(feature = "gRPC")]
+		{
+			match crate::Binary::Build::ServiceRegister::register_with_mountain(
+				"grove-host",
+				&args.mountain_address,
+				true, // auto reconnect
+			).await {
+				Ok(_) => info!("Registered with Mountain"),
+				Err(e) => warn!("Failed to register with Mountain: {}", e),
+			}
+		}
 
-		info!("Registered with Mountain");
+		#[cfg(not(feature = "gRPC"))]
+		{
+			info!("gRPC feature not enabled, skipping Mountain registration");
+		}
 
 		// Keep running
 		Self::wait_for_shutdown().await;
@@ -185,19 +194,22 @@ impl Entry {
 	fn create_transport(args:&CliArgs) -> Result<Transport> {
 		match args.transport.as_str() {
 			"grpc" => {
+				use crate::Transport::gRPCTransport::GrpcTransport;
 				Ok(Transport::gRPC(
-					crate::Transport::gRPCTransport::new(&args.grpc_address)
+					GrpcTransport::new(&args.grpc_address)
 						.context("Failed to create gRPC transport")?,
 				))
 			},
 			"ipc" => {
+				use crate::Transport::IPCTransport::IPCTransportImpl;
 				Ok(Transport::IPC(
-					crate::Transport::IPCTransport::new().context("Failed to create IPC transport")?,
+					IPCTransportImpl::new().context("Failed to create IPC transport")?,
 				))
 			},
 			"wasm" => {
+				use crate::Transport::WASMTransport::WASMTransportImpl;
 				Ok(Transport::WASM(
-					crate::Transport::WASMTransport::new(args.wasi, args.memory_limit_mb, args.max_execution_time_ms)
+					WASMTransportImpl::new(args.wasi, args.memory_limit_mb, args.max_execution_time_ms)
 						.context("Failed to create WASM transport")?,
 				))
 			},

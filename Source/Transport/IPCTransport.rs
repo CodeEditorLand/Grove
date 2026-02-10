@@ -16,8 +16,8 @@ use tracing::{debug, info, instrument, warn};
 use crate::Transport::{Strategy::TransportStats, TransportConfig};
 
 /// IPC transport for local process communication
-#[derive(Clone)]
-pub struct IPCTransport {
+#[derive(Clone, Debug)]
+pub struct IPCTransportImpl {
 	/// Socket path
 	socket_path:Option<PathBuf>,
 	/// Named pipe name (Windows)
@@ -30,7 +30,7 @@ pub struct IPCTransport {
 	stats:Arc<RwLock<TransportStats>>,
 }
 
-impl IPCTransport {
+impl IPCTransportImpl {
 	/// Create a new IPC transport with default socket path
 	pub fn new() -> anyhow::Result<Self> {
 		#[cfg(unix)]
@@ -175,7 +175,7 @@ impl IPCTransport {
 }
 
 #[async_trait]
-impl super::super::Strategy::TransportStrategy for IPCTransport {
+impl super::super::Strategy::TransportStrategy for IPCTransportImpl {
 	type Error = IPCTransportError;
 
 	#[instrument(skip(self))]
@@ -308,12 +308,13 @@ pub enum IPCTransportError {
 #[cfg(test)]
 mod tests {
 	use super::*;
+	use crate::Transport::Strategy::TransportStrategy;
 
 	#[test]
 	fn test_ipc_transport_creation() {
 		#[cfg(any(unix, windows))]
 		{
-			let result = IPCTransport::new();
+			let result = IPCTransportImpl::new();
 			assert!(result.is_ok());
 		}
 	}
@@ -322,7 +323,7 @@ mod tests {
 	fn test_ipc_transport_not_supported() {
 		#[cfg(not(any(unix, windows)))]
 		{
-			let result = IPCTransport::new();
+			let result = IPCTransportImpl::new();
 			assert!(result.is_err());
 		}
 	}
@@ -330,7 +331,7 @@ mod tests {
 	#[cfg(unix)]
 	#[test]
 	fn test_ipc_transport_with_socket_path() {
-		let result = IPCTransport::with_socket_path(Path::new("/tmp/test.sock"));
+		let result = IPCTransportImpl::with_socket_path(Path::new("/tmp/test.sock"));
 		assert!(result.is_ok());
 		let transport = result.unwrap();
 		assert_eq!(transport.socket_path(), Some(Path::new("/tmp/test.sock")));
@@ -339,7 +340,7 @@ mod tests {
 	#[cfg(windows)]
 	#[test]
 	fn test_ipc_transport_with_pipe_name() {
-		let result = IPCTransport::with_pipe_name(r"\\.\pipe\test");
+		let result = IPCTransportImpl::with_pipe_name(r"\\.\pipe\test");
 		assert!(result.is_ok());
 		let transport = result.unwrap();
 		assert_eq!(transport.pipe_name(), Some(r"\\.\pipe\test"));
@@ -349,7 +350,7 @@ mod tests {
 	async fn test_ipc_transport_not_connected() {
 		#[cfg(any(unix, windows))]
 		{
-			let transport = IPCTransport::new().unwrap();
+			let transport = IPCTransportImpl::new().unwrap();
 			assert!(!transport.is_connected());
 		}
 	}

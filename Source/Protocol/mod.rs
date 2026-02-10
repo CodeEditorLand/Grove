@@ -5,8 +5,8 @@
 
 pub mod SpineConnection;
 
-// Re-exports for convenience
-pub use SpineConnection::{ConnectionState, SpineConfig, SpineConnection};
+// Re-exports for convenience - use module prefix to avoid E0255 conflicts
+// Note: SpineConnection must be accessed via SpineConnection::SpineConnectionImpl
 
 /// Protocol version
 pub const SPINE_PROTOCOL_VERSION:&str = "1.0.0";

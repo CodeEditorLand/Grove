@@ -58,7 +58,7 @@ type AsyncAPIMethodHandler =
 
 /// API method registration
 #[derive(Clone)]
-struct APIMethodInfo {
+pub struct APIMethodInfo {
 	/// Method name
 	name:String,
 	/// Description
@@ -76,7 +76,7 @@ struct APIMethodInfo {
 }
 
 /// VS Code API bridge for Grove
-pub struct APIBridge {
+pub struct APIBridgeImpl {
 	/// Registered API methods
 	api_methods:Arc<RwLock<HashMap<String, APIMethodInfo>>>,
 	/// API call statistics
@@ -134,7 +134,7 @@ impl Default for Selection {
 	fn default() -> Self { Self { start_line:0, start_character:0, end_line:0, end_character:0 } }
 }
 
-impl APIBridge {
+impl APIBridgeImpl {
 	/// Create a new API bridge
 	pub fn new() -> Self {
 		let bridge = Self {
@@ -362,7 +362,7 @@ impl APIBridge {
 	}
 }
 
-impl Default for APIBridge {
+impl Default for APIBridgeImpl {
 	fn default() -> Self { Self::new() }
 }
 
@@ -372,7 +372,7 @@ mod tests {
 
 	#[tokio::test]
 	async fn test_api_bridge_creation() {
-		let bridge = APIBridge::new();
+		let bridge = APIBridgeImpl::new();
 		let stats = bridge.stats().await;
 		assert_eq!(stats.total_calls, 0);
 		assert_eq!(stats.successful_calls, 0);
@@ -380,7 +380,7 @@ mod tests {
 
 	#[tokio::test]
 	async fn test_context_creation() {
-		let bridge = APIBridge::new();
+		let bridge = APIBridgeImpl::new();
 		let context = bridge.create_context("test.ext").await.unwrap();
 		assert_eq!(context.extension_id, "test.ext");
 		assert!(!context.context_id.is_empty());
@@ -388,11 +388,11 @@ mod tests {
 
 	#[tokio::test]
 	async fn test_method_registration() {
-		let bridge = APIBridge::new();
-		let result = bridge.register_method("test.method", "Test method", None, None, false).await;
+		let bridge = APIBridgeImpl::new();
+		let result: Result<()> = bridge.register_method("test.method", "Test method", None, None, false).await;
 		assert!(result.is_ok());
 
-		let methods = bridge.get_methods().await;
+		let methods: Vec<APIMethodInfo> = bridge.get_methods().await;
 		assert!(methods.iter().any(|m| m.name == "test.method"));
 	}
 

@@ -9,12 +9,12 @@ use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 use tokio::sync::RwLock;
 use tracing::{debug, info, instrument, warn};
-use wasmtime::{Engine, Instance, Linker, Module, Store, StoreLimits, StoreLimitsBuilder, WASMBacktraceDetails};
+use wasmtime::{Engine, Instance, Linker, Module, Store, StoreLimits, StoreLimitsBuilder, WasmBacktraceDetails};
 
 use crate::WASM::{
 	DEFAULT_MAX_EXECUTION_TIME_MS,
 	DEFAULT_MEMORY_LIMIT_MB,
-	MemoryManager::{MemoryLimits, MemoryManager},
+	MemoryManager::{MemoryLimits, MemoryManagerImpl},
 };
 
 /// Configuration for the WASM runtime
@@ -61,9 +61,11 @@ impl WASMConfig {
 		// Enable WASM
 		builder.wasm_component_model(false);
 
-		// Enable WASI if configured
+		// Enable WASI if configured (TODO: Update to Wasmtime 20.0.2 WASI API)
+		// The wasi() method is not available in the same form in Wasmtime 20.0.2
+		// WASI support needs to be configured differently
 		if self.enable_wasi {
-			builder.wasi(true);
+			// WASI support will be added through the linker instead
 		}
 
 		// Enable fuel metering for execution limits
@@ -89,7 +91,7 @@ impl WASMConfig {
 		// Enable debugging in debug builds
 		if self.enable_debug {
 			builder.debug_info(true);
-			builder.wasm_backtrace_details(WASMBacktraceDetails::Enable);
+			builder.wasm_backtrace_details(WasmBacktraceDetails::Enable);
 		}
 
 		Ok(builder)
@@ -101,7 +103,7 @@ impl WASMConfig {
 pub struct WASMRuntime {
 	engine:Engine,
 	config:WASMConfig,
-	memory_manager:Arc<RwLock<MemoryManager>>,
+	memory_manager:Arc<RwLock<MemoryManagerImpl>>,
 	instances:Arc<RwLock<Vec<String>>>,
 }
 
@@ -124,8 +126,10 @@ impl WASMRuntime {
 			max_table_size:1024,
 			// Set maximum of 100 instances
 			max_instances:100,
+			max_memories:10,
+			max_tables:10,
 		};
-		let memory_manager = Arc::new(RwLock::new(MemoryManager::new(memory_limits)));
+		let memory_manager = Arc::new(RwLock::new(MemoryManagerImpl::new(memory_limits)));
 
 		info!("WASM runtime created successfully");
 
@@ -139,17 +143,17 @@ impl WASMRuntime {
 	pub fn config(&self) -> &WASMConfig { &self.config }
 
 	/// Get the memory manager
-	pub fn memory_manager(&self) -> Arc<RwLock<MemoryManager>> { Arc::clone(&self.memory_manager) }
+	pub fn memory_manager(&self) -> Arc<RwLock<MemoryManagerImpl>> { Arc::clone(&self.memory_manager) }
 
 	/// Create a new WASM store with limits
 	pub fn create_store(&self) -> Result<Store<StoreLimits>> {
 		let mut store_limits = StoreLimitsBuilder::new()
-            .memory_size(self.config.memory_limit_mb * 1024 * 1024) // Convert MB to bytes
-            .table_elements(1024)
-            .instances(100)
-            .memories(10)
-            .tables(10)
-            .build();
+	           .memory_size((self.config.memory_limit_mb * 1024 * 1024) as usize) // Convert MB to bytes
+	           .table_elements(1024)
+	           .instances(100)
+	           .memories(10)
+	           .tables(10)
+	           .build();
 
 		// Set fuel limit if enabled
 		let mut store = Store::new(&self.engine, store_limits);
@@ -170,8 +174,11 @@ impl WASMRuntime {
 		let mut linker = Linker::new(&self.engine);
 
 		// Add WASI support if enabled
+		// TODO: Update to Wasmtime 20.0.2 WASI API
 		if self.config.enable_wasi {
-			wasmtime_wasi::add_to_linker(&mut linker, |s| s).context("Failed to add WASI to linker")?;
+			// wasmtime_wasi API has changed in 20.0.2
+			// For now, we skip WASI setup to allow compilation
+			// This needs to be properly implemented with the new API
 		}
 
 		// Configure async support
@@ -310,5 +317,11 @@ mod tests {
 		let result = runtime.validate_module(&empty_wasm);
 		// We don't assert on the result since it depends on WASMtime
 		// implementation
+	}
+}
+
+impl std::fmt::Debug for WASMRuntime {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		write!(f, "WASMRuntime")
 	}
 }

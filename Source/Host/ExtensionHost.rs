@@ -11,19 +11,20 @@ use tokio::sync::RwLock;
 use tracing::{error, info, instrument, warn};
 
 use crate::{
-	Host::{Activation, ExtensionManager, HostConfig},
+	Host::{Activation, HostConfig},
+	Host::ExtensionManager::ExtensionManagerImpl,
 	Transport::Transport,
 	WASM::Runtime::{WASMConfig, WASMRuntime},
 };
 
 /// Main extension host controller
-pub struct ExtensionHost {
+pub struct ExtensionHostImpl {
 	/// Host configuration
 	config:HostConfig,
 	/// Transport for communication
 	transport:Transport,
 	/// Extension manager
-	extension_manager:Arc<ExtensionManager>,
+	extension_manager:Arc<ExtensionManagerImpl>,
 	/// Activation engine
 	activation_engine:Arc<Activation::ActivationEngine>,
 	/// WASM runtime
@@ -68,7 +69,7 @@ pub struct HostStats {
 	pub uptime_seconds:u64,
 }
 
-impl ExtensionHost {
+impl ExtensionHostImpl {
 	/// Create a new extension host
 	///
 	/// # Arguments
@@ -102,7 +103,7 @@ impl ExtensionHost {
 		let wasm_runtime = Arc::new(WASMRuntime::new(wasm_config).await?);
 
 		// Create extension manager
-		let extension_manager = Arc::new(ExtensionManager::new(Arc::clone(&wasm_runtime), config.clone()));
+		let extension_manager = Arc::new(ExtensionManagerImpl::new(Arc::clone(&wasm_runtime), config.clone()));
 
 		// Create activation engine
 		let activation_engine = Arc::new(Activation::ActivationEngine::new(
@@ -258,7 +259,7 @@ impl ExtensionHost {
 		HostStats {
 			loaded_extensions,
 			active_extensions,
-			total_activations:extension_stats.total_activations,
+			total_activations:extension_stats.total_activated as u64,
 			total_activation_time_ms:extension_stats.total_activation_time_ms,
 			api_calls:0, // Track through API bridge
 			errors:extension_stats.errors,
@@ -267,13 +268,13 @@ impl ExtensionHost {
 	}
 
 	/// Get host state
-	pub async fn state(&self) -> HostState { *self.state.read().await }
+	pub async fn state(&self) -> HostState { self.state.read().await.clone() }
 
 	/// Get the transport
 	pub fn transport(&self) -> &Transport { &self.transport }
 
 	/// Get the extension manager
-	pub fn extension_manager(&self) -> &Arc<ExtensionManager> { &self.extension_manager }
+	pub fn extension_manager(&self) -> &Arc<ExtensionManagerImpl> { &self.extension_manager }
 
 	/// Get the activation engine
 	pub fn activation_engine(&self) -> &Arc<Activation::ActivationEngine> { &self.activation_engine }
@@ -311,7 +312,7 @@ impl ExtensionHost {
 	}
 }
 
-impl Drop for ExtensionHost {
+impl Drop for ExtensionHostImpl {
 	fn drop(&mut self) {
 		info!("ExtensionHost dropped");
 	}

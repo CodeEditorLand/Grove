@@ -49,6 +49,7 @@ use crate::vine::generated::vine::{
 	echo_action_service_client::EchoActionServiceClient,
 };
 
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum ConnectionState {
 	Disconnected,
 	Connecting,
@@ -76,7 +77,7 @@ pub struct ConnectionMetrics {
 	pub reconnections:u64,
 }
 
-pub struct SpineConnection {
+pub struct SpineConnectionImpl {
 	config:Arc<RwLock<ProtocolConfig>>,
 	state:Arc<RwLock<ConnectionState>>,
 
@@ -88,7 +89,7 @@ pub struct SpineConnection {
 	metrics:Arc<RwLock<ConnectionMetrics>>,
 }
 
-impl SpineConnection {
+impl SpineConnectionImpl {
 	#[instrument(skip(config))]
 	pub fn new(config:ProtocolConfig) -> Self {
 		Self {
@@ -107,7 +108,7 @@ impl SpineConnection {
 	#[instrument(skip(self))]
 	pub async fn Connect(&mut self) -> Result<()> {
 		let guard = self.config.read().await;
-		let url = guard.mountain_url.clone();
+		let url = guard.mountain_endpoint.clone();
 		drop(guard);
 
 		info!("Connecting to Spine at: {}", url);
@@ -154,11 +155,11 @@ impl SpineConnection {
 }
 
 #[cfg(feature = "grove_echo")]
-impl SpineConnection {
+impl SpineConnectionImpl {
 	#[instrument(skip(self))]
 	pub async fn ConnectEchoClient(&mut self) -> Result<()> {
 		let guard = self.config.read().await;
-		let url = guard.mountain_url.clone();
+		let url = guard.mountain_endpoint.clone();
 		drop(guard);
 
 		info!("Connecting EchoAction client to: {}", url);
@@ -266,10 +267,10 @@ mod tests {
 		assert!(config.enabled);
 	}
 
-	#[test]
-	fn test_spine_connection_creation() {
-		let config = ProtocolConfig { mountain_url:"http://127.0.0.1:50051".to_string(), ..Default::default() };
-		let connection = SpineConnection::new(config);
-		assert_eq!(connection.GetState(), ConnectionState::Disconnected);
+	#[tokio::test]
+	async fn test_spine_connection_creation() {
+		let config = ProtocolConfig { mountain_endpoint:"http://127.0.0.1:50051".to_string(), ..Default::default() };
+		let connection = SpineConnectionImpl::new(config);
+		assert_eq!(connection.GetState().await, ConnectionState::Disconnected);
 	}
 }

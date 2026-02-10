@@ -14,7 +14,7 @@ use tokio::sync::RwLock;
 use tracing::{debug, info, instrument, warn};
 
 /// Extension manager for handling extension lifecycle
-pub struct ExtensionManager {
+pub struct ExtensionManagerImpl {
     /// WASM runtime for executing extensions
     wasm_runtime: Arc<WASMRuntime>,
     /// Host configuration
@@ -101,7 +101,7 @@ pub struct ExtensionStats {
     pub errors: u64,
 }
 
-impl ExtensionManager {
+impl ExtensionManagerImpl {
     /// Create a new extension manager
     pub fn new(wasm_runtime: Arc<WASMRuntime>, config: HostConfig) -> Self {
         Self {
@@ -456,7 +456,7 @@ mod tests {
                 .unwrap()
         );
         let config = HostConfig::default();
-        let manager = ExtensionManager::new(wasm_runtime, config);
+        let manager = ExtensionManagerImpl::new(wasm_runtime, config);
         
         assert_eq!(manager.list_extensions().await.len(), 0);
     }
