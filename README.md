@@ -225,14 +225,14 @@ Grove provides security through:
 
 ## License
 
-MIT License - see [LICENSE](../LICENSE) file for details
+MIT License - see [LICENSE](https://github.com/CodeEditorLand/Land/tree/Current/Element/LICENSE) file for details
 
 ## Contributing
 
-Please see [CONTRIBUTING.md](../../CONTRIBUTING.md) for guidelines.
+Please see [CONTRIBUTING.md](https://github.com/CodeEditorLand/Land/tree/Current/CONTRIBUTING.md) for guidelines.
 
 ## Related Projects
 
-- [Cocoon](../Cocoon) - Node.js Extension Host
-- [Mountain](../../Documentation/Architecture/components/mountain.md) - Core VS Code implementation
-- [Vine](../../Documentation/Architecture/components/vine.md) - Communication protocol
+- [Cocoon](https://github.com/CodeEditorLand/Cocoon/tree/Current/) - Node.js Extension Host
+- [Mountain](https://github.com/CodeEditorLand/Land/tree/Current/Documentation/Architecture/components/Mountain.md) - Core VS Code implementation
+- [Vine](https://github.com/CodeEditorLand/Land/tree/Current/Documentation/Architecture/components/Vine.md) - Communication protocol
