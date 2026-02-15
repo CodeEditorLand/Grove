@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":["Build","Main"],"struct":["BinaryConfig"]};

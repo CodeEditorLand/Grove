@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["DEFAULT_CONNECTION_TIMEOUT_MS","DEFAULT_HEARTBEAT_INTERVAL_SEC","DEFAULT_MESSAGE_BUFFER_SIZE","DEFAULT_MOUNTAIN_ENDPOINT","SPINE_PROTOCOL_VERSION"],"enum":["MessageType","ProtocolError"],"mod":["SpineConnection"],"struct":["ProtocolConfig"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":["ConfigurationService"],"struct":["ServiceConfig"],"trait":["Service"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":["APIBridgeImpl","APICall","APICallRequest","APICallResponse","APIContext","APIMethodInfo","APIStats","Selection"]};
