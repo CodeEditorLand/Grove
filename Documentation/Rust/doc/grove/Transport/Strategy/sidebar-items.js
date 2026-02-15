@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Transport","TransportType"],"struct":["TransportMessage","TransportStats"],"trait":["TransportStrategy"]};

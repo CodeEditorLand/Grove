@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["CompletionTriggerKind"],"struct":["Command","Commands","CompletionContext","DiagnosticCollection","Disposable","DocumentFilter","Env","Extension","Extensions","Languages","OutputChannel","VSCodeAPI","Window","Workspace","WorkspaceConfiguration","WorkspaceFolder"],"trait":["CompletionItemProvider"],"type":["CommandCallback","DocumentSelector"]};

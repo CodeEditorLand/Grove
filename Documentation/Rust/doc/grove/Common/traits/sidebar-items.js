@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["GroveError"],"trait":["Configurable","ContextClone","Disposable","ExtensionContext","ExtensionMetadata","Identifiable","Named","Observable","Resettable","Retryable","Serializable","Stateful","Validatable","Versioned"],"type":["GroveResult"]};

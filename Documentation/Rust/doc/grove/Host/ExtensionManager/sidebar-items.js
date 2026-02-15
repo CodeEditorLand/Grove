@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["ExtensionState","ExtensionType"],"struct":["ExtensionInfo","ExtensionManagerImpl","ExtensionStats"]};

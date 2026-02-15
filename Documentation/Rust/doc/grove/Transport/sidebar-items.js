@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["DEFAULT_CONNECTION_TIMEOUT_MS","DEFAULT_REQUEST_TIMEOUT_MS"],"fn":["create_default_transport","create_grpc_transport","create_ipc_transport","create_wasm_transport"],"mod":["IPCTransport","Strategy","WASMTransport","gRPCTransport"],"struct":["TransportConfig"]};

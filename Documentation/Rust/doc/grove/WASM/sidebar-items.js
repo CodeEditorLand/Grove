@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["DEFAULT_MAX_EXECUTION_TIME_MS","DEFAULT_MEMORY_LIMIT_MB","DEFAULT_TABLE_SIZE"],"fn":["init_wasm_runtime"],"mod":["FunctionExport","HostBridge","MemoryManager","ModuleLoader","Runtime"],"struct":["WASMStats"]};

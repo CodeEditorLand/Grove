@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":["ExportConfig","FunctionExportImpl","FunctionStats","HostFunctionRegistry"]};

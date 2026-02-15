@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["MAX_VS_CODE_API_VERSION","MIN_VS_CODE_API_VERSION","VS_CODE_API_VERSION"],"fn":["is_api_version_supported"],"mod":["types","utils","vscode"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["ImportKind","ModuleSourceType"],"struct":["ImportDeclaration","ModuleLoadOptions","ModuleLoaderImpl","WASMInstance","WASMModule"]};
