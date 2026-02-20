@@ -312,32 +312,41 @@ impl TransportStrategy for WASMTransportImpl {
 /// WASM transport errors
 #[derive(Debug, thiserror::Error)]
 pub enum WASMTransportError {
-	#[error("Module not found: {0}")]
-	ModuleNotFound(String),
+/// Module not found error
+#[error("Module not found: {0}")]
+ModuleNotFound(String),
 
-	#[error("Function not found: {0}")]
-	FunctionNotFound(String),
+/// Function not found error
+#[error("Function not found: {0}")]
+FunctionNotFound(String),
 
-	#[error("Function call failed: {0}")]
-	FunctionCallFailed(String),
+/// Function call failed error
+#[error("Function call failed: {0}")]
+FunctionCallFailed(String),
 
-	#[error("Memory error: {0}")]
-	MemoryError(String),
+/// Memory error
+#[error("Memory error: {0}")]
+MemoryError(String),
 
-	#[error("Runtime error: {0}")]
-	RuntimeError(String),
+/// Runtime error
+#[error("Runtime error: {0}")]
+RuntimeError(String),
 
-	#[error("Invalid request: {0}")]
-	InvalidRequest(String),
+/// Invalid request error
+#[error("Invalid request: {0}")]
+InvalidRequest(String),
 
-	#[error("Not connected")]
-	NotConnected,
+/// Not connected error
+#[error("Not connected")]
+NotConnected,
 
-	#[error("Compilation failed: {0}")]
-	CompilationFailed(String),
+/// Compilation failed error
+#[error("Compilation failed: {0}")]
+CompilationFailed(String),
 
-	#[error("Timeout")]
-	Timeout,
+/// Timeout error
+#[error("Timeout")]
+Timeout,
 }
 
 #[cfg(test)]

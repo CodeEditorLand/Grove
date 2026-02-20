@@ -49,49 +49,81 @@ use crate::vine::generated::vine::{
 	echo_action_service_client::EchoActionServiceClient,
 };
 
+/// Connection state for Spine connection
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum ConnectionState {
-	Disconnected,
-	Connecting,
-	Connected,
-	Error,
+/// Disconnected from Spine
+Disconnected,
+/// Currently connecting to Spine
+Connecting,
+/// Connected to Spine
+Connected,
+/// Error state
+Error,
 }
 
+/// Heartbeat configuration for connection monitoring
 #[derive(Clone, Debug)]
 pub struct HeartbeatConfig {
-	pub interval_seconds:u64,
-	pub max_missed:u32,
-	pub enabled:bool,
+/// Interval between heartbeats in seconds
+pub interval_seconds:u64,
+/// Maximum number of missed heartbeats before considering connection lost
+pub max_missed:u32,
+/// Whether heartbeat is enabled
+pub enabled:bool,
 }
 
+/// Heartbeat configuration for connection monitoring
 impl Default for HeartbeatConfig {
 	fn default() -> Self { Self { interval_seconds:30, max_missed:3, enabled:true } }
 }
 
+/// Connection metrics for monitoring
 #[derive(Clone, Debug, Default)]
 pub struct ConnectionMetrics {
-	pub total_requests:u64,
-	pub successful_requests:u64,
-	pub failed_requests:u64,
-	pub uptime_seconds:u64,
-	pub reconnections:u64,
+/// Total number of requests sent
+pub total_requests:u64,
+/// Number of successful requests
+pub successful_requests:u64,
+/// Number of failed requests
+pub failed_requests:u64,
+/// Connection uptime in seconds
+pub uptime_seconds:u64,
+/// Number of reconnection attempts
+pub reconnections:u64,
 }
 
+/// Spine connection implementation
 pub struct SpineConnectionImpl {
-	config:Arc<RwLock<ProtocolConfig>>,
-	state:Arc<RwLock<ConnectionState>>,
+/// Protocol configuration
+config:Arc<RwLock<ProtocolConfig>>,
+/// Current connection state
+state:Arc<RwLock<ConnectionState>>,
 
-	#[cfg(feature = "grove_echo")]
-	echo_client:Option<EchoActionServiceClient<tonic::transport::Channel>>,
+#[cfg(feature = "grove_echo")]
+/// Echo client for testing
+echo_client:Option<EchoActionServiceClient<tonic::transport::Channel>>,
 
-	heartbeat_config:HeartbeatConfig,
-	last_heartbeat:Arc<RwLock<chrono::DateTime<chrono::Utc>>>,
-	metrics:Arc<RwLock<ConnectionMetrics>>,
+/// Heartbeat configuration
+heartbeat_config:HeartbeatConfig,
+/// Timestamp of the last heartbeat
+last_heartbeat:Arc<RwLock<chrono::DateTime<chrono::Utc>>>,
+/// Connection metrics
+metrics:Arc<RwLock<ConnectionMetrics>>,
 }
 
 impl SpineConnectionImpl {
-	#[instrument(skip(config))]
-	pub fn new(config:ProtocolConfig) -> Self {
+/// Create a new Spine connection
+///
+/// # Arguments
+///
+/// * `config` - Protocol configuration
+///
+/// # Returns
+///
+/// A new SpineConnectionImpl instance
+#[instrument(skip(config))]
+pub fn new(config:ProtocolConfig) -> Self {
 		Self {
 			config:Arc::new(RwLock::new(config)),
 			state:Arc::new(RwLock::new(ConnectionState::Disconnected)),
@@ -105,6 +137,7 @@ impl SpineConnectionImpl {
 		}
 	}
 
+	/// Connect to the Spine service
 	#[instrument(skip(self))]
 	pub async fn Connect(&mut self) -> Result<()> {
 		let guard = self.config.read().await;
@@ -119,6 +152,7 @@ impl SpineConnectionImpl {
 		Ok(())
 	}
 
+	/// Disconnect from the Spine service
 	#[instrument(skip(self))]
 	pub async fn Disconnect(&mut self) -> Result<()> {
 		info!("Disconnecting from Spine");
@@ -133,8 +167,15 @@ impl SpineConnectionImpl {
 		Ok(())
 	}
 
+	/// Get the current connection state
 	pub async fn GetState(&self) -> ConnectionState { *self.state.read().await }
 
+	/// Send a request to the Spine service
+	///
+	/// # Arguments
+	///
+	/// * `method` - The method name to call
+	/// * `payload` - The request payload
 	#[instrument(skip(self, payload))]
 	pub async fn SendRequest(&self, method:&str, payload:Vec<u8>) -> Result<Vec<u8>> {
 		if self.GetState().await != ConnectionState::Connected {
@@ -149,8 +190,10 @@ impl SpineConnectionImpl {
 		Ok(Vec::new())
 	}
 
+	/// Get the connection metrics
 	pub async fn GetMetrics(&self) -> ConnectionMetrics { self.metrics.read().await.clone() }
-
+	
+	/// Set the heartbeat configuration
 	pub fn SetHeartbeatConfig(&mut self, config:HeartbeatConfig) { self.heartbeat_config = config; }
 }
 

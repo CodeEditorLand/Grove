@@ -51,14 +51,14 @@ pub struct WASMModule {
 /// Source type of a WASM module
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 pub enum ModuleSourceType {
-	/// Module loaded from a file
-	File,
-	/// Module loaded from memory
-	Memory,
-	/// Module loaded from a network URL
-	Url,
-	/// Module generated dynamically
-	Generated,
+/// Module loaded from a file
+File,
+/// Module loaded from in-memory bytes
+Memory,
+/// Module loaded from a network URL
+Url,
+/// Module generated dynamically
+Generated,
 }
 
 /// Import declaration for a WASM module
@@ -75,11 +75,16 @@ pub struct ImportDeclaration {
 /// Kind of import
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub enum ImportKind {
-	Function,
-	Table,
-	Memory,
-	Global,
-	Tag,
+/// Function import
+Function,
+/// Table import
+Table,
+/// Memory import
+Memory,
+/// Global import
+Global,
+/// Tag import
+Tag,
 }
 
 /// Module loading options

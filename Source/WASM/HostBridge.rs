@@ -16,26 +16,33 @@ use wasmtime::{Caller, Extern, Func, Linker, Store};
 /// Host bridge error types
 #[derive(Debug, thiserror::Error)]
 pub enum BridgeError {
-	#[error("Function not found: {0}")]
-	FunctionNotFound(String),
+/// Function not found error
+#[error("Function not found: {0}")]
+FunctionNotFound(String),
 
-	#[error("Invalid function signature: {0}")]
-	InvalidSignature(String),
+/// Invalid function signature error
+#[error("Invalid function signature: {0}")]
+InvalidSignature(String),
 
-	#[error("Serialization failed: {0}")]
-	SerializationError(String),
+/// Serialization failed error
+#[error("Serialization failed: {0}")]
+SerializationError(String),
 
-	#[error("Deserialization failed: {0}")]
-	DeserializationError(String),
+/// Deserialization failed error
+#[error("Deserialization failed: {0}")]
+DeserializationError(String),
 
-	#[error("Host function error: {0}")]
-	HostFunctionError(String),
+/// Host function error
+#[error("Host function error: {0}")]
+HostFunctionError(String),
 
-	#[error("Communication timeout")]
-	Timeout,
+/// Communication timeout error
+#[error("Communication timeout")]
+Timeout,
 
-	#[error("Bridge closed")]
-	BridgeClosed,
+/// Bridge closed error
+#[error("Bridge closed")]
+BridgeClosed,
 }
 
 /// Type-safe result for operations
@@ -57,29 +64,33 @@ pub struct FunctionSignature {
 /// Parameter types for WASM functions
 #[derive(Debug, Clone, Copy, serde::Serialize, serde::Deserialize, PartialEq, Eq)]
 pub enum ParamType {
-	I32,
-	I64,
-	F32,
-	F64,
-	/// Pointer to memory
-	Ptr,
-	/// Length parameter following a pointer
-	Len,
+/// 32-bit signed integer parameter
+I32,
+/// 64-bit signed integer parameter
+I64,
+/// 32-bit floating point parameter
+F32,
+/// 64-bit floating point parameter
+F64,
+/// Pointer to memory
+Ptr,
+/// Length parameter following a pointer
+Len,
 }
 
 /// Return types for WASM functions
 #[derive(Debug, Clone, Copy, serde::Serialize, serde::Deserialize, PartialEq, Eq)]
 pub enum ReturnType {
-	/// 32-bit signed integer
-	I32,
-	/// 64-bit signed integer
-	I64,
-	/// 32-bit floating point number
-	F32,
-	/// 64-bit floating point number
-	F64,
-	/// No return value
-	Void,
+/// 32-bit signed integer return type
+I32,
+/// 64-bit signed integer return type
+I64,
+/// 32-bit floating point return type
+F32,
+/// 64-bit floating point return type
+F64,
+/// No return value (void)
+Void,
 }
 
 /// Message sent from WASM to host
@@ -111,8 +122,10 @@ pub struct HostResponse {
 /// Callback for async function responses
 #[derive(Clone)]
 pub struct AsyncCallback {
-	sender:Arc<tokio::sync::Mutex<Option<tokio::sync::oneshot::Sender<HostResponse>>>>,
-	message_id:String,
+/// Sender for transmitting the response
+sender:Arc<tokio::sync::Mutex<Option<tokio::sync::oneshot::Sender<HostResponse>>>>,
+/// Message ID for correlation
+message_id:String,
 }
 
 impl std::fmt::Debug for AsyncCallback {

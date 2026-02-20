@@ -11,69 +11,168 @@ pub type GroveResult<T> = Result<T, GroveError>;
 /// Grove error type
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub enum GroveError {
-	/// Extension not found
-	ExtensionNotFound { extension_id:String, message:Option<String> },
+/// Extension not found error
+ExtensionNotFound {
+/// The extension identifier
+extension_id:String,
+/// Optional error message
+message:Option<String>,
+},
 
-	/// Extension loading failed
-	ExtensionLoadFailed { extension_id:String, reason:String, path:Option<String> },
+/// Extension loading failed error
+ExtensionLoadFailed {
+/// The extension identifier
+extension_id:String,
+/// The failure reason
+reason:String,
+/// Optional path to the extension
+path:Option<String>,
+},
 
-	/// Extension activation failed
-	ActivationFailed { extension_id:String, reason:String },
+/// Extension activation failed error
+ActivationFailed {
+/// The extension identifier
+extension_id:String,
+/// The failure reason
+reason:String,
+},
 
-	/// Extension deactivation failed
-	DeactivationFailed { extension_id:String, reason:String },
+/// Extension deactivation failed error
+DeactivationFailed {
+/// The extension identifier
+extension_id:String,
+/// The failure reason
+reason:String,
+},
 
-	/// WASM runtime error
-	WASMRuntimeError { reason:String, module_id:Option<String> },
+/// WASM runtime error
+WASMRuntimeError {
+/// The error reason
+reason:String,
+/// Optional module identifier
+module_id:Option<String>,
+},
 
-	/// WASM compilation failed
-	WASMCompilationFailed { reason:String, module_path:Option<String> },
+/// WASM compilation failed error
+WASMCompilationFailed {
+/// The failure reason
+reason:String,
+/// Optional path to the module
+module_path:Option<String>,
+},
 
-	/// WASM module not found
-	WASMModuleNotFound { module_id:String },
+/// WASM module not found error
+WASMModuleNotFound {
+/// The module identifier
+module_id:String,
+},
 
-	/// Transport error
-	TransportError { transport_type:String, reason:String },
+/// Transport error
+TransportError {
+/// The transport type
+transport_type:String,
+/// The error reason
+reason:String,
+},
 
-	/// Connection error
-	ConnectionError { endpoint:String, reason:String },
+/// Connection error
+ConnectionError {
+/// The endpoint that failed
+endpoint:String,
+/// The error reason
+reason:String,
+},
 
-	/// API call error
-	APIError { api_method:String, reason:String, error_code:Option<i32> },
+/// API call error
+APIError {
+/// The API method that failed
+api_method:String,
+/// The error reason
+reason:String,
+/// Optional error code
+error_code:Option<i32>,
+},
 
-	/// Configuration error
-	ConfigurationError { key:String, reason:String },
+/// Configuration error
+ConfigurationError {
+/// The configuration key
+key:String,
+/// The error reason
+reason:String,
+},
 
-	/// I/O error
-	IoError { path:Option<String>, operation:String, reason:String },
+/// I/O error
+IoError {
+/// Optional path related to the error
+path:Option<String>,
+/// The operation that failed
+operation:String,
+/// The error reason
+reason:String,
+},
 
-	/// Serialization error
-	SerializationError { type_name:String, reason:String },
+/// Serialization error
+SerializationError {
+/// The type name being serialized
+type_name:String,
+/// The error reason
+reason:String,
+},
 
-	/// Deserialization error
-	DeserializationError { type_name:String, reason:String },
+/// Deserialization error
+DeserializationError {
+/// The type name being deserialized
+type_name:String,
+/// The error reason
+reason:String,
+},
 
-	/// Timeout error
-	Timeout { operation:String, timeout_ms:u64 },
+/// Timeout error
+Timeout {
+/// The operation that timed out
+operation:String,
+/// The timeout duration in milliseconds
+timeout_ms:u64,
+},
 
-	/// Invalid argument error
-	InvalidArgument { argument_name:String, reason:String },
+/// Invalid argument error
+InvalidArgument {
+/// The argument name
+argument_name:String,
+/// The error reason
+reason:String,
+},
 
-	/// Not implemented error
-	NotImplemented { feature:String },
+/// Not implemented error
+NotImplemented {
+/// The feature that is not implemented
+feature:String,
+},
 
-	/// Permission denied error
-	PermissionDenied { resource:String, reason:String },
+/// Permission denied error
+PermissionDenied {
+/// The resource that was denied
+resource:String,
+/// The error reason
+reason:String,
+},
 
-	/// Resource exhausted error
-	ResourceExhausted { resource:String, reason:String },
+/// Resource exhausted error
+ResourceExhausted {
+/// The resource that was exhausted
+resource:String,
+/// The error reason
+reason:String,
+},
 
-	/// Internal error
-	InternalError {
-		reason:String,
-		#[serde(skip)]
-		backtrace:Option<String>,
-	},
+/// Internal error
+InternalError {
+/// The error reason
+reason:String,
+/// Optional backtrace (skipped during serialization)
+#[serde(skip)]
+backtrace:Option<String>,
+},
 }
 
 impl GroveError {

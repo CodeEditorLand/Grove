@@ -283,29 +283,37 @@ impl TransportStrategy for IPCTransportImpl {
 /// IPC transport errors
 #[derive(Debug, thiserror::Error)]
 pub enum IPCTransportError {
-	#[error("Connection failed: {0}")]
-	ConnectionFailed(String),
+/// Connection failed error
+#[error("Connection failed: {0}")]
+ConnectionFailed(String),
 
-	#[error("Send failed: {0}")]
-	SendFailed(String),
+/// Send failed error
+#[error("Send failed: {0}")]
+SendFailed(String),
 
-	#[error("Receive failed: {0}")]
-	ReceiveFailed(String),
+/// Receive failed error
+#[error("Receive failed: {0}")]
+ReceiveFailed(String),
 
-	#[error("Not connected")]
-	NotConnected,
+/// Not connected error
+#[error("Not connected")]
+NotConnected,
 
-	#[error("IPC not supported on this platform")]
-	NotSupported,
+/// IPC not supported on this platform error
+#[error("IPC not supported on this platform")]
+NotSupported,
 
-	#[error("Cleanup failed: {0}")]
-	CleanupFailed(String),
+/// Cleanup failed error
+#[error("Cleanup failed: {0}")]
+CleanupFailed(String),
 
-	#[error("Socket error: {0}")]
-	SocketError(String),
+/// Socket error
+#[error("Socket error: {0}")]
+SocketError(String),
 
-	#[error("Timeout")]
-	Timeout,
+/// Timeout error
+#[error("Timeout")]
+Timeout,
 }
 
 #[cfg(test)]

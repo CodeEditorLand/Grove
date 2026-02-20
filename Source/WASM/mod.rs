@@ -48,8 +48,11 @@ pub use Runtime::{WASMConfig, WASMRuntime};
 use anyhow::Result;
 
 /// Default configuration for WASM runtime
+/// Default memory limit in megabytes
 pub const DEFAULT_MEMORY_LIMIT_MB:u64 = 512;
+/// Default maximum execution time in milliseconds
 pub const DEFAULT_MAX_EXECUTION_TIME_MS:u64 = 30000;
+/// Default table size
 pub const DEFAULT_TABLE_SIZE:u32 = 1024;
 
 /// WASM runtime statistics

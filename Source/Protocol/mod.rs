@@ -132,23 +132,29 @@ impl MessageType {
 /// Protocol error types
 #[derive(Debug, thiserror::Error)]
 pub enum ProtocolError {
-	#[error("Connection error: {0}")]
-	ConnectionError(String),
+/// Connection error
+#[error("Connection error: {0}")]
+ConnectionError(String),
 
-	#[error("Serialization error: {0}")]
-	SerializationError(String),
+/// Serialization error
+#[error("Serialization error: {0}")]
+SerializationError(String),
 
-	#[error("Deserialization error: {0}")]
-	DeserializationError(String),
+/// Deserialization error
+#[error("Deserialization error: {0}")]
+DeserializationError(String),
 
-	#[error("Invalid message: {0}")]
-	InvalidMessage(String),
+/// Invalid message error
+#[error("Invalid message: {0}")]
+InvalidMessage(String),
 
-	#[error("Timeout error")]
-	Timeout,
+/// Timeout error
+#[error("Timeout error")]
+Timeout,
 
-	#[error("Protocol error: {0}")]
-	ProtocolError(String),
+/// Protocol error
+#[error("Protocol error: {0}")]
+ProtocolError(String),
 }
 
 #[cfg(test)]

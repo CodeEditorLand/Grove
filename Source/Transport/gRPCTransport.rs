@@ -183,23 +183,29 @@ impl TransportStrategy for GrpcTransport {
 /// gRPC transport errors
 #[derive(Debug, thiserror::Error)]
 pub enum GrpcTransportError {
-	#[error("Connection failed: {0}")]
-	ConnectionFailed(String),
+/// Connection failed error
+#[error("Connection failed: {0}")]
+ConnectionFailed(String),
 
-	#[error("Send failed: {0}")]
-	SendFailed(String),
+/// Send failed error
+#[error("Send failed: {0}")]
+SendFailed(String),
 
-	#[error("Receive failed: {0}")]
-	ReceiveFailed(String),
+/// Receive failed error
+#[error("Receive failed: {0}")]
+ReceiveFailed(String),
 
-	#[error("Not connected")]
-	NotConnected,
+/// Not connected error
+#[error("Not connected")]
+NotConnected,
 
-	#[error("Timeout")]
-	Timeout,
+/// Timeout error
+#[error("Timeout")]
+Timeout,
 
-	#[error("gRPC error: {0}")]
-	GrpcError(String),
+/// gRPC error
+#[error("gRPC error: {0}")]
+GrpcError(String),
 }
 
 impl From<tonic::transport::Error> for GrpcTransportError {
