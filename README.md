@@ -49,7 +49,7 @@ Land
 
 ---
 
-# **Grove** 🌳 The Native Rust/WASM Extension Host for Land 🏞️
+# **Grove** 🌳 The Native Rust/WASM Extension Host for Land 🏞️
 
 [![License: CC0-1.0](https://img.shields.io/badge/License-CC0_1.0-lightgrey.svg)](https://github.com/CodeEditorLand/Grove/tree/Current/LICENSE)
 [![Crates.io](https://img.shields.io/crates/v/Grove.svg)](https://crates.io/crates/Grove)
@@ -76,7 +76,7 @@ surface.
 
 ---
 
-## Key Features 🔐
+## Key Features 🔐
 
 - **WASM Runtime Integration:** Full WebAssembly support through WASMtime,
   enabling secure sandboxing of untrusted extensions with capability-based
@@ -94,7 +94,7 @@ surface.
 
 ---
 
-## Core Architecture Principles 🏗️
+## Core Architecture Principles 🏗️
 
 | Principle                 | Description                                                                                            | Key Components Involved                                                   |
 | :------------------------ | :----------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------ |
@@ -106,7 +106,7 @@ surface.
 
 ---
 
-## `Grove` in the Land Ecosystem 🌳 + 🏞️
+## `Grove` in the Land Ecosystem 🌳 + 🏞️
 
 This diagram illustrates `Grove`'s role as the native Rust/WASM extension host
 alongside `Cocoon` (Node.js).
@@ -135,7 +135,7 @@ compiled to WebAssembly or native Rust, offering:
 - **Multiple Transport**: gRPC, IPC, and direct WASM transport strategies
 - **Secure Sandboxing**: WASMtime-based isolation for untrusted extensions
 
-## System Architecture Diagram 🏗️
+## System Architecture Diagram 🏗️
 
 This diagram illustrates `Grove`'s internal architecture and its place within
 the broader Land ecosystem.
@@ -147,7 +147,7 @@ classDef mountain fill:#f9f,stroke:#333,stroke-width:2px;
 classDef wasm fill:#cfc,stroke:#333,stroke-width:1px;
 classDef transport fill:#ff9,stroke:#333,stroke-width:1px,stroke-dasharray: 5 5;
 
-subgraph "Grove 🌳 (Rust/WASM Extension Host)"
+subgraph "Grove 🌳 (Rust/WASM Extension Host)"
 direction TB
 ExtensionHost["Extension Host Controller"]:::grove
 ActivationMgr["Activation Manager"]:::grove
@@ -241,7 +241,7 @@ async fn main() -> anyhow::Result<()> {
 
 ---
 
-## Deep Dive & Component Breakdown 🔬
+## Deep Dive & Component Breakdown 🔬
 
 To understand how `Grove`'s internal components interact to provide the
 high-fidelity WASM and Rust extension hosting environment, see the following
@@ -384,7 +384,7 @@ see the [`LICENSE`](https://github.com/CodeEditorLand/Grove/tree/Current/) file.
 
 ---
 
-## Changelog 📜
+## Changelog 📜
 
 Stay updated with our progress! See
 [`CHANGELOG.md`](https://github.com/CodeEditorLand/Grove/tree/Current/) for a
@@ -392,7 +392,7 @@ history of changes specific to **Grove**.
 
 ---
 
-## Funding & Acknowledgements 🙏🏻
+## Funding & Acknowledgements 🙏🏻
 
 **Grove** is a core element of the **Land** ecosystem. This project is funded
 through [NGI0 Commons Fund](https://NLnet.NL/commonsfund), a fund established by
@@ -401,38 +401,38 @@ through [NGI0 Commons Fund](https://NLnet.NL/commonsfund), a fund established by
 [NLnet project page](https://NLnet.NL/project/Land).
 
 <table>
-<thead>
-<tr>
-<th align="left"><strong>Land</strong></th>
-<th align="left"><strong>PlayForm</strong></th>
-<th align="left"><strong>NLnet</strong></th>
-<th align="left"><strong>NGI0 Commons Fund</strong></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="left" valign="middle">
-<a href="https://Editor.Land">
-<img width="60" src="https://raw.githubusercontent.com/CodeEditorLand/Asset/refs/heads/Current/Logo/Land.svg" alt="Land">
-</a>
-</td>
-<td align="left" valign="middle">
-<a href="https://PlayForm.Cloud">
-<img width="76" src="https://raw.githubusercontent.com/PlayForm/Asset/refs/heads/Current/Logo/PlayForm.svg" alt="PlayForm">
-</a>
-</td>
-<td align="left" valign="middle">
-<a href="https://NLnet.NL">
-<img width="240" src="https://NLnet.NL/logo/banner.svg" alt="NLnet">
-</a>
-</td>
-<td align="left" valign="middle">
-<a href="https://NLnet.NL/commonsfund">
-<img width="240" src="https://NLnet.NL/image/logos/NGI0CommonsFund_tag_black_mono.svg" alt="NGI0 Commons Fund">
-</a>
-</td>
-</tr>
-</tbody>
+	<thead>
+		<tr>
+			<th align="left"><strong>Land</strong></th>
+			<th align="left"><strong>PlayForm</strong></th>
+			<th align="left"><strong>NLnet</strong></th>
+			<th align="left"><strong>NGI0 Commons Fund</strong></th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td align="left" valign="middle">
+				<a href="https://Editor.Land">
+					<img width="60" src="https://raw.githubusercontent.com/CodeEditorLand/Asset/refs/heads/Current/Logo/Land.svg" alt="Land">
+				</a>
+			</td>
+			<td align="left" valign="middle">
+				<a href="https://PlayForm.Cloud">
+					<img width="76" src="https://raw.githubusercontent.com/PlayForm/Asset/refs/heads/Current/Logo/PlayForm.svg" alt="PlayForm">
+				</a>
+			</td>
+			<td align="left" valign="middle">
+				<a href="https://NLnet.NL">
+					<img width="240" src="https://NLnet.NL/logo/banner.svg" alt="NLnet">
+				</a>
+			</td>
+			<td align="left" valign="middle">
+				<a href="https://NLnet.NL/commonsfund">
+					<img width="240" src="https://NLnet.NL/image/logos/NGI0CommonsFund_tag_black_mono.svg" alt="NGI0 Commons Fund">
+				</a>
+			</td>
+		</tr>
+	</tbody>
 </table>
 
 ---
