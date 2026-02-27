@@ -235,7 +235,7 @@ impl ModuleLoaderImpl {
 		// Instantiate
 		let instance = linker
 			.instantiate(&mut store, module)
-			.context("Failed to instantiate WASM module")?;
+			.map_err(|e| anyhow::anyhow!("Failed to instantiate WASM module: {}", e))?;
 
 		let instance_id = generate_instance_id();
 

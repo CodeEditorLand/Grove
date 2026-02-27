@@ -119,7 +119,7 @@ impl WASMRuntime {
 		// Build the WASMtime engine
 		let engine_config = wasmtime::Config::new();
 		let engine_config = config.apply_to_engine_builder(engine_config)?;
-		let engine = Engine::new(&engine_config).context("Failed to create WASMtime engine")?;
+		let engine = Engine::new(&engine_config).map_err(|e| anyhow::anyhow!("Failed to create WASMtime engine: {}", e))?;
 
 		// Initialize memory manager
 		let memory_limits = MemoryLimits {
@@ -164,7 +164,7 @@ impl WASMRuntime {
 		if self.config.enable_fuel_metering {
 			// Set fuel based on execution time (rough approximation: 1 unit = 1000 ns)
 			let fuel = self.config.max_execution_time_ms * 1_000; // Convert ms to fuel
-			store.set_fuel(fuel).context("Failed to set fuel limit")?;
+			store.set_fuel(fuel).map_err(|e| anyhow::anyhow!("Failed to set fuel limit: {}", e))?;
 		}
 
 		Ok(store)
@@ -205,7 +205,8 @@ impl WASMRuntime {
 	pub fn compile_module(&self, wasm_bytes:&[u8]) -> Result<Module> {
 		debug!("Compiling WASM module ({} bytes)", wasm_bytes.len());
 
-		let module = Module::from_binary(&self.engine, wasm_bytes).context("Failed to compile WASM module")?;
+		let module = Module::from_binary(&self.engine, wasm_bytes)
+			.map_err(|e| anyhow::anyhow!("Failed to compile WASM module: {}", e))?;
 
 		debug!("WASM module compiled successfully");
 

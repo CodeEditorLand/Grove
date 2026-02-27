@@ -11,10 +11,11 @@ use std::path::PathBuf;
 
 fn main() -> anyhow::Result<()> {
     // Generate build timestamp and other vergen environment variables
+    // TODO: Downgraded vergen from 9.x to 8.x to restore EmitBuilder API compatibility
+    // Future consideration: Add git metadata if available through different means
     vergen::EmitBuilder::builder()
         .all_build()
         .all_cargo()
-        .all_git()
         .all_rustc()
         .emit()?;
     let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
@@ -56,11 +57,13 @@ fn compile_protos() {
     // Create the output directory if it doesn't exist
     std::fs::create_dir_all(&out_dir).expect(&format!("Failed to create directory: {:?}", out_dir));
     
+    // TODO: Downgraded tonic-build from 0.14 to 0.12 to fix configure() API availability
+    // Future consideration: Update to latest tonic-build version when API is stable
     tonic_build::configure()
         .build_server(true)
         .build_client(true)
         .out_dir(&out_dir)
-        .compile(&[proto_file], &[proto_dir])
+        .compile_protos(&[proto_file.as_path()], &[proto_dir.as_path()])
         .expect("Failed to compile protos");
 
     println!("cargo:rerun-if-changed={}", out_dir.display());

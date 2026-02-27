@@ -19,68 +19,51 @@ name = "grove"
 path = "Source/main.rs"
 
 [dependencies]
-# Async runtime
-tokio = { version = "1.35", features = ["full"] }
+tokio = { version = "1.49", features = ["full"] }
 tokio-util = { version = "0.7", features = ["codec"] }
-
-# WASM runtime
-wasmtime = { version = "20", features = ["async", "component-model", "runtime", "cranelift"], optional = true }
-wasmtime-wasi = { version = "20", optional = true }
-wasmparser = { version = "0.218", optional = true }
-
-# gRPC
+wasmtime = { version = "42", features = [
+	"async",
+	"component-model",
+	"runtime",
+	"cranelift",
+], optional = true }
+wasmtime-wasi = { version = "42", optional = true }
+wasmparser = { version = "0.245", optional = true }
 prost = { version = "0.12", optional = true }
-tonic = { version = "0.11", features = ["tls"], optional = true }
-tonic-build = "0.11"
-
-# Serialization
+tonic = { version = "0.12", optional = true }
+tonic-build = "0.12"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 serde_bytes = "0.11"
-
-# Error handling
 anyhow = "1.0"
-thiserror = "1.0"
-
-# tracing/logging
+thiserror = "2.0"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
-
-# CLI
-clap = { version = "4.4", features = ["derive"] }
-
-# Utilities
-bytes = { version = "1.5", features = ["serde"] }
+clap = { version = "4.5", features = ["derive"] }
+bytes = { version = "1.11", features = ["serde"] }
 futures = "0.3"
 async-trait = "0.1"
 semver = "1"
 chrono = "0.4"
-
-# Additional missing dependencies
-uuid = { version = "1.8", features = ["v4", "serde"] }
+uuid = { version = "1.21", features = ["v4", "serde"] }
 shellexpand = "3.1"
-reqwest = { version = "0.11", features = ["json"], optional = true }
+reqwest = { version = "0.13", features = ["json"], optional = true }
 base64 = "0.22"
+metrics = "0.24"
+metrics-exporter-prometheus = { version = "0.18", optional = true }
+opentelemetry = { version = "0.31", default-features = false, features = [
+	"trace",
+], optional = true }
+opentelemetry-otlp = { version = "0.31", features = [
+	"grpc-tonic",
+], optional = true }
+opentelemetry-semantic-conventions = { version = "0.31", optional = true }
+tracing-opentelemetry = { version = "0.32", optional = true }
 
-# Metrics
-metrics = "0.23"
-metrics-exporter-prometheus = { version = "0.13", optional = true }
-
-# OTEL Tracing
-opentelemetry = { version = "0.23", default-features = false, features = ["trace"], optional = true }
-opentelemetry-otlp = { version = "0.16", features = ["grpc-tonic"], optional = true }
-opentelemetry-semantic-conventions = { version = "0.15", optional = true }
-tracing-opentelemetry = { version = "0.24", optional = true }
-
-# IPC (for macOS/Linux)
-[target.'cfg(unix)'.dependencies]
-nix = { version = "0.27", optional = true }
-
-# Protocol buffers (build-only)
 [build-dependencies]
-tonic-build = "0.11"
+tonic-build = "0.12"
 anyhow = "1.0"
-vergen = { version = "8.3", features = ["build", "cargo", "git", "gitcl", "rustc", "si"] }
+vergen = { version = "8", features = ["build", "cargo", "rustc"] }
 
 [profile.release]
 opt-level = 3
@@ -103,8 +86,13 @@ strip = "debuginfo"
 default = ["grpc", "wasm"]
 grpc = ["tonic", "prost"]
 wasm = ["wasmtime", "wasmtime-wasi", "reqwest", "wasmparser"]
-ipc = ["nix"]
-telemetry = ["opentelemetry", "opentelemetry-otlp", "opentelemetry-semantic-conventions", "tracing-opentelemetry", "metrics-exporter-prometheus"]
+telemetry = [
+	"opentelemetry",
+	"opentelemetry-otlp",
+	"opentelemetry-semantic-conventions",
+	"tracing-opentelemetry",
+	"metrics-exporter-prometheus",
+]
 dev = ["telemetry"]
 debug = ["dev"]
-all = ["grpc", "wasm", "ipc", "telemetry"]
+all = ["grpc", "wasm", "telemetry"]
