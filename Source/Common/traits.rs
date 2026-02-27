@@ -2,8 +2,6 @@
 //!
 //! Defines common traits used across the Grove codebase.
 
-use std::fmt;
-
 use serde::{Deserialize, Serialize};
 
 /// Extension context trait for providing extension-specific information
@@ -307,6 +305,7 @@ mod tests {
 }
 
 // Helper struct for testing Retryable
+#[allow(dead_code)]
 struct RetryableTrait;
 
 impl Retryable for RetryableTrait {}

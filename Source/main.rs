@@ -8,7 +8,7 @@ use std::path::PathBuf;
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 use tracing::{error, info};
-use grove::Transport::{self, GrpcTransport, IPCTransportImpl, WASMTransportImpl};
+use grove::Transport::{GrpcTransport, IPCTransportImpl, WASMTransportImpl};
 use grove::Transport::Transport as TransportEnum;
 use grove::Binary::Main::Entry::{Entry, ValidationResult, BuildResult, ExtensionInfo};
 use grove::Binary::Build::{RuntimeBuild, ServiceRegister};

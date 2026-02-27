@@ -5,10 +5,10 @@
 
 use std::{collections::HashMap, sync::Arc};
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use tokio::sync::RwLock;
-use tracing::{debug, info, instrument, warn};
+use tracing::{debug, info, instrument};
 
 /// Lifecycle event types
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -57,29 +57,32 @@ pub enum LifecycleState {
 }
 
 /// Lifecycle event handler callback
+#[allow(dead_code)]
 type LifecycleEventHandler = fn(&str, LifecycleEvent) -> Result<()>;
 
 /// Lifecycle manager for extension lifecycle
 pub struct LifecycleManager {
-	/// Event handlers
-	handlers:Arc<RwLock<HashMap<String, LifecycleHandlerInfo>>>,
-	/// Extension states
-	states:Arc<RwLock<HashMap<String, LifecycleState>>>,
-	/// Event history
-	event_history:Arc<RwLock<Vec<LifecycleEventRecord>>>,
+    /// Event handlers
+    handlers:Arc<RwLock<HashMap<String, LifecycleHandlerInfo>>>,
+    /// Extension states
+    states:Arc<RwLock<HashMap<String, LifecycleState>>>,
+    /// Event history
+    event_history:Arc<RwLock<Vec<LifecycleEventRecord>>>,
 }
 
 /// Information about a lifecycle handler
 #[derive(Debug, Clone)]
 struct LifecycleHandlerInfo {
-	/// Extension ID
-	extension_id:String,
-	/// Current state
-	state:LifecycleState,
-	/// Supported events
-	supported_events:Vec<LifecycleEvent>,
-	/// Last state change timestamp
-	last_state_change:Option<u64>,
+    /// Extension ID
+    #[allow(dead_code)]
+    extension_id:String,
+    /// Current state
+    state:LifecycleState,
+    /// Supported events
+    #[allow(dead_code)]
+    supported_events:Vec<LifecycleEvent>,
+    /// Last state change timestamp
+    last_state_change:Option<u64>,
 }
 
 /// Record of a lifecycle event

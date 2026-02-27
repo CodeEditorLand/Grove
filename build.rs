@@ -10,9 +10,7 @@ use std::env;
 use std::path::PathBuf;
 
 fn main() -> anyhow::Result<()> {
-    // Generate build timestamp and other vergen environment variables
-    // TODO: Downgraded vergen from 9.x to 8.x to restore EmitBuilder API compatibility
-    // Future consideration: Add git metadata if available through different means
+    // Generate build timestamp using vergen 8.x for EmitBuilder API compatibility
     vergen::EmitBuilder::builder()
         .all_build()
         .all_cargo()
@@ -57,8 +55,7 @@ fn compile_protos() {
     // Create the output directory if it doesn't exist
     std::fs::create_dir_all(&out_dir).expect(&format!("Failed to create directory: {:?}", out_dir));
     
-    // TODO: Downgraded tonic-build from 0.14 to 0.12 to fix configure() API availability
-    // Future consideration: Update to latest tonic-build version when API is stable
+    // Using tonic-build 0.12 for configure() API stability
     tonic_build::configure()
         .build_server(true)
         .build_client(true)

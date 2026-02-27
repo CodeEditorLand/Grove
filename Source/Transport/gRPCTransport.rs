@@ -6,10 +6,9 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use bytes::Bytes;
 use tokio::sync::RwLock;
 use tonic::transport::{Channel, Endpoint};
-use tracing::{debug, info, instrument, warn};
+use tracing::{debug, info, instrument};
 
 use crate::Transport::TransportStrategy;
 use crate::Transport::TransportType;

@@ -12,14 +12,10 @@ use std::{
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 use tokio::sync::RwLock;
-use tracing::{debug, info, instrument, warn};
+use tracing::{debug, info, instrument};
 use wasmtime::{Instance, Linker, Module, Store, StoreLimits};
 
-use crate::WASM::{
-	HostBridge,
-	MemoryManager,
-	Runtime::{WASMConfig, WASMRuntime},
-};
+use crate::WASM::Runtime::{WASMConfig, WASMRuntime};
 
 /// WASM module wrapper with metadata
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -131,10 +127,12 @@ pub struct WASMInstance {
 
 /// WASM Module Loader
 pub struct ModuleLoaderImpl {
-	runtime:Arc<WASMRuntime>,
-	config:WASMConfig,
-	linkers:Arc<RwLock<Vec<Linker<()>>>>,
-	loaded_modules:Arc<RwLock<Vec<WASMModule>>>,
+    runtime:Arc<WASMRuntime>,
+    #[allow(dead_code)]
+    config:WASMConfig,
+    #[allow(dead_code)]
+    linkers:Arc<RwLock<Vec<Linker<()>>>>,
+    loaded_modules:Arc<RwLock<Vec<WASMModule>>>,
 }
 
 impl ModuleLoaderImpl {
@@ -182,7 +180,7 @@ impl ModuleLoaderImpl {
 		let module_info = self.extract_module_info(&module);
 
 		// Create module wrapper
-		let mut wasm_module = WASMModule {
+		let wasm_module = WASMModule {
 			id:generate_module_id(&module_info.name),
 			name:module_info.name,
 			path:None,

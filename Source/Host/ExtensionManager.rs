@@ -16,6 +16,7 @@ use tracing::{debug, info, instrument, warn};
 /// Extension manager for handling extension lifecycle
 pub struct ExtensionManagerImpl {
     /// WASM runtime for executing extensions
+    #[allow(dead_code)]
     wasm_runtime: Arc<WASMRuntime>,
     /// Host configuration
     config: HostConfig,

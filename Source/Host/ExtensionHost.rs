@@ -19,8 +19,9 @@ use crate::{
 
 /// Main extension host controller
 pub struct ExtensionHostImpl {
-	/// Host configuration
-	config:HostConfig,
+    /// Host configuration
+    #[allow(dead_code)]
+    config:HostConfig,
 	/// Transport for communication
 	transport:Transport,
 	/// Extension manager

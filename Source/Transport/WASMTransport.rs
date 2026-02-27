@@ -6,37 +6,39 @@
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
 
 use async_trait::async_trait;
+use base64::Engine;
 use bytes::Bytes;
 use serde::{Deserialize, Serialize};
 use tokio::sync::RwLock;
-use tracing::{debug, info, instrument, warn};
+use tracing::{debug, info, instrument};
 
 use crate::{
-	Transport::TransportStrategy,
-	Transport::TransportType,
-	Transport::TransportStats,
-	Transport::TransportConfig,
-	WASM::{
-		HostBridge::HostBridgeImpl,
-		MemoryManager::{MemoryLimits, MemoryManagerImpl},
-		Runtime::{WASMConfig, WASMRuntime},
-		WASMStats,
-	},
+    Transport::TransportStrategy,
+    Transport::TransportType,
+    Transport::TransportStats,
+    Transport::TransportConfig,
+    WASM::{
+        HostBridge::HostBridgeImpl,
+        MemoryManager::{MemoryLimits, MemoryManagerImpl},
+        Runtime::{WASMConfig, WASMRuntime},
+        WASMStats,
+    },
 };
 
 /// WASM transport for direct module communication
 #[derive(Clone, Debug)]
 pub struct WASMTransportImpl {
-	/// WASM runtime
-	runtime:Arc<WASMRuntime>,
-	/// Memory manager
-	memory_manager:Arc<RwLock<MemoryManagerImpl>>,
-	/// Host bridge for communication
-	bridge:Arc<HostBridgeImpl>,
-	/// Loaded modules
-	modules:Arc<RwLock<HashMap<String, WASMModuleInfo>>>,
-	/// Transport configuration
-	config:TransportConfig,
+    /// WASM runtime
+    runtime:Arc<WASMRuntime>,
+    /// Memory manager
+    memory_manager:Arc<RwLock<MemoryManagerImpl>>,
+    /// Host bridge for communication
+    bridge:Arc<HostBridgeImpl>,
+    /// Loaded modules
+    modules:Arc<RwLock<HashMap<String, WASMModuleInfo>>>,
+    /// Transport configuration
+    #[allow(dead_code)]
+    config:TransportConfig,
 	/// Connection state
 	connected:Arc<RwLock<bool>>,
 	/// Transport statistics
@@ -191,9 +193,9 @@ impl WASMTransportImpl {
 		);
 
 		let modules = self.modules.read().await;
-		let module = modules
-			.get(module_id)
-			.ok_or_else(|| anyhow::anyhow!("Module not found: {}", module_id))?;
+		let _module = modules
+		    .get(module_id)
+		    .ok_or_else(|| anyhow::anyhow!("Module not found: {}", module_id))?;
 
 		// In a real implementation, this would call the actual WASM function
 		// For now, we return a mock response
@@ -258,8 +260,9 @@ impl TransportStrategy for WASMTransportImpl {
 		let args_base64 = parts[2];
 
 		// Decode arguments from base64
+		use base64::engine::general_purpose::STANDARD;
 		let args = vec![Bytes::from(
-			base64::decode(args_base64).map_err(|e| WASMTransportError::InvalidRequest(e.to_string()))?,
+		    STANDARD.decode(args_base64).map_err(|e| WASMTransportError::InvalidRequest(e.to_string()))?,
 		)];
 
 		// Call the WASM function

@@ -6,11 +6,13 @@
 
 use std::{collections::HashMap, sync::Arc};
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use bytes::Bytes;
 use serde::{Serialize, de::DeserializeOwned};
 use tokio::sync::{RwLock, mpsc, oneshot};
-use tracing::{debug, error, instrument, warn};
+use tracing::{debug, instrument, warn};
+
+#[allow(unused_imports)]
 use wasmtime::{Caller, Extern, Func, Linker, Store};
 
 /// Host bridge error types
@@ -198,8 +200,8 @@ pub struct HostBridgeImpl {
 impl HostBridgeImpl {
 	/// Create a new host bridge
 	pub fn new() -> Self {
-		let (wasm_to_host_tx, wasm_to_host_rx) = mpsc::unbounded_channel();
-		let (host_to_wasm_tx, host_to_wasm_rx) = mpsc::unbounded_channel();
+	    let (_wasm_to_host_tx, wasm_to_host_rx) = mpsc::unbounded_channel();
+	    let (host_to_wasm_tx, host_to_wasm_rx) = mpsc::unbounded_channel();
 
 		// In a real implementation, we'd need to wire these up properly
 		// For now, we drop the receiver to avoid unused warnings

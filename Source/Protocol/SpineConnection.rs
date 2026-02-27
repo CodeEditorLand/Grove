@@ -34,14 +34,13 @@
 //! let echo_response = connection.SendEchoAction(action).await?; // NEW:
 //! optional
 
-use std::{collections::HashMap, sync::Arc};
+use std::sync::Arc;
 
-use anyhow::{Context, Result};
-use serde::{Deserialize, Serialize};
+use anyhow::Result;
 use tokio::sync::RwLock;
 use tracing::{debug, info, instrument, warn};
 
-use crate::Protocol::{MessageType, ProtocolConfig};
+use crate::Protocol::ProtocolConfig;
 #[cfg(feature = "grove_echo")]
 use crate::vine::generated::vine::{
 	EchoAction,
@@ -176,8 +175,8 @@ pub fn new(config:ProtocolConfig) -> Self {
 	///
 	/// * `method` - The method name to call
 	/// * `payload` - The request payload
-	#[instrument(skip(self, payload))]
-	pub async fn SendRequest(&self, method:&str, payload:Vec<u8>) -> Result<Vec<u8>> {
+	#[instrument(skip(self, _payload))]
+	pub async fn SendRequest(&self, method:&str, _payload:Vec<u8>) -> Result<Vec<u8>> {
 		if self.GetState().await != ConnectionState::Connected {
 			return Err(anyhow::anyhow!("Not connected to Spine"));
 		}

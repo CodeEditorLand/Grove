@@ -5,35 +5,39 @@
 
 use std::{collections::HashMap, sync::Arc};
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use tokio::sync::RwLock;
 use tracing::{debug, info, instrument, warn};
-use wasmtime::{Caller, Engine, Extern, Func, FuncType, Linker, Store, StoreLimits, Trap, Val, ValType};
+use wasmtime::{Caller, Linker};
 
-use crate::WASM::HostBridge::{FunctionSignature, HostBridgeImpl as HostBridge, HostBridgeImpl, HostFunctionCallback, ParamType, ReturnType};
+use crate::WASM::HostBridge::{FunctionSignature, HostBridgeImpl as HostBridge, HostFunctionCallback};
 
 /// Host function registry for WASM exports
 pub struct HostFunctionRegistry {
-	/// Registered host functions
-	functions:Arc<RwLock<HashMap<String, RegisteredHostFunction>>>,
-	/// Associated host bridge
-	bridge:Arc<HostBridge>,
+    /// Registered host functions
+    functions:Arc<RwLock<HashMap<String, RegisteredHostFunction>>>,
+    /// Associated host bridge
+    #[allow(dead_code)]
+    bridge:Arc<HostBridge>,
 }
 
 /// Registered host function with metadata
 #[derive(Debug, Clone)]
 struct RegisteredHostFunction {
-	/// Function name
-	name:String,
-	/// Function signature
-	signature:FunctionSignature,
-	/// Synchronous callback
-	callback:Option<HostFunctionCallback>,
-	/// Registration timestamp
-	registered_at:u64,
-	/// Call statistics
-	stats:FunctionStats,
+    /// Function name
+    #[allow(dead_code)]
+    name:String,
+    /// Function signature
+    #[allow(dead_code)]
+    signature:FunctionSignature,
+    /// Synchronous callback
+    callback:Option<HostFunctionCallback>,
+    /// Registration timestamp
+    #[allow(dead_code)]
+    registered_at:u64,
+    /// Call statistics
+    stats:FunctionStats,
 }
 
 /// Function statistics
@@ -196,9 +200,9 @@ impl FunctionExportImpl {
 		let func_name_inner = func_name.clone();
 
 		// Create a wrapper function that handles stats and error handling
-		let wrapped_callback =
-			move |mut _caller:Caller<'_, T>, args:&[wasmtime::Val]| -> Result<Vec<wasmtime::Val>, wasmtime::Trap> {
-				let start = std::time::Instant::now();
+		let _wrapped_callback =
+		    move |_caller:Caller<'_, T>, args:&[wasmtime::Val]| -> Result<Vec<wasmtime::Val>, wasmtime::Trap> {
+		    let _start = std::time::Instant::now();
 
 				// Convert args to bytes
 				let args_bytes:Result<Vec<bytes::Bytes>, _> = args
@@ -281,11 +285,11 @@ impl FunctionExportImpl {
 		// In Wasmtime 20, func_wrap expects parameters to be inferred from the closure signature
 		let func_name_for_logging = func_name.clone();
 		linker.func_wrap(
-			"_host", // Module name for host functions
-			&func_name,
-			move |mut caller:wasmtime::Caller<'_, T>, input_param:i32| -> i32 {
-				// Track function call for metrics
-				let start = std::time::Instant::now();
+		    "_host", // Module name for host functions
+		    &func_name,
+		    move |_caller:wasmtime::Caller<'_, T>, input_param:i32| -> i32 {
+		        // Track function call for metrics
+		        let start = std::time::Instant::now();
 
 				// Convert input parameter to bytes for callback
 				let args_bytes = match serde_json::to_vec(&input_param)
@@ -357,6 +361,7 @@ impl FunctionExportImpl {
 	}
 
 	/// Convert our signature to WASMtime signature type
+	#[allow(dead_code)]
 	fn wasmtime_signature_from_signature(&self, _sig:&FunctionSignature) -> Result<wasmparser::FuncType> {
 		// This is a placeholder - actual implementation depends on the exact types
 		// In production, this would map ParamType and ReturnType to WASMtime types

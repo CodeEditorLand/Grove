@@ -54,15 +54,15 @@ impl Commands {
 pub fn new() -> Self { Self }
 
 	/// Register a command
-	pub fn register_command(&self, command_id:String, callback:CommandCallback) -> Result<Command, String> {
-		Ok(Command { id:command_id.clone() })
+	pub fn register_command(&self, command_id:String, _callback:CommandCallback) -> Result<Command, String> {
+	    Ok(Command { id:command_id.clone() })
 	}
 
 	/// Execute a command
 	pub async fn execute_command<T:serde::de::DeserializeOwned>(
-		&self,
-		command_id:String,
-		args:Vec<serde_json::Value>,
+	    &self,
+	    command_id:String,
+	    _args:Vec<serde_json::Value>,
 	) -> Result<T, String> {
 		// Placeholder implementation
 		Err(format!("Command not implemented: {}", command_id))
@@ -88,21 +88,21 @@ impl Window {
 pub fn new() -> Self { Self }
 
 	/// Show an information message
-	pub async fn show_information_message(&self, message:String) -> Result<String, String> {
-		// Placeholder implementation
-		Ok("OK".to_string())
+	pub async fn show_information_message(&self, _message:String) -> Result<String, String> {
+	    // Placeholder implementation
+	    Ok("OK".to_string())
 	}
 
 	/// Show a warning message
-	pub async fn show_warning_message(&self, message:String) -> Result<String, String> {
-		// Placeholder implementation
-		Ok("OK".to_string())
+	pub async fn show_warning_message(&self, _message:String) -> Result<String, String> {
+	    // Placeholder implementation
+	    Ok("OK".to_string())
 	}
 
 	/// Show an error message
-	pub async fn show_error_message(&self, message:String) -> Result<String, String> {
-		// Placeholder implementation
-		Ok("OK".to_string())
+	pub async fn show_error_message(&self, _message:String) -> Result<String, String> {
+	    // Placeholder implementation
+	    Ok("OK".to_string())
 	}
 
 	/// Create and show a new output channel
@@ -186,32 +186,33 @@ pub struct WorkspaceFolder {
 /// Workspace configuration
 #[derive(Debug, Clone)]
 pub struct WorkspaceConfiguration {
-/// The configuration section name
-section:Option<String>,
+    /// The configuration section name
+    #[allow(dead_code)]
+    section:Option<String>,
 }
 
 impl WorkspaceConfiguration {
-/// Create a new workspace configuration
-///
-/// # Arguments
-///
-/// * `section` - Optional section name to retrieve
-pub fn new(section:Option<String>) -> Self { Self { section } }
+    /// Create a new workspace configuration
+    ///
+    /// # Arguments
+    ///
+    /// * `section` - Optional section name to retrieve
+    pub fn new(section:Option<String>) -> Self { Self { section } }
 
-	/// Get a configuration value
-	pub fn get<T:serde::de::DeserializeOwned>(&self, key:String) -> Result<T, String> {
-		// Placeholder implementation
-		Err(format!("Configuration not implemented: {:?}", key))
-	}
+    /// Get a configuration value
+    pub fn get<T:serde::de::DeserializeOwned>(&self, _key:String) -> Result<T, String> {
+        // Placeholder implementation
+        Err("Configuration not implemented".to_string())
+    }
 
-	/// Check if a key exists in the configuration
-	pub fn has(&self, key:String) -> bool { false }
+    /// Check if a key exists in the configuration
+    pub fn has(&self, _key:String) -> bool { false }
 
-	/// Update a configuration value
-	pub async fn update(&self, key:String, value:serde_json::Value) -> Result<(), String> {
-		// Placeholder implementation
-		Err(format!("Update configuration not implemented: {}", key))
-	}
+    /// Update a configuration value
+    pub async fn update(&self, _key:String, _value:serde_json::Value) -> Result<(), String> {
+        // Placeholder implementation
+        Err("Update configuration not implemented".to_string())
+    }
 }
 
 /// Languages namespace
@@ -308,27 +309,28 @@ pub enum CompletionTriggerKind {
 /// Diagnostic collection
 #[derive(Debug, Clone)]
 pub struct DiagnosticCollection {
-/// The name of the diagnostic collection
-name:Option<String>,
+    /// The name of the diagnostic collection
+    #[allow(dead_code)]
+    name:Option<String>,
 }
 
 impl DiagnosticCollection {
-/// Create a new diagnostic collection
-///
-/// # Arguments
-///
-/// * `name` - Optional name for the collection
-pub fn new(name:Option<String>) -> Self { Self { name } }
+    /// Create a new diagnostic collection
+    ///
+    /// # Arguments
+    ///
+    /// * `name` - Optional name for the collection
+    pub fn new(name:Option<String>) -> Self { Self { name } }
 
-	/// Set diagnostics for a resource
-	pub fn set(&self, uri:String, diagnostics:Vec<Diagnostic>) {
-		// Placeholder implementation
-	}
+    /// Set diagnostics for a resource
+    pub fn set(&self, _uri:String, _diagnostics:Vec<Diagnostic>) {
+        // Placeholder implementation
+    }
 
-	/// Delete diagnostics for a resource
-	pub fn delete(&self, uri:String) {
-		// Placeholder implementation
-	}
+    /// Delete diagnostics for a resource
+    pub fn delete(&self, _uri:String) {
+        // Placeholder implementation
+    }
 
 	/// Clear all diagnostics
 	pub fn clear(&self) {
@@ -367,7 +369,7 @@ pub fn new() -> Self { Self }
 	pub fn all(&self) -> Vec<Extension> { Vec::new() }
 
 	/// Get an extension by id
-	pub fn get_extension(&self, extension_id:String) -> Option<Extension> { None }
+	pub fn get_extension(&self, _extension_id:String) -> Option<Extension> { None }
 }
 
 /// Extension representation

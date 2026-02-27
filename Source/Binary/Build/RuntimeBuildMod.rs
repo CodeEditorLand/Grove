@@ -6,7 +6,7 @@
 use std::sync::Arc;
 
 use anyhow::{Context, Result};
-use tracing::{debug, info, instrument, warn};
+use tracing::{debug, info, instrument};
 
 use crate::{
 	Host::{ExtensionHost::ExtensionHostImpl, HostConfig},
@@ -19,11 +19,11 @@ pub struct RuntimeBuild;
 
 impl RuntimeBuild {
 	/// Build a Groove extension host with the specified configuration
-	#[instrument(skip(transport, wasm_runtime))]
+	#[instrument(skip(transport))]
 	pub async fn build_host(
-		transport:Transport,
-		wasm_runtime:Arc<WASMRuntime>,
-		host_config:HostConfig,
+	    transport:Transport,
+	    _wasm_runtime:Arc<WASMRuntime>,
+	host_config:HostConfig,
 	) -> Result<ExtensionHostImpl> {
 		info!("Building Grove extension host");
 

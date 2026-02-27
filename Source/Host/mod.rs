@@ -41,7 +41,6 @@ pub mod Lifecycle;
 pub use Activation::{ActivationEngine, ActivationEvent};
 pub use Lifecycle::{LifecycleEvent, LifecycleManager};
 // Note: ExtensionHost, ExtensionManager, APIBridge must be accessed via module prefix
-use anyhow::Result;
 
 /// Host configuration
 #[derive(Debug, Clone)]

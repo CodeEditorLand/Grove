@@ -9,7 +9,7 @@ use async_trait::async_trait;
 use bytes::Bytes;
 use serde::{Deserialize, Serialize};
 
-use crate::Transport::{TransportConfig, GrpcTransport, IPCTransportImpl, WASMTransportImpl};
+use crate::Transport::{GrpcTransport, IPCTransportImpl, WASMTransportImpl};
 
 /// Transport strategy trait
 ///

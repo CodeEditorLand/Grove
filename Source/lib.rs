@@ -92,10 +92,11 @@ const VERSION:&str = env!("CARGO_PKG_VERSION");
 /// Grove library information
 #[derive(Debug, Clone)]
 pub struct GroveInfo {
-	/// Version string
-	pub version:&'static str,
-	/// Build timestamp
-	build_timestamp:String,
+    /// Version string
+    pub version:&'static str,
+    /// Build timestamp
+    #[allow(dead_code)]
+    build_timestamp:String,
 }
 
 impl GroveInfo {

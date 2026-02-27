@@ -5,11 +5,11 @@
 
 use std::sync::Arc;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use tokio::sync::RwLock;
 use tracing::{debug, info, instrument, warn};
-use wasmtime::{Engine, Instance, Linker, Module, Store, StoreLimits, StoreLimitsBuilder, WasmBacktraceDetails};
+use wasmtime::{Engine, Linker, Module, Store, StoreLimits, StoreLimitsBuilder, WasmBacktraceDetails};
 
 use crate::WASM::{
 	DEFAULT_MAX_EXECUTION_TIME_MS,
@@ -150,16 +150,16 @@ impl WASMRuntime {
 
 	/// Create a new WASM store with limits
 	pub fn create_store(&self) -> Result<Store<StoreLimits>> {
-		let mut store_limits = StoreLimitsBuilder::new()
-	           .memory_size((self.config.memory_limit_mb * 1024 * 1024) as usize) // Convert MB to bytes
-	           .table_elements(1024)
-	           .instances(100)
-	           .memories(10)
-	           .tables(10)
-	           .build();
+	    let store_limits = StoreLimitsBuilder::new()
+	        .memory_size((self.config.memory_limit_mb * 1024 * 1024) as usize) // Convert MB to bytes
+	        .table_elements(1024)
+	        .instances(100)
+	        .memories(10)
+	        .tables(10)
+	        .build();
 
-		// Set fuel limit if enabled
-		let mut store = Store::new(&self.engine, store_limits);
+	    // Set fuel limit if enabled
+	    let mut store = Store::new(&self.engine, store_limits);
 
 		if self.config.enable_fuel_metering {
 			// Set fuel based on execution time (rough approximation: 1 unit = 1000 ns)

@@ -4,12 +4,11 @@
 //! Supports Unix domain sockets on macOS/Linux.
 
 use std::{
-	path::{Path, PathBuf},
-	sync::Arc,
+    path::{Path, PathBuf},
+    sync::Arc,
 };
 
 use async_trait::async_trait;
-use bytes::Bytes;
 use tokio::sync::RwLock;
 use tracing::{debug, info, instrument, warn};
 
@@ -21,12 +20,14 @@ use crate::Transport::TransportConfig;
 /// IPC transport for local process communication
 #[derive(Clone, Debug)]
 pub struct IPCTransportImpl {
-	/// Socket path
-	socket_path:Option<PathBuf>,
-	/// Named pipe name (Windows)
-	pipe_name:Option<String>,
-	/// Transport configuration
-	config:TransportConfig,
+    /// Socket path
+    socket_path:Option<PathBuf>,
+    /// Named pipe name (Windows)
+    #[allow(dead_code)]
+    pipe_name:Option<String>,
+    /// Transport configuration
+    #[allow(dead_code)]
+    config:TransportConfig,
 	/// Connection state
 	connected:Arc<RwLock<bool>>,
 	/// Transport statistics

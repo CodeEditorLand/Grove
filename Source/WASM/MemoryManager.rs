@@ -11,6 +11,7 @@ use std::sync::{
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 use tracing::{debug, instrument, warn};
+#[allow(unused_imports)]
 use wasmtime::{Memory, MemoryType};
 
 /// Memory limits for WASM instances

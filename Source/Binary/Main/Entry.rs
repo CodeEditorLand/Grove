@@ -9,11 +9,9 @@ use anyhow::{Context, Result};
 use tracing::{error, info, instrument};
 
 use crate::{
-	Binary::Build::ServiceRegister,
-	Binary::Main::CliArgs,
-	Host::{HostConfig, ExtensionHost::ExtensionHostImpl},
-	Transport::Transport,
-	WASM::Runtime::{WASMConfig, WASMRuntime},
+    Binary::Main::CliArgs,
+    Host::{HostConfig, ExtensionHost::ExtensionHostImpl},
+    Transport::Transport,
 };
 
 /// Grove entry point manager
@@ -69,12 +67,12 @@ impl Entry {
 	}
 
 	/// Run as a service
-	#[instrument(skip(args))]
-	async fn run_service(args:CliArgs) -> Result<()> {
-		info!("Starting Grove as service");
-
-		// Create transport for Mountain communication
-		let transport = Transport::default();
+	#[instrument(skip(_args))]
+	async fn run_service(_args:CliArgs) -> Result<()> {
+	    info!("Starting Grove as service");
+	
+	    // Create transport for Mountain communication
+	    let _transport = Transport::default();
 
 		// Register with Mountain
 		#[cfg(feature = "gRPC")]
@@ -167,23 +165,22 @@ impl Entry {
 
 	/// Build a WASM module
 	pub async fn build_wasm_module(
-		source:PathBuf,
-		output:PathBuf,
-		opt_level:String,
-		target:Option<String>,
+	    source:PathBuf,
+	    output:PathBuf,
+	    _opt_level:String,
+	    _target:Option<String>,
 	) -> Result<BuildResult> {
-		info!("Building WASM module from: {:?}", source);
-		info!("Output: {:?}", output);
-		info!("Optimization level: {}", opt_level);
-
-		// For now, return a placeholder result
-		// In production, this would invoke rustc/cargo with wasm32-wasi target
-		Ok(BuildResult { success:true, output_path:output, compile_time_ms:0 })
+	    info!("Building WASM module from: {:?}", source);
+	    info!("Output: {:?}", output);
+	
+	    // For now, return a placeholder result
+	    // In production, this would invoke rustc/cargo with wasm32-wasi target
+	    Ok(BuildResult { success:true, output_path:output, compile_time_ms:0 })
 	}
-
+	
 	/// List loaded extensions
-	pub async fn list_extensions(detailed:bool) -> Result<Vec<ExtensionInfo>> {
-		info!("Listing extensions");
+	pub async fn list_extensions(_detailed:bool) -> Result<Vec<ExtensionInfo>> {
+	    info!("Listing extensions");
 
 		// For now, return empty list
 		// In production, this would query the extension manager

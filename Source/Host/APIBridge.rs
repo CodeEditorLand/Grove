@@ -5,8 +5,7 @@
 
 use std::{collections::HashMap, sync::Arc};
 
-use anyhow::{Context, Result};
-use bytes::Bytes;
+use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use tokio::sync::RwLock;
 use tracing::{debug, instrument, warn};
@@ -38,41 +37,49 @@ pub struct APICallResponse {
 }
 
 /// VS Code API call representation
+#[allow(dead_code)]
 pub struct APICall {
-	/// Extension ID
-	extension_id:String,
-	/// API method
-	api_method:String,
-	/// Arguments
-	arguments:Vec<serde_json::Value>,
-	/// Timestamp
-	timestamp:u64,
+    /// Extension ID
+    extension_id:String,
+    /// API method
+    api_method:String,
+    /// Arguments
+    arguments:Vec<serde_json::Value>,
+    /// Timestamp
+    timestamp:u64,
 }
 
 /// API method handler callback
+#[allow(dead_code)]
 type APIMethodHandler = fn(&str, Vec<serde_json::Value>) -> Result<serde_json::Value>;
 
 /// Async API method handler callback
+#[allow(dead_code)]
 type AsyncAPIMethodHandler =
-	fn(&str, Vec<serde_json::Value>) -> Box<dyn std::future::Future<Output = Result<serde_json::Value>> + Send + Unpin>;
+    fn(&str, Vec<serde_json::Value>) -> Box<dyn std::future::Future<Output = Result<serde_json::Value>> + Send + Unpin>;
 
 /// API method registration
 #[derive(Clone)]
 pub struct APIMethodInfo {
-	/// Method name
-	name:String,
-	/// Description
-	description:String,
-	/// Parameters schema (JSON Schema)
-	parameters:Option<serde_json::Value>,
-	/// Return type schema (JSON Schema)
-	returns:Option<serde_json::Value>,
-	/// Whether this method is async
-	is_async:bool,
-	/// Call count
-	call_count:u64,
-	/// Total execution time in microseconds
-	total_time_us:u64,
+    /// Method name
+    #[allow(dead_code)]
+    name:String,
+    /// Description
+    #[allow(dead_code)]
+    description:String,
+    /// Parameters schema (JSON Schema)
+    #[allow(dead_code)]
+    parameters:Option<serde_json::Value>,
+    /// Return type schema (JSON Schema)
+    #[allow(dead_code)]
+    returns:Option<serde_json::Value>,
+    /// Whether this method is async
+    #[allow(dead_code)]
+    is_async:bool,
+    /// Call count
+    call_count:u64,
+    /// Total execution time in microseconds
+    total_time_us:u64,
 }
 
 /// VS Code API bridge for Grove
