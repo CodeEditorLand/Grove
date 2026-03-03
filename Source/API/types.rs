@@ -385,9 +385,9 @@ impl TextDocumentItem {
 /// The parameters sent in notifications/requests for user-initiated creation of
 /// files
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CreateFilesParams {
-	/// An array of all files/folders created in this operation
-	pub files:Vec<FileCreate>,
+pub struct CreateFileParams {
+ /// An array of all files/folders created in this operation
+ pub files:Vec<FileCreate>,
 }
 
 /// Represents information to create a file

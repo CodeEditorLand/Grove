@@ -13,32 +13,32 @@ use crate::API::types::*;
 /// VS Code API facade - the main entry point for extensions
 #[derive(Debug, Clone)]
 pub struct VSCodeAPI {
-	/// Commands namespace
-	pub commands:Arc<Commands>,
-	/// Window namespace
-	pub window:Arc<Window>,
-	/// Workspace namespace
-	pub workspace:Arc<Workspace>,
-	/// Languages namespace
-	pub languages:Arc<Languages>,
-	/// Extensions namespace
-	pub extensions:Arc<Extensions>,
-	/// Environment namespace
-	pub env:Arc<Env>,
+    /// Commands namespace
+    pub commands:Arc<CommandNamespace>,
+    /// Window namespace
+    pub window:Arc<Window>,
+    /// Workspace namespace
+    pub workspace:Arc<Workspace>,
+    /// Languages namespace
+    pub languages:Arc<LanguageNamespace>,
+    /// Extensions namespace
+    pub extensions:Arc<ExtensionNamespace>,
+    /// Environment namespace
+    pub env:Arc<Env>,
 }
 
 impl VSCodeAPI {
-	/// Create a new VS Code API facade
-	pub fn new() -> Self {
-		Self {
-			commands:Arc::new(Commands::new()),
-			window:Arc::new(Window::new()),
-			workspace:Arc::new(Workspace::new()),
-			languages:Arc::new(Languages::new()),
-			extensions:Arc::new(Extensions::new()),
-			env:Arc::new(Env::new()),
-		}
-	}
+    /// Create a new VS Code API facade
+    pub fn new() -> Self {
+        Self {
+            commands:Arc::new(CommandNamespace::new()),
+            window:Arc::new(Window::new()),
+            workspace:Arc::new(Workspace::new()),
+            languages:Arc::new(LanguageNamespace::new()),
+            extensions:Arc::new(ExtensionNamespace::new()),
+            env:Arc::new(Env::new()),
+        }
+    }
 }
 
 impl Default for VSCodeAPI {
@@ -47,11 +47,11 @@ impl Default for VSCodeAPI {
 
 /// Commands namespace
 #[derive(Debug, Clone)]
-pub struct Commands;
+pub struct CommandNamespace;
 
-impl Commands {
-/// Create a new Commands instance
-pub fn new() -> Self { Self }
+impl CommandNamespace {
+    /// Create a new CommandNamespace instance
+    pub fn new() -> Self { Self }
 
 	/// Register a command
 	pub fn register_command(&self, command_id:String, _callback:CommandCallback) -> Result<Command, String> {
@@ -217,11 +217,11 @@ impl WorkspaceConfiguration {
 
 /// Languages namespace
 #[derive(Debug, Clone)]
-pub struct Languages;
+pub struct LanguageNamespace;
 
-impl Languages {
-/// Create a new Languages instance
-pub fn new() -> Self { Self }
+impl LanguageNamespace {
+    /// Create a new LanguageNamespace instance
+    pub fn new() -> Self { Self }
 
 	/// Register completion item provider
 	pub async fn register_completion_item_provider<T:CompletionItemProvider>(
@@ -359,11 +359,11 @@ pub fn dispose(&self) {
 
 /// Extensions namespace
 #[derive(Debug, Clone)]
-pub struct Extensions;
+pub struct ExtensionNamespace;
 
-impl Extensions {
-/// Create a new Extensions instance
-pub fn new() -> Self { Self }
+impl ExtensionNamespace {
+    /// Create a new ExtensionNamespace instance
+    pub fn new() -> Self { Self }
 
 	/// Get all extensions
 	pub fn all(&self) -> Vec<Extension> { Vec::new() }
