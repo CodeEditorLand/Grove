@@ -24,14 +24,14 @@
 //! # Key Components
 //!
 //! - [`Strategy`] - Transport strategy trait
-//! - [`gRPCTransport`] - gRPC-based communication
-//! - [`IPCTransport`] - Inter-process communication
+//! - [`GrpcTransport`] - gRPC-based communication
+//! - [`IpcTransport`] - Inter-process communication
 //! - [`WASMTransport`] - Direct WASM module communication
 
 
 
-pub mod gRPCTransport;
-pub mod IPCTransport;
+pub mod GrpcTransport;
+pub mod IpcTransport;
 pub mod Strategy;
 pub mod WASMTransport;
 
@@ -39,8 +39,8 @@ pub mod WASMTransport;
 use std::time::Duration;
 
 pub use Strategy::{Transport, TransportStrategy, TransportType, TransportStats};
-pub use gRPCTransport::GrpcTransport;
-pub use IPCTransport::IPCTransportImpl;
+pub use GrpcTransport::GrpcTransport;
+pub use IpcTransport::IPCTransportImpl;
 pub use WASMTransport::WASMTransportImpl;
 use anyhow::Result;
 
