@@ -242,56 +242,56 @@ impl CompletionItem {
 /// Completion item kind
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum CompletionItemKind {
-/// Text completion
-Text = 1,
-/// Method completion
-Method = 2,
-/// Function completion
-Function = 3,
-/// Constructor completion
-Constructor = 4,
-/// Field completion
-Field = 5,
-/// Variable completion
-Variable = 6,
-/// Class completion
-Class = 7,
-/// Interface completion
-Interface = 8,
-/// Module completion
-Module = 9,
-/// Property completion
-Property = 10,
-/// Unit completion
-Unit = 11,
-/// Value completion
-Value = 12,
-/// Enum completion
-Enum = 13,
-/// Keyword completion
-Keyword = 14,
-/// Snippet completion
-Snippet = 15,
-/// Color completion
-Color = 16,
-/// File completion
-File = 17,
-/// Reference completion
-Reference = 18,
-/// Folder completion
-Folder = 19,
-/// Enum member completion
-EnumMember = 20,
-/// Constant completion
-Constant = 21,
-/// Struct completion
-Struct = 22,
-/// Event completion
-Event = 23,
-/// Operator completion
-Operator = 24,
-/// Type parameter completion
-TypeParameter = 25,
+	/// Text completion
+	Text = 1,
+	/// Method completion
+	Method = 2,
+	/// Function completion
+	Function = 3,
+	/// Constructor completion
+	Constructor = 4,
+	/// Field completion
+	Field = 5,
+	/// Variable completion
+	Variable = 6,
+	/// Class completion
+	Class = 7,
+	/// Interface completion
+	Interface = 8,
+	/// Module completion
+	Module = 9,
+	/// Property completion
+	Property = 10,
+	/// Unit completion
+	Unit = 11,
+	/// Value completion
+	Value = 12,
+	/// Enum completion
+	Enum = 13,
+	/// Keyword completion
+	Keyword = 14,
+	/// Snippet completion
+	Snippet = 15,
+	/// Color completion
+	Color = 16,
+	/// File completion
+	File = 17,
+	/// Reference completion
+	Reference = 18,
+	/// Folder completion
+	Folder = 19,
+	/// Enum member completion
+	EnumMember = 20,
+	/// Constant completion
+	Constant = 21,
+	/// Struct completion
+	Struct = 22,
+	/// Event completion
+	Event = 23,
+	/// Operator completion
+	Operator = 24,
+	/// Type parameter completion
+	TypeParameter = 25,
 }
 
 /// Completion item documentation
@@ -386,8 +386,8 @@ impl TextDocumentItem {
 /// files
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateFileParams {
- /// An array of all files/folders created in this operation
- pub files:Vec<FileCreate>,
+	/// An array of all files/folders created in this operation
+	pub files:Vec<FileCreate>,
 }
 
 /// Represents information to create a file

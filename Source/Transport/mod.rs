@@ -28,8 +28,6 @@
 //! - [`IpcTransport`] - Inter-process communication
 //! - [`WASMTransport`] - Direct WASM module communication
 
-
-
 pub mod GrpcTransport;
 pub mod IpcTransport;
 pub mod Strategy;
@@ -38,7 +36,7 @@ pub mod WASMTransport;
 // Re-exports for convenience
 use std::time::Duration;
 
-pub use Strategy::{Transport, TransportStrategy, TransportType, TransportStats};
+pub use Strategy::{Transport, TransportStats, TransportStrategy, TransportType};
 pub use GrpcTransport::GrpcTransport;
 pub use IpcTransport::IPCTransportImpl;
 pub use WASMTransport::WASMTransportImpl;

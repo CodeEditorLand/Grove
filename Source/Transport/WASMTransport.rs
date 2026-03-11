@@ -13,32 +13,29 @@ use tokio::sync::RwLock;
 use tracing::{debug, info, instrument};
 
 use crate::{
-    Transport::TransportStrategy,
-    Transport::TransportType,
-    Transport::TransportStats,
-    Transport::TransportConfig,
-    WASM::{
-        HostBridge::HostBridgeImpl,
-        MemoryManager::{MemoryLimits, MemoryManagerImpl},
-        Runtime::{WASMConfig, WASMRuntime},
-        WASMStats,
-    },
+	Transport::{TransportConfig, TransportStats, TransportStrategy, TransportType},
+	WASM::{
+		HostBridge::HostBridgeImpl,
+		MemoryManager::{MemoryLimits, MemoryManagerImpl},
+		Runtime::{WASMConfig, WASMRuntime},
+		WASMStats,
+	},
 };
 
 /// WASM transport for direct module communication
 #[derive(Clone, Debug)]
 pub struct WASMTransportImpl {
-    /// WASM runtime
-    runtime:Arc<WASMRuntime>,
-    /// Memory manager
-    memory_manager:Arc<RwLock<MemoryManagerImpl>>,
-    /// Host bridge for communication
-    bridge:Arc<HostBridgeImpl>,
-    /// Loaded modules
-    modules:Arc<RwLock<HashMap<String, WASMModuleInfo>>>,
-    /// Transport configuration
-    #[allow(dead_code)]
-    config:TransportConfig,
+	/// WASM runtime
+	runtime:Arc<WASMRuntime>,
+	/// Memory manager
+	memory_manager:Arc<RwLock<MemoryManagerImpl>>,
+	/// Host bridge for communication
+	bridge:Arc<HostBridgeImpl>,
+	/// Loaded modules
+	modules:Arc<RwLock<HashMap<String, WASMModuleInfo>>>,
+	/// Transport configuration
+	#[allow(dead_code)]
+	config:TransportConfig,
 	/// Connection state
 	connected:Arc<RwLock<bool>>,
 	/// Transport statistics
@@ -194,8 +191,8 @@ impl WASMTransportImpl {
 
 		let modules = self.modules.read().await;
 		let _module = modules
-		    .get(module_id)
-		    .ok_or_else(|| anyhow::anyhow!("Module not found: {}", module_id))?;
+			.get(module_id)
+			.ok_or_else(|| anyhow::anyhow!("Module not found: {}", module_id))?;
 
 		// In a real implementation, this would call the actual WASM function
 		// For now, we return a mock response
@@ -262,7 +259,9 @@ impl TransportStrategy for WASMTransportImpl {
 		// Decode arguments from base64
 		use base64::engine::general_purpose::STANDARD;
 		let args = vec![Bytes::from(
-		    STANDARD.decode(args_base64).map_err(|e| WASMTransportError::InvalidRequest(e.to_string()))?,
+			STANDARD
+				.decode(args_base64)
+				.map_err(|e| WASMTransportError::InvalidRequest(e.to_string()))?,
 		)];
 
 		// Call the WASM function
@@ -307,49 +306,47 @@ impl TransportStrategy for WASMTransportImpl {
 
 	fn is_connected(&self) -> bool { self.connected.blocking_read().to_owned() }
 
-	fn transport_type(&self) -> TransportType {
-		TransportType::WASM
-	}
+	fn transport_type(&self) -> TransportType { TransportType::WASM }
 }
 
 /// WASM transport errors
 #[derive(Debug, thiserror::Error)]
 pub enum WASMTransportError {
-/// Module not found error
-#[error("Module not found: {0}")]
-ModuleNotFound(String),
+	/// Module not found error
+	#[error("Module not found: {0}")]
+	ModuleNotFound(String),
 
-/// Function not found error
-#[error("Function not found: {0}")]
-FunctionNotFound(String),
+	/// Function not found error
+	#[error("Function not found: {0}")]
+	FunctionNotFound(String),
 
-/// Function call failed error
-#[error("Function call failed: {0}")]
-FunctionCallFailed(String),
+	/// Function call failed error
+	#[error("Function call failed: {0}")]
+	FunctionCallFailed(String),
 
-/// Memory error
-#[error("Memory error: {0}")]
-MemoryError(String),
+	/// Memory error
+	#[error("Memory error: {0}")]
+	MemoryError(String),
 
-/// Runtime error
-#[error("Runtime error: {0}")]
-RuntimeError(String),
+	/// Runtime error
+	#[error("Runtime error: {0}")]
+	RuntimeError(String),
 
-/// Invalid request error
-#[error("Invalid request: {0}")]
-InvalidRequest(String),
+	/// Invalid request error
+	#[error("Invalid request: {0}")]
+	InvalidRequest(String),
 
-/// Not connected error
-#[error("Not connected")]
-NotConnected,
+	/// Not connected error
+	#[error("Not connected")]
+	NotConnected,
 
-/// Compilation failed error
-#[error("Compilation failed: {0}")]
-CompilationFailed(String),
+	/// Compilation failed error
+	#[error("Compilation failed: {0}")]
+	CompilationFailed(String),
 
-/// Timeout error
-#[error("Timeout")]
-Timeout,
+	/// Timeout error
+	#[error("Timeout")]
+	Timeout,
 }
 
 #[cfg(test)]
@@ -378,7 +375,7 @@ mod tests {
 	#[tokio::test]
 	async fn test_wasm_transport_not_connected_after_close() {
 		let transport = WASMTransportImpl::new(true, 512, 30000).unwrap();
-		let _: anyhow::Result<()> = transport.close().await.map_err(|e| anyhow::anyhow!(e.to_string()));
+		let _:anyhow::Result<()> = transport.close().await.map_err(|e| anyhow::anyhow!(e.to_string()));
 		assert!(!transport.is_connected());
 	}
 

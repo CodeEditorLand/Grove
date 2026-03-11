@@ -4,30 +4,27 @@
 //! Supports Unix domain sockets on macOS/Linux.
 
 use std::{
-    path::{Path, PathBuf},
-    sync::Arc,
+	path::{Path, PathBuf},
+	sync::Arc,
 };
 
 use async_trait::async_trait;
 use tokio::sync::RwLock;
 use tracing::{debug, info, instrument, warn};
 
-use crate::Transport::TransportStrategy;
-use crate::Transport::TransportType;
-use crate::Transport::TransportStats;
-use crate::Transport::TransportConfig;
+use crate::Transport::{TransportConfig, TransportStats, TransportStrategy, TransportType};
 
 /// IPC transport for local process communication
 #[derive(Clone, Debug)]
 pub struct IPCTransportImpl {
-    /// Socket path
-    socket_path:Option<PathBuf>,
-    /// Named pipe name (Windows)
-    #[allow(dead_code)]
-    pipe_name:Option<String>,
-    /// Transport configuration
-    #[allow(dead_code)]
-    config:TransportConfig,
+	/// Socket path
+	socket_path:Option<PathBuf>,
+	/// Named pipe name (Windows)
+	#[allow(dead_code)]
+	pipe_name:Option<String>,
+	/// Transport configuration
+	#[allow(dead_code)]
+	config:TransportConfig,
 	/// Connection state
 	connected:Arc<RwLock<bool>>,
 	/// Transport statistics
@@ -276,45 +273,43 @@ impl TransportStrategy for IPCTransportImpl {
 
 	fn is_connected(&self) -> bool { self.connected.blocking_read().to_owned() }
 
-	fn transport_type(&self) -> TransportType {
-		TransportType::IPC
-	}
+	fn transport_type(&self) -> TransportType { TransportType::IPC }
 }
 
 /// IPC transport errors
 #[derive(Debug, thiserror::Error)]
 pub enum IPCTransportError {
-/// Connection failed error
-#[error("Connection failed: {0}")]
-ConnectionFailed(String),
+	/// Connection failed error
+	#[error("Connection failed: {0}")]
+	ConnectionFailed(String),
 
-/// Send failed error
-#[error("Send failed: {0}")]
-SendFailed(String),
+	/// Send failed error
+	#[error("Send failed: {0}")]
+	SendFailed(String),
 
-/// Receive failed error
-#[error("Receive failed: {0}")]
-ReceiveFailed(String),
+	/// Receive failed error
+	#[error("Receive failed: {0}")]
+	ReceiveFailed(String),
 
-/// Not connected error
-#[error("Not connected")]
-NotConnected,
+	/// Not connected error
+	#[error("Not connected")]
+	NotConnected,
 
-/// IPC not supported on this platform error
-#[error("IPC not supported on this platform")]
-NotSupported,
+	/// IPC not supported on this platform error
+	#[error("IPC not supported on this platform")]
+	NotSupported,
 
-/// Cleanup failed error
-#[error("Cleanup failed: {0}")]
-CleanupFailed(String),
+	/// Cleanup failed error
+	#[error("Cleanup failed: {0}")]
+	CleanupFailed(String),
 
-/// Socket error
-#[error("Socket error: {0}")]
-SocketError(String),
+	/// Socket error
+	#[error("Socket error: {0}")]
+	SocketError(String),
 
-/// Timeout error
-#[error("Timeout")]
-Timeout,
+	/// Timeout error
+	#[error("Timeout")]
+	Timeout,
 }
 
 #[cfg(test)]

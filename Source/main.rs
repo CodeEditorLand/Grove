@@ -8,10 +8,13 @@ use std::path::PathBuf;
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 use tracing::{error, info};
-use grove::Transport::{GrpcTransport, IPCTransportImpl, WASMTransportImpl};
-use grove::Transport::Transport as TransportEnum;
-use grove::Binary::Main::Entry::{Entry, ValidationResult, BuildResult, ExtensionInfo};
-use grove::Binary::Build::{RuntimeBuild, ServiceRegister};
+use grove::{
+	Binary::{
+		Build::{RuntimeBuild, ServiceRegister},
+		Main::Entry::{BuildResult, Entry, ExtensionInfo, ValidationResult},
+	},
+	Transport::{GrpcTransport, IPCTransportImpl, Transport as TransportEnum, WASMTransportImpl},
+};
 
 /// Grove - Rust/WASM Extension Host for VS Code
 ///
@@ -187,11 +190,7 @@ async fn run_standalone(
 	let transport = match transport_type.as_str() {
 		"grpc" => TransportEnum::gRPC(GrpcTransport::new(&grpc_address)?),
 		"ipc" => TransportEnum::IPC(IPCTransportImpl::new()?),
-		"wasm" => TransportEnum::WASM(WASMTransportImpl::new(
-			wasi,
-			memory_limit_mb,
-			max_execution_time_ms,
-		)?),
+		"wasm" => TransportEnum::WASM(WASMTransportImpl::new(wasi, memory_limit_mb, max_execution_time_ms)?),
 		_ => TransportEnum::default(),
 	};
 
@@ -205,7 +204,7 @@ async fn run_standalone(
 			error!("Failed to load extension: {}", e);
 			e
 		})?;
-		
+
 		info!("Extension loaded successfully with ID: {}", ext_id);
 		host.activate(&ext_id).await?;
 		info!("Extension activated");

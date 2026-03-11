@@ -21,9 +21,9 @@ impl RuntimeBuild {
 	/// Build a Groove extension host with the specified configuration
 	#[instrument(skip(transport))]
 	pub async fn build_host(
-	    transport:Transport,
-	    _wasm_runtime:Arc<WASMRuntime>,
-	host_config:HostConfig,
+		transport:Transport,
+		_wasm_runtime:Arc<WASMRuntime>,
+		host_config:HostConfig,
 	) -> Result<ExtensionHostImpl> {
 		info!("Building Grove extension host");
 

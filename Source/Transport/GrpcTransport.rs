@@ -10,10 +10,7 @@ use tokio::sync::RwLock;
 use tonic::transport::{Channel, Endpoint};
 use tracing::{debug, info, instrument};
 
-use crate::Transport::TransportStrategy;
-use crate::Transport::TransportType;
-use crate::Transport::TransportStats;
-use crate::Transport::TransportConfig;
+use crate::Transport::{TransportConfig, TransportStats, TransportStrategy, TransportType};
 
 /// gRPC transport for communication with Mountain and other gRPC services
 #[derive(Clone, Debug)]
@@ -174,37 +171,35 @@ impl TransportStrategy for GrpcTransport {
 
 	fn is_connected(&self) -> bool { self.connected.blocking_read().to_owned() }
 
-	fn transport_type(&self) -> TransportType {
-		TransportType::gRPC
-	}
+	fn transport_type(&self) -> TransportType { TransportType::gRPC }
 }
 
 /// gRPC transport errors
 #[derive(Debug, thiserror::Error)]
 pub enum GrpcTransportError {
-/// Connection failed error
-#[error("Connection failed: {0}")]
-ConnectionFailed(String),
+	/// Connection failed error
+	#[error("Connection failed: {0}")]
+	ConnectionFailed(String),
 
-/// Send failed error
-#[error("Send failed: {0}")]
-SendFailed(String),
+	/// Send failed error
+	#[error("Send failed: {0}")]
+	SendFailed(String),
 
-/// Receive failed error
-#[error("Receive failed: {0}")]
-ReceiveFailed(String),
+	/// Receive failed error
+	#[error("Receive failed: {0}")]
+	ReceiveFailed(String),
 
-/// Not connected error
-#[error("Not connected")]
-NotConnected,
+	/// Not connected error
+	#[error("Not connected")]
+	NotConnected,
 
-/// Timeout error
-#[error("Timeout")]
-Timeout,
+	/// Timeout error
+	#[error("Timeout")]
+	Timeout,
 
-/// gRPC error
-#[error("gRPC error: {0}")]
-GrpcError(String),
+	/// gRPC error
+	#[error("gRPC error: {0}")]
+	GrpcError(String),
 }
 
 impl From<tonic::transport::Error> for GrpcTransportError {

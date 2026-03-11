@@ -118,7 +118,6 @@ pub enum GroveError {
 	Other(String),
 }
 
-
 /// Identifiable trait for objects with unique IDs
 pub trait Identifiable {
 	/// Get the unique identifier

@@ -9,9 +9,9 @@ use anyhow::{Context, Result};
 use tracing::{error, info, instrument};
 
 use crate::{
-    Binary::Main::CliArgs,
-    Host::{HostConfig, ExtensionHost::ExtensionHostImpl},
-    Transport::Transport,
+	Binary::Main::CliArgs,
+	Host::{ExtensionHost::ExtensionHostImpl, HostConfig},
+	Transport::Transport,
 };
 
 /// Grove entry point manager
@@ -69,10 +69,10 @@ impl Entry {
 	/// Run as a service
 	#[instrument(skip(_args))]
 	async fn run_service(_args:CliArgs) -> Result<()> {
-	    info!("Starting Grove as service");
-	
-	    // Create transport for Mountain communication
-	    let _transport = Transport::default();
+		info!("Starting Grove as service");
+
+		// Create transport for Mountain communication
+		let _transport = Transport::default();
 
 		// Register with Mountain
 		#[cfg(feature = "gRPC")]
@@ -81,7 +81,9 @@ impl Entry {
 				"grove-host",
 				&args.mountain_address,
 				true, // auto reconnect
-			).await {
+			)
+			.await
+			{
 				Ok(_) => info!("Registered with Mountain"),
 				Err(e) => warn!("Failed to register with Mountain: {}", e),
 			}
@@ -165,22 +167,22 @@ impl Entry {
 
 	/// Build a WASM module
 	pub async fn build_wasm_module(
-	    source:PathBuf,
-	    output:PathBuf,
-	    _opt_level:String,
-	    _target:Option<String>,
+		source:PathBuf,
+		output:PathBuf,
+		_opt_level:String,
+		_target:Option<String>,
 	) -> Result<BuildResult> {
-	    info!("Building WASM module from: {:?}", source);
-	    info!("Output: {:?}", output);
-	
-	    // For now, return a placeholder result
-	    // In production, this would invoke rustc/cargo with wasm32-wasi target
-	    Ok(BuildResult { success:true, output_path:output, compile_time_ms:0 })
+		info!("Building WASM module from: {:?}", source);
+		info!("Output: {:?}", output);
+
+		// For now, return a placeholder result
+		// In production, this would invoke rustc/cargo with wasm32-wasi target
+		Ok(BuildResult { success:true, output_path:output, compile_time_ms:0 })
 	}
-	
+
 	/// List loaded extensions
 	pub async fn list_extensions(_detailed:bool) -> Result<Vec<ExtensionInfo>> {
-	    info!("Listing extensions");
+		info!("Listing extensions");
 
 		// For now, return empty list
 		// In production, this would query the extension manager
@@ -193,8 +195,7 @@ impl Entry {
 			"grpc" => {
 				use crate::Transport::gRPCTransport::GrpcTransport;
 				Ok(Transport::gRPC(
-					GrpcTransport::new(&args.grpc_address)
-						.context("Failed to create gRPC transport")?,
+					GrpcTransport::new(&args.grpc_address).context("Failed to create gRPC transport")?,
 				))
 			},
 			"ipc" => {

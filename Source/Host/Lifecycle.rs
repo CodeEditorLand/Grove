@@ -62,27 +62,27 @@ type LifecycleEventHandler = fn(&str, LifecycleEvent) -> Result<()>;
 
 /// Lifecycle manager for extension lifecycle
 pub struct LifecycleManager {
-    /// Event handlers
-    handlers:Arc<RwLock<HashMap<String, LifecycleHandlerInfo>>>,
-    /// Extension states
-    states:Arc<RwLock<HashMap<String, LifecycleState>>>,
-    /// Event history
-    event_history:Arc<RwLock<Vec<LifecycleEventRecord>>>,
+	/// Event handlers
+	handlers:Arc<RwLock<HashMap<String, LifecycleHandlerInfo>>>,
+	/// Extension states
+	states:Arc<RwLock<HashMap<String, LifecycleState>>>,
+	/// Event history
+	event_history:Arc<RwLock<Vec<LifecycleEventRecord>>>,
 }
 
 /// Information about a lifecycle handler
 #[derive(Debug, Clone)]
 struct LifecycleHandlerInfo {
-    /// Extension ID
-    #[allow(dead_code)]
-    extension_id:String,
-    /// Current state
-    state:LifecycleState,
-    /// Supported events
-    #[allow(dead_code)]
-    supported_events:Vec<LifecycleEvent>,
-    /// Last state change timestamp
-    last_state_change:Option<u64>,
+	/// Extension ID
+	#[allow(dead_code)]
+	extension_id:String,
+	/// Current state
+	state:LifecycleState,
+	/// Supported events
+	#[allow(dead_code)]
+	supported_events:Vec<LifecycleEvent>,
+	/// Last state change timestamp
+	last_state_change:Option<u64>,
 }
 
 /// Record of a lifecycle event
@@ -191,7 +191,8 @@ impl LifecycleManager {
 		let new_state = self.determine_next_state(current_state, event)?;
 
 		// Perform state transition (in real implementation, this would call extension)
-		self.perform_state_transition(extension_id, event_clone.clone(), new_state).await?;
+		self.perform_state_transition(extension_id, event_clone.clone(), new_state)
+			.await?;
 
 		let elapsed_ms = start.elapsed().as_millis() as u64;
 

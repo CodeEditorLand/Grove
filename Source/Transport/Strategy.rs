@@ -217,9 +217,11 @@ impl Transport {
 impl Default for Transport {
 	fn default() -> Self {
 		// Default to gRPC with localhost address
-		Self::gRPC(GrpcTransport::new("127.0.0.1:50050").unwrap_or_else(|_| {
-			GrpcTransport::new("0.0.0.0:50050").expect("Failed to create default gRPC transport")
-		}))
+		Self::gRPC(
+			GrpcTransport::new("127.0.0.1:50050").unwrap_or_else(|_| {
+				GrpcTransport::new("0.0.0.0:50050").expect("Failed to create default gRPC transport")
+			}),
+		)
 	}
 }
 

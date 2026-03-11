@@ -51,25 +51,25 @@ use crate::vine::generated::vine::{
 /// Connection state for Spine connection
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum ConnectionState {
-/// Disconnected from Spine
-Disconnected,
-/// Currently connecting to Spine
-Connecting,
-/// Connected to Spine
-Connected,
-/// Error state
-Error,
+	/// Disconnected from Spine
+	Disconnected,
+	/// Currently connecting to Spine
+	Connecting,
+	/// Connected to Spine
+	Connected,
+	/// Error state
+	Error,
 }
 
 /// Heartbeat configuration for connection monitoring
 #[derive(Clone, Debug)]
 pub struct HeartbeatConfig {
-/// Interval between heartbeats in seconds
-pub interval_seconds:u64,
-/// Maximum number of missed heartbeats before considering connection lost
-pub max_missed:u32,
-/// Whether heartbeat is enabled
-pub enabled:bool,
+	/// Interval between heartbeats in seconds
+	pub interval_seconds:u64,
+	/// Maximum number of missed heartbeats before considering connection lost
+	pub max_missed:u32,
+	/// Whether heartbeat is enabled
+	pub enabled:bool,
 }
 
 /// Heartbeat configuration for connection monitoring
@@ -80,49 +80,49 @@ impl Default for HeartbeatConfig {
 /// Connection metrics for monitoring
 #[derive(Clone, Debug, Default)]
 pub struct ConnectionMetrics {
-/// Total number of requests sent
-pub total_requests:u64,
-/// Number of successful requests
-pub successful_requests:u64,
-/// Number of failed requests
-pub failed_requests:u64,
-/// Connection uptime in seconds
-pub uptime_seconds:u64,
-/// Number of reconnection attempts
-pub reconnections:u64,
+	/// Total number of requests sent
+	pub total_requests:u64,
+	/// Number of successful requests
+	pub successful_requests:u64,
+	/// Number of failed requests
+	pub failed_requests:u64,
+	/// Connection uptime in seconds
+	pub uptime_seconds:u64,
+	/// Number of reconnection attempts
+	pub reconnections:u64,
 }
 
 /// Spine connection implementation
 pub struct SpineConnectionImpl {
-/// Protocol configuration
-config:Arc<RwLock<ProtocolConfig>>,
-/// Current connection state
-state:Arc<RwLock<ConnectionState>>,
+	/// Protocol configuration
+	config:Arc<RwLock<ProtocolConfig>>,
+	/// Current connection state
+	state:Arc<RwLock<ConnectionState>>,
 
-#[cfg(feature = "grove_echo")]
-/// Echo client for testing
-echo_client:Option<EchoActionServiceClient<tonic::transport::Channel>>,
+	#[cfg(feature = "grove_echo")]
+	/// Echo client for testing
+	echo_client:Option<EchoActionServiceClient<tonic::transport::Channel>>,
 
-/// Heartbeat configuration
-heartbeat_config:HeartbeatConfig,
-/// Timestamp of the last heartbeat
-last_heartbeat:Arc<RwLock<chrono::DateTime<chrono::Utc>>>,
-/// Connection metrics
-metrics:Arc<RwLock<ConnectionMetrics>>,
+	/// Heartbeat configuration
+	heartbeat_config:HeartbeatConfig,
+	/// Timestamp of the last heartbeat
+	last_heartbeat:Arc<RwLock<chrono::DateTime<chrono::Utc>>>,
+	/// Connection metrics
+	metrics:Arc<RwLock<ConnectionMetrics>>,
 }
 
 impl SpineConnectionImpl {
-/// Create a new Spine connection
-///
-/// # Arguments
-///
-/// * `config` - Protocol configuration
-///
-/// # Returns
-///
-/// A new SpineConnectionImpl instance
-#[instrument(skip(config))]
-pub fn new(config:ProtocolConfig) -> Self {
+	/// Create a new Spine connection
+	///
+	/// # Arguments
+	///
+	/// * `config` - Protocol configuration
+	///
+	/// # Returns
+	///
+	/// A new SpineConnectionImpl instance
+	#[instrument(skip(config))]
+	pub fn new(config:ProtocolConfig) -> Self {
 		Self {
 			config:Arc::new(RwLock::new(config)),
 			state:Arc::new(RwLock::new(ConnectionState::Disconnected)),
@@ -191,7 +191,7 @@ pub fn new(config:ProtocolConfig) -> Self {
 
 	/// Get the connection metrics
 	pub async fn GetMetrics(&self) -> ConnectionMetrics { self.metrics.read().await.clone() }
-	
+
 	/// Set the heartbeat configuration
 	pub fn SetHeartbeatConfig(&mut self, config:HeartbeatConfig) { self.heartbeat_config = config; }
 }

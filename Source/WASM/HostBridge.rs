@@ -11,40 +11,39 @@ use bytes::Bytes;
 use serde::{Serialize, de::DeserializeOwned};
 use tokio::sync::{RwLock, mpsc, oneshot};
 use tracing::{debug, instrument, warn};
-
 #[allow(unused_imports)]
 use wasmtime::{Caller, Extern, Func, Linker, Store};
 
 /// Host bridge error types
 #[derive(Debug, thiserror::Error)]
 pub enum BridgeError {
-/// Function not found error
-#[error("Function not found: {0}")]
-FunctionNotFound(String),
+	/// Function not found error
+	#[error("Function not found: {0}")]
+	FunctionNotFound(String),
 
-/// Invalid function signature error
-#[error("Invalid function signature: {0}")]
-InvalidSignature(String),
+	/// Invalid function signature error
+	#[error("Invalid function signature: {0}")]
+	InvalidSignature(String),
 
-/// Serialization failed error
-#[error("Serialization failed: {0}")]
-SerializationError(String),
+	/// Serialization failed error
+	#[error("Serialization failed: {0}")]
+	SerializationError(String),
 
-/// Deserialization failed error
-#[error("Deserialization failed: {0}")]
-DeserializationError(String),
+	/// Deserialization failed error
+	#[error("Deserialization failed: {0}")]
+	DeserializationError(String),
 
-/// Host function error
-#[error("Host function error: {0}")]
-HostFunctionError(String),
+	/// Host function error
+	#[error("Host function error: {0}")]
+	HostFunctionError(String),
 
-/// Communication timeout error
-#[error("Communication timeout")]
-Timeout,
+	/// Communication timeout error
+	#[error("Communication timeout")]
+	Timeout,
 
-/// Bridge closed error
-#[error("Bridge closed")]
-BridgeClosed,
+	/// Bridge closed error
+	#[error("Bridge closed")]
+	BridgeClosed,
 }
 
 /// Type-safe result for operations
@@ -66,33 +65,33 @@ pub struct FunctionSignature {
 /// Parameter types for WASM functions
 #[derive(Debug, Clone, Copy, serde::Serialize, serde::Deserialize, PartialEq, Eq)]
 pub enum ParamType {
-/// 32-bit signed integer parameter
-I32,
-/// 64-bit signed integer parameter
-I64,
-/// 32-bit floating point parameter
-F32,
-/// 64-bit floating point parameter
-F64,
-/// Pointer to memory
-Ptr,
-/// Length parameter following a pointer
-Len,
+	/// 32-bit signed integer parameter
+	I32,
+	/// 64-bit signed integer parameter
+	I64,
+	/// 32-bit floating point parameter
+	F32,
+	/// 64-bit floating point parameter
+	F64,
+	/// Pointer to memory
+	Ptr,
+	/// Length parameter following a pointer
+	Len,
 }
 
 /// Return types for WASM functions
 #[derive(Debug, Clone, Copy, serde::Serialize, serde::Deserialize, PartialEq, Eq)]
 pub enum ReturnType {
-/// 32-bit signed integer return type
-I32,
-/// 64-bit signed integer return type
-I64,
-/// 32-bit floating point return type
-F32,
-/// 64-bit floating point return type
-F64,
-/// No return value (void)
-Void,
+	/// 32-bit signed integer return type
+	I32,
+	/// 64-bit signed integer return type
+	I64,
+	/// 32-bit floating point return type
+	F32,
+	/// 64-bit floating point return type
+	F64,
+	/// No return value (void)
+	Void,
 }
 
 /// Message sent from WASM to host
@@ -124,17 +123,15 @@ pub struct HostResponse {
 /// Callback for async function responses
 #[derive(Clone)]
 pub struct AsyncCallback {
-/// Sender for transmitting the response
-sender:Arc<tokio::sync::Mutex<Option<tokio::sync::oneshot::Sender<HostResponse>>>>,
-/// Message ID for correlation
-message_id:String,
+	/// Sender for transmitting the response
+	sender:Arc<tokio::sync::Mutex<Option<tokio::sync::oneshot::Sender<HostResponse>>>>,
+	/// Message ID for correlation
+	message_id:String,
 }
 
 impl std::fmt::Debug for AsyncCallback {
-	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		f.debug_struct("AsyncCallback")
-			.field("message_id", &self.message_id)
-			.finish()
+	fn fmt(&self, f:&mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		f.debug_struct("AsyncCallback").field("message_id", &self.message_id).finish()
 	}
 }
 
@@ -200,8 +197,8 @@ pub struct HostBridgeImpl {
 impl HostBridgeImpl {
 	/// Create a new host bridge
 	pub fn new() -> Self {
-	    let (_wasm_to_host_tx, wasm_to_host_rx) = mpsc::unbounded_channel();
-	    let (host_to_wasm_tx, host_to_wasm_rx) = mpsc::unbounded_channel();
+		let (_wasm_to_host_tx, wasm_to_host_rx) = mpsc::unbounded_channel();
+		let (host_to_wasm_tx, host_to_wasm_rx) = mpsc::unbounded_channel();
 
 		// In a real implementation, we'd need to wire these up properly
 		// For now, we drop the receiver to avoid unused warnings

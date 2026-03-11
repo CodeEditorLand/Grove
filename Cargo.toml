@@ -65,23 +65,6 @@ tonic-build = "0.12"
 anyhow = { workspace = true }
 vergen = { version = "8", features = ["build", "cargo", "rustc"] }
 
-[profile.release]
-opt-level = 3
-lto = true
-codegen-units = 1
-strip = true
-panic = "abort"
-
-[profile.dev]
-opt-level = 0
-debug = true
-
-[profile.wasm-release]
-inherits = "release"
-opt-level = "s"
-lto = true
-strip = "debuginfo"
-
 [features]
 default = ["grpc", "wasm"]
 grpc = ["tonic", "prost"]

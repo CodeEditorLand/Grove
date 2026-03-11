@@ -263,10 +263,10 @@ mod tests {
 	#[tokio::test]
 	async fn test_configuration_service_basic() {
 		let service = ConfigurationServiceImpl::new(None);
-		let _: anyhow::Result<()> = service.start().await;
+		let _:anyhow::Result<()> = service.start().await;
 
 		// Test setting and getting
-		let _: anyhow::Result<()> = service
+		let _:anyhow::Result<()> = service
 			.set(
 				"test.key".to_string(),
 				serde_json::json!("test-value"),
@@ -277,7 +277,7 @@ mod tests {
 		let value = service.get("test.key").await;
 		assert_eq!(value, Some(serde_json::json!("test-value")));
 
-		let _: anyhow::Result<()> = service.stop().await;
+		let _:anyhow::Result<()> = service.stop().await;
 	}
 
 	#[tokio::test]
@@ -293,9 +293,13 @@ mod tests {
 	async fn test_get_all_in_scope() {
 		let service = ConfigurationServiceImpl::new(None);
 
-		let _: anyhow::Result<()> = service.set("key1".to_string(), serde_json::json!("value1"), ConfigurationScope::Global).await;
+		let _:anyhow::Result<()> = service
+			.set("key1".to_string(), serde_json::json!("value1"), ConfigurationScope::Global)
+			.await;
 
-		let _: anyhow::Result<()> = service.set("key2".to_string(), serde_json::json!("value2"), ConfigurationScope::Workspace).await;
+		let _:anyhow::Result<()> = service
+			.set("key2".to_string(), serde_json::json!("value2"), ConfigurationScope::Workspace)
+			.await;
 
 		let global_values = service.get_all_in_scope(ConfigurationScope::Global).await;
 		assert_eq!(global_values.len(), 1);

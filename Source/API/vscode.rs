@@ -13,32 +13,32 @@ use crate::API::types::*;
 /// VS Code API facade - the main entry point for extensions
 #[derive(Debug, Clone)]
 pub struct VSCodeAPI {
-    /// Commands namespace
-    pub commands:Arc<CommandNamespace>,
-    /// Window namespace
-    pub window:Arc<Window>,
-    /// Workspace namespace
-    pub workspace:Arc<Workspace>,
-    /// Languages namespace
-    pub languages:Arc<LanguageNamespace>,
-    /// Extensions namespace
-    pub extensions:Arc<ExtensionNamespace>,
-    /// Environment namespace
-    pub env:Arc<Env>,
+	/// Commands namespace
+	pub commands:Arc<CommandNamespace>,
+	/// Window namespace
+	pub window:Arc<Window>,
+	/// Workspace namespace
+	pub workspace:Arc<Workspace>,
+	/// Languages namespace
+	pub languages:Arc<LanguageNamespace>,
+	/// Extensions namespace
+	pub extensions:Arc<ExtensionNamespace>,
+	/// Environment namespace
+	pub env:Arc<Env>,
 }
 
 impl VSCodeAPI {
-    /// Create a new VS Code API facade
-    pub fn new() -> Self {
-        Self {
-            commands:Arc::new(CommandNamespace::new()),
-            window:Arc::new(Window::new()),
-            workspace:Arc::new(Workspace::new()),
-            languages:Arc::new(LanguageNamespace::new()),
-            extensions:Arc::new(ExtensionNamespace::new()),
-            env:Arc::new(Env::new()),
-        }
-    }
+	/// Create a new VS Code API facade
+	pub fn new() -> Self {
+		Self {
+			commands:Arc::new(CommandNamespace::new()),
+			window:Arc::new(Window::new()),
+			workspace:Arc::new(Workspace::new()),
+			languages:Arc::new(LanguageNamespace::new()),
+			extensions:Arc::new(ExtensionNamespace::new()),
+			env:Arc::new(Env::new()),
+		}
+	}
 }
 
 impl Default for VSCodeAPI {
@@ -50,19 +50,19 @@ impl Default for VSCodeAPI {
 pub struct CommandNamespace;
 
 impl CommandNamespace {
-    /// Create a new CommandNamespace instance
-    pub fn new() -> Self { Self }
+	/// Create a new CommandNamespace instance
+	pub fn new() -> Self { Self }
 
 	/// Register a command
 	pub fn register_command(&self, command_id:String, _callback:CommandCallback) -> Result<Command, String> {
-	    Ok(Command { id:command_id.clone() })
+		Ok(Command { id:command_id.clone() })
 	}
 
 	/// Execute a command
 	pub async fn execute_command<T:serde::de::DeserializeOwned>(
-	    &self,
-	    command_id:String,
-	    _args:Vec<serde_json::Value>,
+		&self,
+		command_id:String,
+		_args:Vec<serde_json::Value>,
 	) -> Result<T, String> {
 		// Placeholder implementation
 		Err(format!("Command not implemented: {}", command_id))
@@ -75,8 +75,8 @@ pub type CommandCallback = Box<dyn Fn(Vec<serde_json::Value>) -> Result<serde_js
 /// Command representation
 #[derive(Debug, Clone)]
 pub struct Command {
-/// The unique identifier of the command
-pub id:String,
+	/// The unique identifier of the command
+	pub id:String,
 }
 
 /// Window namespace
@@ -84,25 +84,25 @@ pub id:String,
 pub struct Window;
 
 impl Window {
-/// Create a new Window instance
-pub fn new() -> Self { Self }
+	/// Create a new Window instance
+	pub fn new() -> Self { Self }
 
 	/// Show an information message
 	pub async fn show_information_message(&self, _message:String) -> Result<String, String> {
-	    // Placeholder implementation
-	    Ok("OK".to_string())
+		// Placeholder implementation
+		Ok("OK".to_string())
 	}
 
 	/// Show a warning message
 	pub async fn show_warning_message(&self, _message:String) -> Result<String, String> {
-	    // Placeholder implementation
-	    Ok("OK".to_string())
+		// Placeholder implementation
+		Ok("OK".to_string())
 	}
 
 	/// Show an error message
 	pub async fn show_error_message(&self, _message:String) -> Result<String, String> {
-	    // Placeholder implementation
-	    Ok("OK".to_string())
+		// Placeholder implementation
+		Ok("OK".to_string())
 	}
 
 	/// Create and show a new output channel
@@ -112,17 +112,17 @@ pub fn new() -> Self { Self }
 /// Output channel for logging
 #[derive(Debug, Clone)]
 pub struct OutputChannel {
-/// The name of the output channel
-name:String,
+	/// The name of the output channel
+	name:String,
 }
 
 impl OutputChannel {
-/// Create a new output channel
-///
-/// # Arguments
-///
-/// * `name` - The name of the output channel
-pub fn new(name:String) -> Self { Self { name } }
+	/// Create a new output channel
+	///
+	/// # Arguments
+	///
+	/// * `name` - The name of the output channel
+	pub fn new(name:String) -> Self { Self { name } }
 
 	/// Append a line to the channel
 	pub fn append_line(&self, line:&str) {
@@ -155,8 +155,8 @@ pub fn new(name:String) -> Self { Self { name } }
 pub struct Workspace;
 
 impl Workspace {
-/// Create a new Workspace instance
-pub fn new() -> Self { Self }
+	/// Create a new Workspace instance
+	pub fn new() -> Self { Self }
 
 	/// Get workspace folders
 	pub fn workspace_folders(&self) -> Vec<WorkspaceFolder> {
@@ -186,33 +186,33 @@ pub struct WorkspaceFolder {
 /// Workspace configuration
 #[derive(Debug, Clone)]
 pub struct WorkspaceConfiguration {
-    /// The configuration section name
-    #[allow(dead_code)]
-    section:Option<String>,
+	/// The configuration section name
+	#[allow(dead_code)]
+	section:Option<String>,
 }
 
 impl WorkspaceConfiguration {
-    /// Create a new workspace configuration
-    ///
-    /// # Arguments
-    ///
-    /// * `section` - Optional section name to retrieve
-    pub fn new(section:Option<String>) -> Self { Self { section } }
+	/// Create a new workspace configuration
+	///
+	/// # Arguments
+	///
+	/// * `section` - Optional section name to retrieve
+	pub fn new(section:Option<String>) -> Self { Self { section } }
 
-    /// Get a configuration value
-    pub fn get<T:serde::de::DeserializeOwned>(&self, _key:String) -> Result<T, String> {
-        // Placeholder implementation
-        Err("Configuration not implemented".to_string())
-    }
+	/// Get a configuration value
+	pub fn get<T:serde::de::DeserializeOwned>(&self, _key:String) -> Result<T, String> {
+		// Placeholder implementation
+		Err("Configuration not implemented".to_string())
+	}
 
-    /// Check if a key exists in the configuration
-    pub fn has(&self, _key:String) -> bool { false }
+	/// Check if a key exists in the configuration
+	pub fn has(&self, _key:String) -> bool { false }
 
-    /// Update a configuration value
-    pub async fn update(&self, _key:String, _value:serde_json::Value) -> Result<(), String> {
-        // Placeholder implementation
-        Err("Update configuration not implemented".to_string())
-    }
+	/// Update a configuration value
+	pub async fn update(&self, _key:String, _value:serde_json::Value) -> Result<(), String> {
+		// Placeholder implementation
+		Err("Update configuration not implemented".to_string())
+	}
 }
 
 /// Languages namespace
@@ -220,8 +220,8 @@ impl WorkspaceConfiguration {
 pub struct LanguageNamespace;
 
 impl LanguageNamespace {
-    /// Create a new LanguageNamespace instance
-    pub fn new() -> Self { Self }
+	/// Create a new LanguageNamespace instance
+	pub fn new() -> Self { Self }
 
 	/// Register completion item provider
 	pub async fn register_completion_item_provider<T:CompletionItemProvider>(
@@ -257,25 +257,25 @@ pub type DocumentSelector = Vec<DocumentFilter>;
 
 /// Completion item provider
 pub trait CompletionItemProvider: Send + Sync {
-/// Provide completion items at the given position
-///
-/// # Arguments
-///
-/// * `document` - The text document identifier
-/// * `position` - The position in the document
-/// * `context` - The completion context
-/// * `token` - Optional cancellation token
-///
-/// # Returns
-///
-/// A vector of completion items
-fn provide_completion_items(
-&self,
-document:TextDocumentIdentifier,
-position:Position,
-context:CompletionContext,
-token:Option<String>,
-) -> Vec<CompletionItem>;
+	/// Provide completion items at the given position
+	///
+	/// # Arguments
+	///
+	/// * `document` - The text document identifier
+	/// * `position` - The position in the document
+	/// * `context` - The completion context
+	/// * `token` - Optional cancellation token
+	///
+	/// # Returns
+	///
+	/// A vector of completion items
+	fn provide_completion_items(
+		&self,
+		document:TextDocumentIdentifier,
+		position:Position,
+		context:CompletionContext,
+		token:Option<String>,
+	) -> Vec<CompletionItem>;
 }
 
 /// Completion context
@@ -309,28 +309,28 @@ pub enum CompletionTriggerKind {
 /// Diagnostic collection
 #[derive(Debug, Clone)]
 pub struct DiagnosticCollection {
-    /// The name of the diagnostic collection
-    #[allow(dead_code)]
-    name:Option<String>,
+	/// The name of the diagnostic collection
+	#[allow(dead_code)]
+	name:Option<String>,
 }
 
 impl DiagnosticCollection {
-    /// Create a new diagnostic collection
-    ///
-    /// # Arguments
-    ///
-    /// * `name` - Optional name for the collection
-    pub fn new(name:Option<String>) -> Self { Self { name } }
+	/// Create a new diagnostic collection
+	///
+	/// # Arguments
+	///
+	/// * `name` - Optional name for the collection
+	pub fn new(name:Option<String>) -> Self { Self { name } }
 
-    /// Set diagnostics for a resource
-    pub fn set(&self, _uri:String, _diagnostics:Vec<Diagnostic>) {
-        // Placeholder implementation
-    }
+	/// Set diagnostics for a resource
+	pub fn set(&self, _uri:String, _diagnostics:Vec<Diagnostic>) {
+		// Placeholder implementation
+	}
 
-    /// Delete diagnostics for a resource
-    pub fn delete(&self, _uri:String) {
-        // Placeholder implementation
-    }
+	/// Delete diagnostics for a resource
+	pub fn delete(&self, _uri:String) {
+		// Placeholder implementation
+	}
 
 	/// Clear all diagnostics
 	pub fn clear(&self) {
@@ -348,13 +348,13 @@ impl DiagnosticCollection {
 pub struct Disposable;
 
 impl Disposable {
-/// Create a new disposable item
-pub fn new() -> Self { Self }
+	/// Create a new disposable item
+	pub fn new() -> Self { Self }
 
-/// Dispose the resource
-pub fn dispose(&self) {
-// Placeholder implementation
-}
+	/// Dispose the resource
+	pub fn dispose(&self) {
+		// Placeholder implementation
+	}
 }
 
 /// Extensions namespace
@@ -362,8 +362,8 @@ pub fn dispose(&self) {
 pub struct ExtensionNamespace;
 
 impl ExtensionNamespace {
-    /// Create a new ExtensionNamespace instance
-    pub fn new() -> Self { Self }
+	/// Create a new ExtensionNamespace instance
+	pub fn new() -> Self { Self }
 
 	/// Get all extensions
 	pub fn all(&self) -> Vec<Extension> { Vec::new() }
@@ -395,8 +395,8 @@ pub struct Extension {
 pub struct Env;
 
 impl Env {
-/// Create a new Env instance
-pub fn new() -> Self { Self }
+	/// Create a new Env instance
+	pub fn new() -> Self { Self }
 
 	/// Get environment variable
 	pub fn get_env_var(&self, name:String) -> Option<String> { std::env::var(name).ok() }

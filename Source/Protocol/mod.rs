@@ -6,7 +6,8 @@
 pub mod SpineConnection;
 
 // Re-exports for convenience - use module prefix to avoid E0255 conflicts
-// Note: SpineConnection must be accessed via SpineConnection::SpineConnectionImpl
+// Note: SpineConnection must be accessed via
+// SpineConnection::SpineConnectionImpl
 
 /// Protocol version
 pub const SPINE_PROTOCOL_VERSION:&str = "1.0.0";
@@ -132,29 +133,29 @@ impl MessageType {
 /// Protocol error types
 #[derive(Debug, thiserror::Error)]
 pub enum ProtocolError {
-/// Connection error
-#[error("Connection error: {0}")]
-ConnectionError(String),
+	/// Connection error
+	#[error("Connection error: {0}")]
+	ConnectionError(String),
 
-/// Serialization error
-#[error("Serialization error: {0}")]
-SerializationError(String),
+	/// Serialization error
+	#[error("Serialization error: {0}")]
+	SerializationError(String),
 
-/// Deserialization error
-#[error("Deserialization error: {0}")]
-DeserializationError(String),
+	/// Deserialization error
+	#[error("Deserialization error: {0}")]
+	DeserializationError(String),
 
-/// Invalid message error
-#[error("Invalid message: {0}")]
-InvalidMessage(String),
+	/// Invalid message error
+	#[error("Invalid message: {0}")]
+	InvalidMessage(String),
 
-/// Timeout error
-#[error("Timeout error")]
-Timeout,
+	/// Timeout error
+	#[error("Timeout error")]
+	Timeout,
 
-/// Protocol error
-#[error("Protocol error: {0}")]
-ProtocolError(String),
+	/// Protocol error
+	#[error("Protocol error: {0}")]
+	ProtocolError(String),
 }
 
 #[cfg(test)]

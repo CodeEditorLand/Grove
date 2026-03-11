@@ -15,29 +15,29 @@ use crate::WASM::HostBridge::{FunctionSignature, HostBridgeImpl as HostBridge, H
 
 /// Host function registry for WASM exports
 pub struct HostFunctionRegistry {
-    /// Registered host functions
-    functions:Arc<RwLock<HashMap<String, RegisteredHostFunction>>>,
-    /// Associated host bridge
-    #[allow(dead_code)]
-    bridge:Arc<HostBridge>,
+	/// Registered host functions
+	functions:Arc<RwLock<HashMap<String, RegisteredHostFunction>>>,
+	/// Associated host bridge
+	#[allow(dead_code)]
+	bridge:Arc<HostBridge>,
 }
 
 /// Registered host function with metadata
 #[derive(Debug, Clone)]
 struct RegisteredHostFunction {
-    /// Function name
-    #[allow(dead_code)]
-    name:String,
-    /// Function signature
-    #[allow(dead_code)]
-    signature:FunctionSignature,
-    /// Synchronous callback
-    callback:Option<HostFunctionCallback>,
-    /// Registration timestamp
-    #[allow(dead_code)]
-    registered_at:u64,
-    /// Call statistics
-    stats:FunctionStats,
+	/// Function name
+	#[allow(dead_code)]
+	name:String,
+	/// Function signature
+	#[allow(dead_code)]
+	signature:FunctionSignature,
+	/// Synchronous callback
+	callback:Option<HostFunctionCallback>,
+	/// Registration timestamp
+	#[allow(dead_code)]
+	registered_at:u64,
+	/// Call statistics
+	stats:FunctionStats,
 }
 
 /// Function statistics
@@ -195,14 +195,14 @@ impl FunctionExportImpl {
 		} else {
 			name.to_string()
 		};
-		
+
 		let func_name_for_debug = func_name.clone();
 		let func_name_inner = func_name.clone();
 
 		// Create a wrapper function that handles stats and error handling
 		let _wrapped_callback =
-		    move |_caller:Caller<'_, T>, args:&[wasmtime::Val]| -> Result<Vec<wasmtime::Val>, wasmtime::Trap> {
-		    let _start = std::time::Instant::now();
+			move |_caller:Caller<'_, T>, args:&[wasmtime::Val]| -> Result<Vec<wasmtime::Val>, wasmtime::Trap> {
+				let _start = std::time::Instant::now();
 
 				// Convert args to bytes
 				let args_bytes:Result<Vec<bytes::Bytes>, _> = args
@@ -245,11 +245,10 @@ impl FunctionExportImpl {
 				match result {
 					Ok(response_bytes) => {
 						// Deserialize response
-						let result_val:serde_json::Value = serde_json::from_slice(&response_bytes)
-							.map_err(|_| {
-								warn!("Error deserializing response for function '{}'", func_name_inner);
-								wasmtime::Trap::StackOverflow
-							})?;
+						let result_val:serde_json::Value = serde_json::from_slice(&response_bytes).map_err(|_| {
+							warn!("Error deserializing response for function '{}'", func_name_inner);
+							wasmtime::Trap::StackOverflow
+						})?;
 
 						let ret_val = match result_val {
 							serde_json::Value::Number(n) => {
@@ -282,80 +281,99 @@ impl FunctionExportImpl {
 		let _wasmparser_signature = wasmparser::FuncType::new([wasmparser::ValType::I32], [wasmparser::ValType::I32]);
 
 		// Register host function with the linker using simple i32->i32 signature
-		// In Wasmtime 20, func_wrap expects parameters to be inferred from the closure signature
+		// In Wasmtime 20, func_wrap expects parameters to be inferred from the closure
+		// signature
 		let func_name_for_logging = func_name.clone();
-		linker.func_wrap(
-		    "_host", // Module name for host functions
-		    &func_name,
-		    move |_caller:wasmtime::Caller<'_, T>, input_param:i32| -> i32 {
-		        // Track function call for metrics
-		        let start = std::time::Instant::now();
+		linker
+			.func_wrap(
+				"_host", // Module name for host functions
+				&func_name,
+				move |_caller:wasmtime::Caller<'_, T>, input_param:i32| -> i32 {
+					// Track function call for metrics
+					let start = std::time::Instant::now();
 
-				// Convert input parameter to bytes for callback
-				let args_bytes = match serde_json::to_vec(&input_param)
-					.map(bytes::Bytes::from) {
-					Ok(b) => b,
-					Err(e) => {
-						warn!("Serialization error for function '{}': {}", func_name_for_logging, e);
-						return -1i32;
-					}
-				};
+					// Convert input parameter to bytes for callback
+					let args_bytes = match serde_json::to_vec(&input_param).map(bytes::Bytes::from) {
+						Ok(b) => b,
+						Err(e) => {
+							warn!("Serialization error for function '{}': {}", func_name_for_logging, e);
+							return -1i32;
+						},
+					};
 
-				// Call the registered callback
-				let result = callback(vec![args_bytes]);
+					// Call the registered callback
+					let result = callback(vec![args_bytes]);
 
-				match result {
-					Ok(response_bytes) => {
-						// Deserialize response
-						let result_val:serde_json::Value = match serde_json::from_slice(&response_bytes) {
-							Ok(v) => v,
-							Err(_) => {
-								warn!("Error deserializing response for function '{}'", func_name_for_logging);
-								return -1i32;
-							}
-						};
+					match result {
+						Ok(response_bytes) => {
+							// Deserialize response
+							let result_val:serde_json::Value = match serde_json::from_slice(&response_bytes) {
+								Ok(v) => v,
+								Err(_) => {
+									warn!("Error deserializing response for function '{}'", func_name_for_logging);
+									return -1i32;
+								},
+							};
 
-						// Extract result value
-						let ret_val = match result_val {
-							serde_json::Value::Number(n) => {
-								if let Some(i) = n.as_i64() {
-									i as i32
-								} else if let Some(f) = n.as_f64() {
-									f as i32
-								} else {
-									warn!("Invalid number format for function '{}'", func_name_for_logging);
+							// Extract result value
+							let ret_val = match result_val {
+								serde_json::Value::Number(n) => {
+									if let Some(i) = n.as_i64() {
+										i as i32
+									} else if let Some(f) = n.as_f64() {
+										f as i32
+									} else {
+										warn!("Invalid number format for function '{}'", func_name_for_logging);
+										-1i32
+									}
+								},
+								serde_json::Value::Bool(b) => {
+									if b {
+										1i32
+									} else {
+										0i32
+									}
+								},
+								_ => {
+									warn!(
+										"Unsupported response type for function '{}', expected number or bool",
+										func_name_for_logging
+									);
 									-1i32
-								}
-							},
-							serde_json::Value::Bool(b) => {
-								if b { 1i32 } else { 0i32 }
-							},
-							_ => {
-								warn!("Unsupported response type for function '{}', expected number or bool", func_name_for_logging);
-								-1i32
-							},
-						};
+								},
+							};
 
-						// Log successful call
-						let duration = start.elapsed();
-						debug!("[FunctionExport] Host function '{}' executed successfully in {}µs", func_name_for_logging, duration.as_micros());
+							// Log successful call
+							let duration = start.elapsed();
+							debug!(
+								"[FunctionExport] Host function '{}' executed successfully in {}µs",
+								func_name_for_logging,
+								duration.as_micros()
+							);
 
-						ret_val
-					},
-					Err(e) => {
-						// Error handling - return error code to WASM caller
-						debug!("[FunctionExport] Host function '{}' returned error: {}", func_name_for_logging, e);
-						// Return -1 to indicate error to WASM caller
-						-1i32
-					},
-				}
-			},
-		).map_err(|e| {
-			warn!("[FunctionExport] Failed to wrap host function '{}': {}", func_name_for_debug, e);
-			e
-		})?;
+							ret_val
+						},
+						Err(e) => {
+							// Error handling - return error code to WASM caller
+							debug!(
+								"[FunctionExport] Host function '{}' returned error: {}",
+								func_name_for_logging, e
+							);
+							// Return -1 to indicate error to WASM caller
+							-1i32
+						},
+					}
+				},
+			)
+			.map_err(|e| {
+				warn!("[FunctionExport] Failed to wrap host function '{}': {}", func_name_for_debug, e);
+				e
+			})?;
 
-		debug!("[FunctionExport] Host function '{}' registered successfully", func_name_for_debug);
+		debug!(
+			"[FunctionExport] Host function '{}' registered successfully",
+			func_name_for_debug
+		);
 
 		Ok(())
 	}
@@ -426,7 +444,7 @@ mod tests {
 
 		let callback = |args:Vec<bytes::Bytes>| Ok(args.get(0).cloned().unwrap_or(bytes::Bytes::new()));
 
-		let result: anyhow::Result<()> = export.register_function("echo", signature, callback).await;
+		let result:anyhow::Result<()> = export.register_function("echo", signature, callback).await;
 		assert!(result.is_ok());
 		assert_eq!(export.get_function_names().await.len(), 1);
 	}
@@ -444,9 +462,9 @@ mod tests {
 		};
 
 		let callback = |_:Vec<bytes::Bytes>| Ok(bytes::Bytes::new());
-		let _: anyhow::Result<()> = export.register_function("test", signature, callback).await;
+		let _:anyhow::Result<()> = export.register_function("test", signature, callback).await;
 
-		let result: bool = export.unregister_function("test").await.unwrap();
+		let result:bool = export.unregister_function("test").await.unwrap();
 		assert!(result);
 		assert_eq!(export.get_function_names().await.len(), 0);
 	}

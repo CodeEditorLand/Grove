@@ -75,14 +75,17 @@ pub mod WASM;
 
 // Re-exports for convenience
 pub use API::{types, vscode};
-pub use Binary::Build::{RuntimeBuild, ServiceRegister};
-pub use Binary::Main::Entry::{Entry, ValidationResult, BuildResult, ExtensionInfo};
+pub use Binary::{
+	Build::{RuntimeBuild, ServiceRegister},
+	Main::Entry::{BuildResult, Entry, ExtensionInfo, ValidationResult},
+};
 pub use Common::{
 	error::{GroveError, GroveResult},
 	traits::ExtensionContext,
 };
 // Transport module exports are already re-exported in Transport/mod.rs
-// Use grove::Transport::{Transport, TransportType, TransportStats, GrpcTransport, IPCTransportImpl, WASMTransportImpl}
+// Use grove::Transport::{Transport, TransportType, TransportStats, GrpcTransport, IPCTransportImpl,
+// WASMTransportImpl}
 pub use WASM::Runtime;
 // Note: ExtensionHost, ExtensionManager must be accessed via module prefix
 
@@ -92,11 +95,11 @@ const VERSION:&str = env!("CARGO_PKG_VERSION");
 /// Grove library information
 #[derive(Debug, Clone)]
 pub struct GroveInfo {
-    /// Version string
-    pub version:&'static str,
-    /// Build timestamp
-    #[allow(dead_code)]
-    build_timestamp:String,
+	/// Version string
+	pub version:&'static str,
+	/// Build timestamp
+	#[allow(dead_code)]
+	build_timestamp:String,
 }
 
 impl GroveInfo {

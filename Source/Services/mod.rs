@@ -6,7 +6,8 @@
 pub mod ConfigurationService;
 
 // Re-exports for convenience - use module prefix to avoid E0255 conflicts
-// Note: ConfigurationService must be accessed via ConfigurationService::ConfigurationServiceImpl
+// Note: ConfigurationService must be accessed via
+// ConfigurationService::ConfigurationServiceImpl
 
 /// Service configuration
 #[derive(Debug, Clone)]
@@ -20,17 +21,17 @@ pub struct ServiceConfig {
 /// Service trait
 #[allow(async_fn_in_trait)]
 pub trait Service: Send + Sync {
-    /// Get service name
-    fn name(&self) -> &str;
+	/// Get service name
+	fn name(&self) -> &str;
 
-    /// Start the service
-    async fn start(&self) -> anyhow::Result<()>;
+	/// Start the service
+	async fn start(&self) -> anyhow::Result<()>;
 
-    /// Stop the service
-    async fn stop(&self) -> anyhow::Result<()>;
+	/// Stop the service
+	async fn stop(&self) -> anyhow::Result<()>;
 
-    /// Check if service is running
-    async fn is_running(&self) -> bool;
+	/// Check if service is running
+	async fn is_running(&self) -> bool;
 }
 
 #[cfg(test)]

@@ -447,7 +447,10 @@ impl SpineActionClient {
 					// Actual EchoAction heartbeat messages will be sent through
 					// the gRPC bidirectional streaming when EchoAction protocol
 					// is fully implemented
-					debug!("[SpineConnection] Heartbeat maintained (last: {})", *last_heartbeat.read().await);
+					debug!(
+						"[SpineConnection] Heartbeat maintained (last: {})",
+						*last_heartbeat.read().await
+					);
 				}
 			}
 		});
@@ -459,8 +462,9 @@ impl SpineActionClient {
 	/// Start EchoAction listener
 	///
 	/// ☀️ 🟡 MOUNTAIN_GROVE_WASM - Receives EchoActions from Mountain
-	/// Listens for EchoAction messages from Mountain over the bidirectional gRPC stream.
-	/// Currently implemented as a stub that logs when the listener is active.
+	/// Listens for EchoAction messages from Mountain over the bidirectional
+	/// gRPC stream. Currently implemented as a stub that logs when the
+	/// listener is active.
 	///
 	/// The EchoAction protocol requires:
 	/// - Bidirectional streaming RPC endpoint in the gRPC service
