@@ -247,13 +247,14 @@ To understand how `Grove`'s internal components interact to provide the
 high-fidelity WASM and Rust extension hosting environment, see the following
 source files:
 
-- **[`Source/Host/`](Source/Host/)** - Core extension host controller and
-  lifecycle management
-- **[`Source/WASM/`](Source/WASM/)** - WebAssembly runtime integration with
-  WASMtime
-- **[`Source/API/`](Source/API/)** - VS Code API facade and type definitions
-- **[`Source/Transport/`](Source/Transport/)** - Communication strategies (gRPC,
-  IPC, WASM)
+- **[`Source/Host/`](https://github.com/CodeEditorLand/Grove/tree/Current/Source/Host/)** -
+  Core extension host controller and lifecycle management
+- **[`Source/WASM/`](https://github.com/CodeEditorLand/Grove/tree/Current/Source/WASM/)** -
+  WebAssembly runtime integration with WASMtime
+- **[`Source/API/`](https://github.com/CodeEditorLand/Grove/tree/Current/Source/API/)** -
+  VS Code API facade and type definitions
+- **[`Source/Transport/`](https://github.com/CodeEditorLand/Grove/tree/Current/Source/Transport/)** -
+  Communication strategies (gRPC, IPC, WASM)
 - **[`Proto/Grove.proto`](Proto/Grove.proto)** - gRPC protocol definitions for
   Mountain integration
 
