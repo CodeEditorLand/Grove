@@ -1,13 +1,15 @@
 <table>
 <tr>
 <td align="left" valign="middle">
-<h3 align="left">Grove</h3>
+<h3 align="left"> Grove</h3>
 </td>
 <td align="left" valign="middle">
-<h3 align="left">🌳</h3>
+<h3 align="left">
+🌳
+</h3>
 </td>
 <td align="left" valign="middle">
-<h3 align="left">+</h3>
+<h3 align="left"> + </h3>
 </td>
 <td align="left" valign="middle">
 <h3 align="left">
@@ -28,20 +30,8 @@ Land
 </h3>
 </td>
 <td align="left" valign="middle">
-<h3 align="left">🏞️</h3>
-</td>
-<td align="left" valign="middle">
-<h3 align="left">+</h3>
-</td>
-<td align="left" valign="middle" width="190">
 <h3 align="left">
-<a href="https://Tauri.App" target="_blank">
-<picture>
-<source media="(prefers-color-scheme: dark)" srcset="https://PlayForm.Cloud/Dark/Image/GitHub/Made/Tauri.svg">
-<source media="(prefers-color-scheme: light)" srcset="https://PlayForm.Cloud/Image/GitHub/Made/Tauri.svg">
-<img width="160" alt="Made With Tauri" src="https://PlayForm.Cloud/Image/GitHub/Made/Tauri.svg">
-</picture>
-</a>
+🏞️
 </h3>
 </td>
 </tr>
