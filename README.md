@@ -111,7 +111,7 @@ alongside `Cocoon` (Node.js).
 
 ---
 
-## Overview
+## Overview 📖
 
 Grove provides a secure, sandboxed environment for running VS Code extensions
 compiled to WebAssembly or native Rust, offering:
@@ -151,14 +151,14 @@ APIBridge --> WASMRuntime
 WASMRuntime --> TransportLayer
 end
 
-subgraph "Mountain ⛰️ (Rust/Tauri Backend)"
+subgraph "Mountain ⛰️ (Rust/Tauri Backend)"
 VineGRPC["Vine gRPC Server"]:::mountain
 end
 
 TransportLayer -- gRPC/IPC --> VineGRPC
 ```
 
-## Compatibility
+## Compatibility ✅
 
 Grove is designed to be compatible with:
 
@@ -202,7 +202,7 @@ cargo build --release --features wasm
 cargo build --release --features grpc
 ```
 
-## Usage
+## Usage 🚀
 
 ### Standalone Mode
 
@@ -253,7 +253,7 @@ and the communication patterns with the Mountain backend.
 
 ---
 
-## Project Structure
+## Project Structure 🗺️
 
 ```
 Element/Grove/
@@ -349,7 +349,7 @@ cargo clippy
 - `ipc`: Inter-process communication (Unix only)
 - `all`: All features enabled
 
-## Security
+## Security 🔒
 
 Grove provides security through:
 
@@ -359,7 +359,7 @@ Grove provides security through:
 4. **Type Safety**: Rust's ownership system ensures memory safety
 5. **Secure API**: Controlled access to host functions
 
-## Performance
+## Performance ⚡
 
 - Zero-cost abstractions via Rust
 - LTO (Link Time Optimization) in release builds
