@@ -39,9 +39,9 @@ Land
 
 ---
 
-# **Grove** 🌳
+# **Grove** 🌳
 
-The Native Rust/WASM Extension Host for Land 🏞️
+The Native Rust/WASM Extension Host for Land 🏞️
 
 [![License: CC0-1.0](https://img.shields.io/badge/License-CC0_1.0-lightgrey.svg)](https://github.com/CodeEditorLand/Grove/tree/Current/LICENSE)
 [![Crates.io](https://img.shields.io/crates/v/Grove.svg)](https://crates.io/crates/Grove)
@@ -67,7 +67,7 @@ IPC, WASM), and full compatibility with the VS Code API surface.
 
 ---
 
-## Key Features 🔐
+## Key Features 🔐
 
 - **WASM Runtime Integration:** Full WebAssembly support through WASMtime,
   enabling secure sandboxing of untrusted extensions with capability-based
@@ -97,7 +97,7 @@ IPC, WASM), and full compatibility with the VS Code API surface.
 
 ---
 
-## `Grove` in the Land Ecosystem 🌳 + 🏞️
+## `Grove` in the Land Ecosystem 🌳 + 🏞️
 
 This diagram illustrates `Grove`'s role as the native Rust/WASM extension host
 alongside `Cocoon` (Node.js).
@@ -112,7 +112,7 @@ alongside `Cocoon` (Node.js).
 
 ---
 
-## Overview 📖
+## Overview 📖
 
 Grove provides a secure, sandboxed environment for running VS Code extensions
 compiled to WebAssembly or native Rust, offering:
@@ -163,7 +163,7 @@ TransportLayer -- gRPC/IPC --> VineGRPC
 
 ---
 
-## Compatibility ✅
+## Compatibility ✅
 
 Grove is designed to be compatible with:
 
@@ -211,7 +211,7 @@ cargo build --release --features grpc
 
 ---
 
-## Usage 🚀
+## Usage 🚀
 
 ### Standalone Mode
 
@@ -240,7 +240,7 @@ async fn main() -> anyhow::Result<()> {
 
 ---
 
-## Deep Dive & Component Breakdown 🔬
+## Deep Dive & Component Breakdown 🔬
 
 To understand how `Grove`'s internal components interact to provide the
 high-fidelity WASM and Rust extension hosting environment, see the following
@@ -262,7 +262,7 @@ and the communication patterns with the Mountain backend.
 
 ---
 
-## Project Structure 🗺️
+## Project Structure 🗺️
 
 ```
 Element/Grove/
@@ -378,7 +378,7 @@ Grove provides security through:
 
 ---
 
-## Performance ⚡
+## Performance ⚡
 
 - Zero-cost abstractions via Rust
 - LTO (Link Time Optimization) in release builds
