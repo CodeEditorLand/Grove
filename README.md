@@ -39,7 +39,9 @@ Land
 
 ---
 
-# **Grove** 🌳 The Native Rust/WASM Extension Host for Land 🏞️
+# **Grove** 🌳
+
+The Native Rust/WASM Extension Host for Land 🏞️
 
 [![License: CC0-1.0](https://img.shields.io/badge/License-CC0_1.0-lightgrey.svg)](https://github.com/CodeEditorLand/Grove/tree/Current/LICENSE)
 [![Crates.io](https://img.shields.io/crates/v/Grove.svg)](https://crates.io/crates/Grove)
@@ -47,11 +49,10 @@ Land
 [![WASMtime Version](https://img.shields.io/badge/WASMtime-v20-blue.svg)](https://wasmtime.dev/)
 
 Welcome to **Grove**, the high-performance Rust/WebAssembly extension host for
-the **Land Code Editor**. Grove is designed to complement `Cocoon` (Node.js) by
-providing a native environment for running Rust and WASM-compiled VS Code
-extensions. It offers secure sandboxing through WASMtime, multiple transport
-strategies (gRPC, IPC, WASM), and full compatibility with the VS Code API
-surface.
+the **Land Code Editor**. Grove complements `Cocoon` (Node.js) by providing a
+native environment for running Rust and WASM-compiled VS Code extensions. It
+offers secure sandboxing through WASMtime, multiple transport strategies (gRPC,
+IPC, WASM), and full compatibility with the VS Code API surface.
 
 **Grove** is engineered to:
 
@@ -66,7 +67,7 @@ surface.
 
 ---
 
-## Key Features 🔐
+## Key Features 🔐
 
 - **WASM Runtime Integration:** Full WebAssembly support through WASMtime,
   enabling secure sandboxing of untrusted extensions with capability-based
@@ -96,7 +97,7 @@ surface.
 
 ---
 
-## `Grove` in the Land Ecosystem 🌳 + 🏞️
+## `Grove` in the Land Ecosystem 🌳 + 🏞️
 
 This diagram illustrates `Grove`'s role as the native Rust/WASM extension host
 alongside `Cocoon` (Node.js).
@@ -111,7 +112,7 @@ alongside `Cocoon` (Node.js).
 
 ---
 
-## Overview 📖
+## Overview 📖
 
 Grove provides a secure, sandboxed environment for running VS Code extensions
 compiled to WebAssembly or native Rust, offering:
@@ -125,6 +126,8 @@ compiled to WebAssembly or native Rust, offering:
 - **Multiple Transport**: gRPC, IPC, and direct WASM transport strategies
 - **Secure Sandboxing**: WASMtime-based isolation for untrusted extensions
 
+---
+
 ## System Architecture Diagram 🏗️
 
 This diagram illustrates `Grove`'s internal architecture and its place within
@@ -137,7 +140,7 @@ classDef mountain fill:#f9f,stroke:#333,stroke-width:2px;
 classDef wasm fill:#cfc,stroke:#333,stroke-width:1px;
 classDef transport fill:#ff9,stroke:#333,stroke-width:1px,stroke-dasharray: 5 5;
 
-subgraph "Grove 🌳 (Rust/WASM Extension Host)"
+subgraph "Grove 🌳 (Rust/WASM Extension Host)"
 direction TB
 ExtensionHost["Extension Host Controller"]:::grove
 ActivationMgr["Activation Manager"]:::grove
@@ -151,14 +154,16 @@ APIBridge --> WASMRuntime
 WASMRuntime --> TransportLayer
 end
 
-subgraph "Mountain ⛰️ (Rust/Tauri Backend)"
+subgraph "Mountain ⛰️ (Rust/Tauri Backend)"
 VineGRPC["Vine gRPC Server"]:::mountain
 end
 
 TransportLayer -- gRPC/IPC --> VineGRPC
 ```
 
-## Compatibility ✅
+---
+
+## Compatibility ✅
 
 Grove is designed to be compatible with:
 
@@ -166,6 +171,8 @@ Grove is designed to be compatible with:
   parsing
 - **VS Code**: Implements vscode.d.ts type definitions
 - **Mountain**: Integrates via GroveService gRPC protocol (Vine.proto)
+
+---
 
 ## Building
 
@@ -202,7 +209,9 @@ cargo build --release --features wasm
 cargo build --release --features grpc
 ```
 
-## Usage 🚀
+---
+
+## Usage 🚀
 
 ### Standalone Mode
 
@@ -231,7 +240,7 @@ async fn main() -> anyhow::Result<()> {
 
 ---
 
-## Deep Dive & Component Breakdown 🔬
+## Deep Dive & Component Breakdown 🔬
 
 To understand how `Grove`'s internal components interact to provide the
 high-fidelity WASM and Rust extension hosting environment, see the following
@@ -253,7 +262,7 @@ and the communication patterns with the Mountain backend.
 
 ---
 
-## Project Structure 🗺️
+## Project Structure 🗺️
 
 ```
 Element/Grove/
@@ -272,6 +281,8 @@ Element/Grove/
 │   └── Grove.proto # Grove-specific protocol
 └── Documentation/Rust/doc/ # Generated Rust documentation
 ```
+
+---
 
 ## Modules
 
@@ -317,6 +328,8 @@ Protocol handling:
 
 - `SpineConnection`: Spine protocol client connection
 
+---
+
 ## Development
 
 ### Running Tests
@@ -341,6 +354,8 @@ cargo fmt
 cargo clippy
 ```
 
+---
+
 ## Features
 
 - `default`: Enables grpc and wasm features
@@ -349,29 +364,37 @@ cargo clippy
 - `ipc`: Inter-process communication (Unix only)
 - `all`: All features enabled
 
+---
+
 ## Security 🔒
 
 Grove provides security through:
 
-1. **WASM Sandboxing**: Isolated execution environment via WASMtime
-2. **Memory Limits**: Configurable memory constraints for extensions
-3. **Resource Controls**: CPU and resource throttling
-4. **Type Safety**: Rust's ownership system ensures memory safety
-5. **Secure API**: Controlled access to host functions
+1. **WASM Sandboxing:** Isolated execution environment via WASMtime.
+2. **Memory Limits:** Configurable memory constraints for extensions.
+3. **Resource Controls:** CPU and resource throttling.
+4. **Type Safety:** Rust's ownership system ensures memory safety.
+5. **Secure API:** Controlled access to host functions.
 
-## Performance ⚡
+---
+
+## Performance ⚡
 
 - Zero-cost abstractions via Rust
 - LTO (Link Time Optimization) in release builds
 - Efficient WASM compilation and instantiation
 - Asynchronous I/O via Tokio
 
+---
+
 ## License ⚖️
 
 This project is released into the public domain under the **Creative Commons CC0
-Universal** license. You are free to use, modify, distribute, and build upon
-this work for any purpose, without any restrictions. For the full legal text,
-see the [`LICENSE`](https://github.com/CodeEditorLand/Grove/tree/Current/) file.
+Universal** license.
+
+You are free to use, modify, distribute, and build upon this work for any
+purpose, without any restrictions. For the full legal text, see the
+[`LICENSE`](https://github.com/CodeEditorLand/Grove/tree/Current/) file.
 
 ---
 
@@ -390,6 +413,11 @@ through [NGI0 Commons Fund](https://NLnet.NL/commonsfund), a fund established by
 [NLnet](https://NLnet.NL) with financial support from the European Commission's
 [Next Generation Internet](https://ngi.eu) program. Learn more at the
 [NLnet project page](https://NLnet.NL/project/Land).
+
+The project is operated by PlayForm, based in Sofia, Bulgaria.
+
+PlayForm acts as the open-source steward for Code Editor Land under the NGI0
+Commons Fund grant.
 
 <table>
 	<thead>
