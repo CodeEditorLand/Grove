@@ -406,6 +406,13 @@ history of changes specific to **Grove**.
 
 ---
 
+
+## See Also
+
+- [Architecture Overview](https://editor.land/Doc/architecture)
+- [Cocoon](https://github.com/CodeEditorLand/Cocoon)
+- [Mountain](https://github.com/CodeEditorLand/Mountain)
+
 ## Funding & Acknowledgements 🙏🏻
 
 **Grove** is a core element of the **Land** ecosystem. This project is funded
