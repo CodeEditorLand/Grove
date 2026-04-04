@@ -10,7 +10,10 @@ use tokio::sync::RwLock;
 use tonic::transport::{Channel, Endpoint};
 use tracing::{debug, info, instrument};
 
-use crate::Transport::{TransportConfig, TransportStats, TransportStrategy, TransportType};
+use crate::Transport::{
+	Strategy::{TransportStats, TransportStrategy, TransportType},
+	TransportConfig,
+};
 
 /// gRPC transport for communication with Mountain and other gRPC services
 #[derive(Clone, Debug)]
@@ -81,9 +84,9 @@ impl GrpcTransport {
 	/// Build an endpoint from the address string
 	fn build_endpoint(&self) -> anyhow::Result<Endpoint> {
 		let endpoint = Endpoint::from_shared(self.endpoint.clone())?
-			.timeout(self.config.connection_timeout)
-			.connect_timeout(self.config.connection_timeout)
-			.tcp_keepalive(Some(self.config.keepalive_interval));
+			.timeout(self.config.ConnectionTimeout)
+			.connect_timeout(self.config.ConnectionTimeout)
+			.tcp_keepalive(Some(self.config.KeepaliveInterval));
 
 		Ok(endpoint)
 	}
@@ -224,7 +227,7 @@ mod tests {
 
 	#[test]
 	fn test_grpc_transport_with_config() {
-		let config = TransportConfig::default().with_max_retries(5);
+		let config = TransportConfig::default().WithMaximumRetries(5);
 		let result = GrpcTransport::with_config("127.0.0.1:50050", config);
 		assert!(result.is_ok());
 	}

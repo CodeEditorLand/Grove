@@ -13,7 +13,7 @@ use tracing::{error, info, instrument, warn};
 use crate::{
 	Host::{Activation, HostConfig},
 	Host::ExtensionManager::ExtensionManagerImpl,
-	Transport::Transport,
+	Transport::Strategy::Transport,
 	WASM::Runtime::{WASMConfig, WASMRuntime},
 };
 

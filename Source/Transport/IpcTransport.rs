@@ -12,7 +12,10 @@ use async_trait::async_trait;
 use tokio::sync::RwLock;
 use tracing::{debug, info, instrument, warn};
 
-use crate::Transport::{TransportConfig, TransportStats, TransportStrategy, TransportType};
+use crate::Transport::{
+	Strategy::{TransportStats, TransportStrategy, TransportType},
+	TransportConfig,
+};
 
 /// IPC transport for local process communication
 #[derive(Clone, Debug)]

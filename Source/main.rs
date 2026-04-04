@@ -13,7 +13,12 @@ use grove::{
 		Build::{RuntimeBuild, ServiceRegister},
 		Main::Entry::{BuildResult, Entry, ExtensionInfo, ValidationResult},
 	},
-	Transport::{GrpcTransport, IPCTransportImpl, Transport as TransportEnum, WASMTransportImpl},
+	Transport::{
+		gRPCTransport::gRPCTransport,
+		IPCTransport::IPCTransport,
+		Strategy::Transport as TransportEnum,
+		WASMTransport::WASMTransportImpl,
+	},
 };
 
 /// Grove - Rust/WASM Extension Host for VS Code
@@ -188,9 +193,13 @@ async fn run_standalone(
 	info!("Starting Grove in standalone mode...");
 
 	let transport = match transport_type.as_str() {
-		"grpc" => TransportEnum::gRPC(GrpcTransport::new(&grpc_address)?),
-		"ipc" => TransportEnum::IPC(IPCTransportImpl::new()?),
-		"wasm" => TransportEnum::WASM(WASMTransportImpl::new(wasi, memory_limit_mb, max_execution_time_ms)?),
+		"grpc" => TransportEnum::gRPC(gRPCTransport::New(&grpc_address)?),
+		"ipc" => TransportEnum::IPC(IPCTransport::New()?),
+		"wasm" => TransportEnum::WASM(WASMTransportImpl::new(
+			wasi,
+			memory_limit_mb,
+			max_execution_time_ms,
+		)?),
 		_ => TransportEnum::default(),
 	};
 

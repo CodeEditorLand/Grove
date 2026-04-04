@@ -13,7 +13,10 @@ use tokio::sync::RwLock;
 use tracing::{debug, info, instrument};
 
 use crate::{
-	Transport::{TransportConfig, TransportStats, TransportStrategy, TransportType},
+	Transport::{
+		Strategy::{TransportStats, TransportStrategy, TransportType},
+		TransportConfig,
+	},
 	WASM::{
 		HostBridge::HostBridgeImpl,
 		MemoryManager::{MemoryLimits, MemoryManagerImpl},

@@ -9,7 +9,11 @@ use async_trait::async_trait;
 use bytes::Bytes;
 use serde::{Deserialize, Serialize};
 
-use crate::Transport::{GrpcTransport, IPCTransportImpl, WASMTransportImpl};
+use crate::Transport::{
+	gRPCTransport::gRPCTransport,
+	IPCTransport::IPCTransport,
+	WASMTransport::WASMTransportImpl,
+};
 
 /// Transport strategy trait
 ///
@@ -76,16 +80,16 @@ impl std::str::FromStr for TransportType {
 	}
 }
 
-/// Transport enumeration
+/// Transport enumeration.
 ///
-/// Union type for all supported transport implementations.
+/// Union type wrapping all supported transport implementations.
 #[derive(Debug)]
 pub enum Transport {
-	/// gRPC-based transport
-	gRPC(GrpcTransport),
-	/// Inter-process communication transport
-	IPC(IPCTransportImpl),
-	/// Direct WASM module transport
+	/// gRPC-based transport (Mountain/Air communication).
+	gRPC(gRPCTransport),
+	/// IPC transport (same-machine process communication).
+	IPC(IPCTransport),
+	/// Direct WASM module transport (browser).
 	WASM(WASMTransportImpl),
 }
 
@@ -190,17 +194,17 @@ impl Transport {
 	}
 
 	/// Get gRPC transport reference (if applicable)
-	pub fn as_grpc(&self) -> Option<&GrpcTransport> {
+	pub fn AsgRPC(&self) -> Option<&gRPCTransport> {
 		match self {
-			Self::gRPC(transport) => Some(transport),
+			Self::gRPC(Transport) => Some(Transport),
 			_ => None,
 		}
 	}
 
-	/// Get IPC transport reference (if applicable)
-	pub fn as_ipc(&self) -> Option<&IPCTransportImpl> {
+	/// Returns the IPC transport reference if this is an IPC transport.
+	pub fn AsIPC(&self) -> Option<&IPCTransport> {
 		match self {
-			Self::IPC(transport) => Some(transport),
+			Self::IPC(Transport) => Some(Transport),
 			_ => None,
 		}
 	}
@@ -216,10 +220,10 @@ impl Transport {
 
 impl Default for Transport {
 	fn default() -> Self {
-		// Default to gRPC with localhost address
 		Self::gRPC(
-			GrpcTransport::new("127.0.0.1:50050").unwrap_or_else(|_| {
-				GrpcTransport::new("0.0.0.0:50050").expect("Failed to create default gRPC transport")
+			gRPCTransport::New("127.0.0.1:50050").unwrap_or_else(|_| {
+				gRPCTransport::New("0.0.0.0:50050")
+					.expect("Failed to create default gRPC transport")
 			}),
 		)
 	}

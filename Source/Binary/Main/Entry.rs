@@ -11,7 +11,7 @@ use tracing::{error, info, instrument};
 use crate::{
 	Binary::Main::CliArgs,
 	Host::{ExtensionHost::ExtensionHostImpl, HostConfig},
-	Transport::Transport,
+	Transport::Strategy::Transport,
 };
 
 /// Grove entry point manager
@@ -193,15 +193,16 @@ impl Entry {
 	fn create_transport(args:&CliArgs) -> Result<Transport> {
 		match args.transport.as_str() {
 			"grpc" => {
-				use crate::Transport::gRPCTransport::GrpcTransport;
+				use crate::Transport::gRPCTransport::gRPCTransport;
 				Ok(Transport::gRPC(
-					GrpcTransport::new(&args.grpc_address).context("Failed to create gRPC transport")?,
+					gRPCTransport::New(&args.grpc_address)
+						.context("Failed to create gRPC transport")?,
 				))
 			},
 			"ipc" => {
-				use crate::Transport::IPCTransport::IPCTransportImpl;
+				use crate::Transport::IPCTransport::IPCTransport;
 				Ok(Transport::IPC(
-					IPCTransportImpl::new().context("Failed to create IPC transport")?,
+					IPCTransport::New().context("Failed to create IPC transport")?,
 				))
 			},
 			"wasm" => {

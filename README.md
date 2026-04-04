@@ -117,7 +117,7 @@ CC0 1.0 Universal. Public domain. No restrictions.
 
 - [Grove Documentation](https://editor.land/Doc/grove)
 - [Architecture Overview](https://editor.land/Doc/architecture)
-- [Why WebAssembly](https://editor.land/Doc/why-webassembly)
+- [Why WebAssembly](https://editor.land/Doc/why-wasm)
 - [Mountain](https://github.com/CodeEditorLand/Mountain)
 - [Cocoon](https://github.com/CodeEditorLand/Cocoon)
 

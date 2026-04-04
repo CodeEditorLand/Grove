@@ -10,7 +10,7 @@ use tracing::{debug, info, instrument};
 
 use crate::{
 	Host::{ExtensionHost::ExtensionHostImpl, HostConfig},
-	Transport::Transport,
+	Transport::Strategy::Transport,
 	WASM::Runtime::{WASMConfig, WASMRuntime},
 };
 
