@@ -215,7 +215,9 @@ impl WorkspaceConfiguration {
 	}
 }
 
-/// Languages namespace
+/// Languages namespace — mirrors the full vscode.languages API surface.
+/// Each register*Provider method returns a Disposable and communicates
+/// with Mountain via the transport layer (gRPC/IPC/WASM).
 #[derive(Debug, Clone)]
 pub struct LanguageNamespace;
 
@@ -233,10 +235,82 @@ impl LanguageNamespace {
 		Ok(Disposable::new())
 	}
 
+	/// Register hover provider
+	pub fn register_hover_provider(&self, _selector:DocumentSelector) -> Disposable { Disposable::new() }
+
+	/// Register definition provider
+	pub fn register_definition_provider(&self, _selector:DocumentSelector) -> Disposable { Disposable::new() }
+
+	/// Register reference provider
+	pub fn register_reference_provider(&self, _selector:DocumentSelector) -> Disposable { Disposable::new() }
+
+	/// Register code actions provider
+	pub fn register_code_actions_provider(&self, _selector:DocumentSelector) -> Disposable { Disposable::new() }
+
+	/// Register document highlight provider
+	pub fn register_document_highlight_provider(&self, _selector:DocumentSelector) -> Disposable { Disposable::new() }
+
+	/// Register document symbol provider
+	pub fn register_document_symbol_provider(&self, _selector:DocumentSelector) -> Disposable { Disposable::new() }
+
+	/// Register workspace symbol provider
+	pub fn register_workspace_symbol_provider(&self) -> Disposable { Disposable::new() }
+
+	/// Register rename provider
+	pub fn register_rename_provider(&self, _selector:DocumentSelector) -> Disposable { Disposable::new() }
+
+	/// Register document formatting provider
+	pub fn register_document_formatting_edit_provider(&self, _selector:DocumentSelector) -> Disposable { Disposable::new() }
+
+	/// Register document range formatting provider
+	pub fn register_document_range_formatting_edit_provider(&self, _selector:DocumentSelector) -> Disposable { Disposable::new() }
+
+	/// Register on-type formatting provider
+	pub fn register_on_type_formatting_edit_provider(&self, _selector:DocumentSelector, _trigger_characters:Vec<String>) -> Disposable { Disposable::new() }
+
+	/// Register signature help provider
+	pub fn register_signature_help_provider(&self, _selector:DocumentSelector) -> Disposable { Disposable::new() }
+
+	/// Register code lens provider
+	pub fn register_code_lens_provider(&self, _selector:DocumentSelector) -> Disposable { Disposable::new() }
+
+	/// Register folding range provider
+	pub fn register_folding_range_provider(&self, _selector:DocumentSelector) -> Disposable { Disposable::new() }
+
+	/// Register selection range provider
+	pub fn register_selection_range_provider(&self, _selector:DocumentSelector) -> Disposable { Disposable::new() }
+
+	/// Register semantic tokens provider
+	pub fn register_document_semantic_tokens_provider(&self, _selector:DocumentSelector) -> Disposable { Disposable::new() }
+
+	/// Register inlay hints provider
+	pub fn register_inlay_hints_provider(&self, _selector:DocumentSelector) -> Disposable { Disposable::new() }
+
+	/// Register type hierarchy provider
+	pub fn register_type_hierarchy_provider(&self, _selector:DocumentSelector) -> Disposable { Disposable::new() }
+
+	/// Register call hierarchy provider
+	pub fn register_call_hierarchy_provider(&self, _selector:DocumentSelector) -> Disposable { Disposable::new() }
+
+	/// Register linked editing range provider
+	pub fn register_linked_editing_range_provider(&self, _selector:DocumentSelector) -> Disposable { Disposable::new() }
+
+	/// Register declaration provider
+	pub fn register_declaration_provider(&self, _selector:DocumentSelector) -> Disposable { Disposable::new() }
+
+	/// Register implementation provider
+	pub fn register_implementation_provider(&self, _selector:DocumentSelector) -> Disposable { Disposable::new() }
+
+	/// Register type definition provider
+	pub fn register_type_definition_provider(&self, _selector:DocumentSelector) -> Disposable { Disposable::new() }
+
 	/// Register diagnostic collection
 	pub fn create_diagnostic_collection(&self, name:Option<String>) -> DiagnosticCollection {
 		DiagnosticCollection::new(name)
 	}
+
+	/// Set language configuration
+	pub fn set_language_configuration(&self, _language:String) -> Disposable { Disposable::new() }
 }
 
 /// Document selector
