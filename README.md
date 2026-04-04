@@ -54,16 +54,18 @@ native environment for running Rust and WASM-compiled VS Code extensions. It
 offers secure sandboxing through WASMtime, multiple transport strategies (gRPC,
 IPC, WASM), and full compatibility with the VS Code API surface.
 
-**Grove** is engineered to:
+**What Grove gives you:**
 
-1. **Provide Native Extension Hosting:** Execute Rust extensions with zero
-   overhead through static linking or WASM sandboxing.
-2. **Enable Secure Sandboxing:** Isolate untrusted extensions using WASMtime's
-   capability-based security model.
-3. **Support Multiple Transports:** Communicate with `Mountain` via gRPC, IPC,
-   or direct WASM host functions.
-4. **Maintain Cocoon Compatibility:** Share the same VS Code API surface and
-   activation semantics for seamless extension porting.
+1. **Extensions at native speed.** Rust extensions run with zero overhead via
+   static linking. No Node.js, no V8, no garbage collector.
+2. **Sandboxed by default.** Untrusted extensions run in WASMtime with
+   capability-based security. They get only the permissions you grant.
+3. **Same API, any transport.** gRPC, IPC, or direct WASM host calls. Grove
+   implements the same VS Code API surface as Cocoon.
+4. **Port extensions from Cocoon.** Same activation semantics, same API shape.
+   Move a Node.js extension to Rust/WASM and it activates the same way.
+
+📖 **[Rust API Documentation](https://Rust.Documentation.Editor.Land/grove/)**
 
 ---
 
