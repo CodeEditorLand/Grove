@@ -4,11 +4,58 @@
 //! This implements the interface described in vscode.d.ts for extension
 //! compatibility.
 
-use std::sync::Arc;
+use std::sync::{
+	Arc,
+	Mutex,
+	atomic::{AtomicU32, Ordering},
+};
 
 use serde::{Deserialize, Serialize};
 
 use crate::API::types::*;
+
+// ============================================================================
+// Provider Registration Store
+// ============================================================================
+
+/// Tracks all active language provider registrations with their handles.
+///
+/// A registration is added when an extension calls `register_*_provider` and
+/// removed when `Disposable::dispose()` is called on the returned handle.
+#[derive(Debug, Default)]
+struct ProviderStore {
+	/// Map from handle → (provider_type, selector) for diagnostics.
+	entries:Mutex<std::collections::HashMap<u32, (String, String)>>,
+	/// Monotonically increasing handle counter.
+	next_handle:AtomicU32,
+}
+
+impl ProviderStore {
+	/// Returns the next unique handle and inserts a registration record.
+	fn insert(&self, provider_type:&str, selector:&str) -> u32 {
+		let Handle = self.next_handle.fetch_add(1, Ordering::Relaxed);
+		if let Ok(mut Guard) = self.entries.lock() {
+			Guard.insert(Handle, (provider_type.to_string(), selector.to_string()));
+		}
+		Handle
+	}
+
+	/// Removes a registration by handle (called from Disposable::dispose).
+	fn remove(&self, handle:u32) {
+		if let Ok(mut Guard) = self.entries.lock() {
+			Guard.remove(&handle);
+		}
+	}
+
+	/// Returns the number of active registrations.
+	#[allow(dead_code)]
+	fn len(&self) -> usize {
+		self.entries
+			.lock()
+			.map(|G| G.len())
+			.unwrap_or(0)
+	}
+}
 
 /// VS Code API facade - the main entry point for extensions
 #[derive(Debug, Clone)]
@@ -215,106 +262,177 @@ impl WorkspaceConfiguration {
 	}
 }
 
-/// Languages namespace - mirrors the full vscode.languages API surface.
-/// Each register*Provider method returns a Disposable and communicates
-/// with Mountain via the transport layer (gRPC/IPC/WASM).
-#[derive(Debug, Clone)]
-pub struct LanguageNamespace;
+/// Languages namespace — mirrors the full vscode.languages API surface.
+///
+/// Each `register_*_provider` method:
+/// 1. Assigns a unique handle from the atomic counter
+/// 2. Stores the registration in `ProviderStore` for lifecycle tracking
+/// 3. Returns a `Disposable` that removes the registration on dispose
+///
+/// Mountain gRPC forwarding (P4 task) will be added in Grove-Vine Connection:
+/// each registration will additionally send a `RegisterProviderRequest` via the
+/// Spine connection to Mountain's CocoonService.
+#[derive(Debug)]
+pub struct LanguageNamespace {
+	/// Active provider registration store.
+	store:Arc<ProviderStore>,
+}
+
+impl Clone for LanguageNamespace {
+	fn clone(&self) -> Self { Self { store:Arc::clone(&self.store) } }
+}
 
 impl LanguageNamespace {
-	/// Create a new LanguageNamespace instance
-	pub fn new() -> Self { Self }
+	/// Create a new LanguageNamespace instance.
+	pub fn new() -> Self { Self { store:Arc::new(ProviderStore::default()) } }
+
+	/// Returns the number of active provider registrations.
+	pub fn active_registration_count(&self) -> usize { self.store.len() }
+
+	/// Internal helper: register a provider, return a disposable handle.
+	fn register(&self, provider_type:&str, selector:&DocumentSelector) -> Disposable {
+		let SelectorStr = selector
+			.iter()
+			.filter_map(|F| F.language.as_deref())
+			.collect::<Vec<_>>()
+			.join(",");
+		let Handle = self.store.insert(provider_type, &SelectorStr);
+		let Store = Arc::clone(&self.store);
+		tracing::debug!("[LanguageNamespace] registered {} handle={} selector={}", provider_type, Handle, SelectorStr);
+		Disposable::with_callback(Box::new(move || {
+			Store.remove(Handle);
+			tracing::debug!("[LanguageNamespace] disposed {} handle={}", provider_type, Handle);
+		}))
+	}
 
 	/// Register completion item provider
 	pub async fn register_completion_item_provider<T:CompletionItemProvider>(
 		&self,
-		_selector:DocumentSelector,
+		selector:DocumentSelector,
 		_provider:T,
 		_trigger_characters:Option<Vec<String>>,
 	) -> Result<Disposable, String> {
-		Ok(Disposable::new())
+		Ok(self.register("completion", &selector))
 	}
 
 	/// Register hover provider
-	pub fn register_hover_provider(&self, _selector:DocumentSelector) -> Disposable { Disposable::new() }
+	pub fn register_hover_provider(&self, selector:DocumentSelector) -> Disposable {
+		self.register("hover", &selector)
+	}
 
 	/// Register definition provider
-	pub fn register_definition_provider(&self, _selector:DocumentSelector) -> Disposable { Disposable::new() }
+	pub fn register_definition_provider(&self, selector:DocumentSelector) -> Disposable {
+		self.register("definition", &selector)
+	}
 
 	/// Register reference provider
-	pub fn register_reference_provider(&self, _selector:DocumentSelector) -> Disposable { Disposable::new() }
+	pub fn register_reference_provider(&self, selector:DocumentSelector) -> Disposable {
+		self.register("references", &selector)
+	}
 
 	/// Register code actions provider
-	pub fn register_code_actions_provider(&self, _selector:DocumentSelector) -> Disposable { Disposable::new() }
+	pub fn register_code_actions_provider(&self, selector:DocumentSelector) -> Disposable {
+		self.register("codeAction", &selector)
+	}
 
 	/// Register document highlight provider
-	pub fn register_document_highlight_provider(&self, _selector:DocumentSelector) -> Disposable { Disposable::new() }
+	pub fn register_document_highlight_provider(&self, selector:DocumentSelector) -> Disposable {
+		self.register("documentHighlight", &selector)
+	}
 
 	/// Register document symbol provider
-	pub fn register_document_symbol_provider(&self, _selector:DocumentSelector) -> Disposable { Disposable::new() }
+	pub fn register_document_symbol_provider(&self, selector:DocumentSelector) -> Disposable {
+		self.register("documentSymbol", &selector)
+	}
 
 	/// Register workspace symbol provider
-	pub fn register_workspace_symbol_provider(&self) -> Disposable { Disposable::new() }
+	pub fn register_workspace_symbol_provider(&self) -> Disposable {
+		self.register("workspaceSymbol", &Vec::new())
+	}
 
 	/// Register rename provider
-	pub fn register_rename_provider(&self, _selector:DocumentSelector) -> Disposable { Disposable::new() }
+	pub fn register_rename_provider(&self, selector:DocumentSelector) -> Disposable {
+		self.register("rename", &selector)
+	}
 
 	/// Register document formatting provider
-	pub fn register_document_formatting_edit_provider(&self, _selector:DocumentSelector) -> Disposable {
-		Disposable::new()
+	pub fn register_document_formatting_edit_provider(&self, selector:DocumentSelector) -> Disposable {
+		self.register("documentFormatting", &selector)
 	}
 
 	/// Register document range formatting provider
-	pub fn register_document_range_formatting_edit_provider(&self, _selector:DocumentSelector) -> Disposable {
-		Disposable::new()
+	pub fn register_document_range_formatting_edit_provider(&self, selector:DocumentSelector) -> Disposable {
+		self.register("documentRangeFormatting", &selector)
 	}
 
 	/// Register on-type formatting provider
 	pub fn register_on_type_formatting_edit_provider(
 		&self,
-		_selector:DocumentSelector,
+		selector:DocumentSelector,
 		_trigger_characters:Vec<String>,
 	) -> Disposable {
-		Disposable::new()
+		self.register("onTypeFormatting", &selector)
 	}
 
 	/// Register signature help provider
-	pub fn register_signature_help_provider(&self, _selector:DocumentSelector) -> Disposable { Disposable::new() }
+	pub fn register_signature_help_provider(&self, selector:DocumentSelector) -> Disposable {
+		self.register("signatureHelp", &selector)
+	}
 
 	/// Register code lens provider
-	pub fn register_code_lens_provider(&self, _selector:DocumentSelector) -> Disposable { Disposable::new() }
+	pub fn register_code_lens_provider(&self, selector:DocumentSelector) -> Disposable {
+		self.register("codeLens", &selector)
+	}
 
 	/// Register folding range provider
-	pub fn register_folding_range_provider(&self, _selector:DocumentSelector) -> Disposable { Disposable::new() }
+	pub fn register_folding_range_provider(&self, selector:DocumentSelector) -> Disposable {
+		self.register("foldingRange", &selector)
+	}
 
 	/// Register selection range provider
-	pub fn register_selection_range_provider(&self, _selector:DocumentSelector) -> Disposable { Disposable::new() }
+	pub fn register_selection_range_provider(&self, selector:DocumentSelector) -> Disposable {
+		self.register("selectionRange", &selector)
+	}
 
 	/// Register semantic tokens provider
-	pub fn register_document_semantic_tokens_provider(&self, _selector:DocumentSelector) -> Disposable {
-		Disposable::new()
+	pub fn register_document_semantic_tokens_provider(&self, selector:DocumentSelector) -> Disposable {
+		self.register("semanticTokens", &selector)
 	}
 
 	/// Register inlay hints provider
-	pub fn register_inlay_hints_provider(&self, _selector:DocumentSelector) -> Disposable { Disposable::new() }
+	pub fn register_inlay_hints_provider(&self, selector:DocumentSelector) -> Disposable {
+		self.register("inlayHints", &selector)
+	}
 
 	/// Register type hierarchy provider
-	pub fn register_type_hierarchy_provider(&self, _selector:DocumentSelector) -> Disposable { Disposable::new() }
+	pub fn register_type_hierarchy_provider(&self, selector:DocumentSelector) -> Disposable {
+		self.register("typeHierarchy", &selector)
+	}
 
 	/// Register call hierarchy provider
-	pub fn register_call_hierarchy_provider(&self, _selector:DocumentSelector) -> Disposable { Disposable::new() }
+	pub fn register_call_hierarchy_provider(&self, selector:DocumentSelector) -> Disposable {
+		self.register("callHierarchy", &selector)
+	}
 
 	/// Register linked editing range provider
-	pub fn register_linked_editing_range_provider(&self, _selector:DocumentSelector) -> Disposable { Disposable::new() }
+	pub fn register_linked_editing_range_provider(&self, selector:DocumentSelector) -> Disposable {
+		self.register("linkedEditingRange", &selector)
+	}
 
 	/// Register declaration provider
-	pub fn register_declaration_provider(&self, _selector:DocumentSelector) -> Disposable { Disposable::new() }
+	pub fn register_declaration_provider(&self, selector:DocumentSelector) -> Disposable {
+		self.register("declaration", &selector)
+	}
 
 	/// Register implementation provider
-	pub fn register_implementation_provider(&self, _selector:DocumentSelector) -> Disposable { Disposable::new() }
+	pub fn register_implementation_provider(&self, selector:DocumentSelector) -> Disposable {
+		self.register("implementation", &selector)
+	}
 
 	/// Register type definition provider
-	pub fn register_type_definition_provider(&self, _selector:DocumentSelector) -> Disposable { Disposable::new() }
+	pub fn register_type_definition_provider(&self, selector:DocumentSelector) -> Disposable {
+		self.register("typeDefinition", &selector)
+	}
 
 	/// Register diagnostic collection
 	pub fn create_diagnostic_collection(&self, name:Option<String>) -> DiagnosticCollection {
@@ -322,7 +440,9 @@ impl LanguageNamespace {
 	}
 
 	/// Set language configuration
-	pub fn set_language_configuration(&self, _language:String) -> Disposable { Disposable::new() }
+	pub fn set_language_configuration(&self, language:String) -> Disposable {
+		self.register("languageConfiguration", &vec![DocumentFilter { language:Some(language), scheme:None, pattern:None }])
+	}
 }
 
 /// Document selector
@@ -429,18 +549,45 @@ impl DiagnosticCollection {
 	}
 }
 
-/// Disposable item
-#[derive(Debug, Clone)]
-pub struct Disposable;
+/// Disposable resource handle.
+///
+/// Returned by all `register_*_provider` methods. Calling `dispose()` removes
+/// the provider registration from the `LanguageNamespace` store.
+pub struct Disposable {
+	callback:Option<Box<dyn FnOnce() + Send + Sync>>,
+}
+
+impl std::fmt::Debug for Disposable {
+	fn fmt(&self, f:&mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		f.debug_struct("Disposable").field("has_callback", &self.callback.is_some()).finish()
+	}
+}
+
+impl Clone for Disposable {
+	/// Cloning a Disposable produces a no-op copy.
+	/// The original disposable retains the callback.
+	fn clone(&self) -> Self { Self { callback:None } }
+}
 
 impl Disposable {
-	/// Create a new disposable item
-	pub fn new() -> Self { Self }
+	/// Create a no-op disposable.
+	pub fn new() -> Self { Self { callback:None } }
 
-	/// Dispose the resource
-	pub fn dispose(&self) {
-		// Placeholder implementation
+	/// Create a disposable with a callback invoked on `dispose()`.
+	pub fn with_callback(callback:Box<dyn FnOnce() + Send + Sync>) -> Self {
+		Self { callback:Some(callback) }
 	}
+
+	/// Dispose the resource, invoking the registered callback if present.
+	pub fn dispose(mut self) {
+		if let Some(Callback) = self.callback.take() {
+			Callback();
+		}
+	}
+}
+
+impl Default for Disposable {
+	fn default() -> Self { Self::new() }
 }
 
 /// Extensions namespace
