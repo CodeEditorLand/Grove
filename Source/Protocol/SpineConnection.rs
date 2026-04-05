@@ -1,5 +1,5 @@
 //! Spine Connection Module
-//! ☀️ 🟡 MOUNTAIN_GROVE_WASM - WASM+Rhai extension host connection
+//!  ☀️ 🟡 MOUNTAIN_GROVE_WASM - WASM+Rhai extension host connection
 //!
 //! This module provides gRPC-based communication for extension host
 //! integration. Maintains full backwards compatibility while adding optional

@@ -10,9 +10,10 @@ use serde::{Deserialize, Serialize};
 use tokio::sync::RwLock;
 use tracing::{debug, info, instrument, warn};
 
-use crate::{
-    Host::{ActivationResult, HostConfig},
-    Host::ExtensionManager::{ExtensionManagerImpl, ExtensionState},
+use crate::Host::{
+	ActivationResult,
+	ExtensionManager::{ExtensionManagerImpl, ExtensionState},
+	HostConfig,
 };
 
 /// Extension activation event types
@@ -79,33 +80,33 @@ impl std::str::FromStr for ActivationEvent {
 
 /// Activation engine for managing extension activation
 pub struct ActivationEngine {
-    /// Extension manager
-    extension_manager:Arc<ExtensionManagerImpl>,
-    /// Host configuration
-    #[allow(dead_code)]
-    config:HostConfig,
-    /// Event handlers mapping
-    event_handlers:Arc<RwLock<HashMap<String, ActivationHandler>>>,
-    /// Activation history
-    activation_history:Arc<RwLock<Vec<ActivationRecord>>>,
+	/// Extension manager
+	extension_manager:Arc<ExtensionManagerImpl>,
+	/// Host configuration
+	#[allow(dead_code)]
+	config:HostConfig,
+	/// Event handlers mapping
+	event_handlers:Arc<RwLock<HashMap<String, ActivationHandler>>>,
+	/// Activation history
+	activation_history:Arc<RwLock<Vec<ActivationRecord>>>,
 }
 
 /// Activation handler for an extension
 #[derive(Debug, Clone)]
 struct ActivationHandler {
-    /// Extension ID
-    #[allow(dead_code)]
-    extension_id:String,
-    /// Activation events
-    events:Vec<ActivationEvent>,
-    /// Activation function path
-    #[allow(dead_code)]
-    activation_function:String,
-    /// Whether extension is currently active
-    is_active:bool,
-    /// Last activation time
-    #[allow(dead_code)]
-    last_activation:Option<u64>,
+	/// Extension ID
+	#[allow(dead_code)]
+	extension_id:String,
+	/// Activation events
+	events:Vec<ActivationEvent>,
+	/// Activation function path
+	#[allow(dead_code)]
+	activation_function:String,
+	/// Whether extension is currently active
+	is_active:bool,
+	/// Last activation time
+	#[allow(dead_code)]
+	last_activation:Option<u64>,
 }
 
 /// Activation record for tracking

@@ -20,40 +20,37 @@ use crate::Transport::{
 #[derive(Clone, Debug)]
 pub struct gRPCTransport {
 	/// Connection endpoint address.
-	Endpoint: String,
+	Endpoint:String,
 	/// gRPC channel (lazily connected).
-	Channel: Arc<RwLock<Option<Channel>>>,
+	Channel:Arc<RwLock<Option<Channel>>>,
 	/// Transport configuration.
-	Configuration: TransportConfig,
+	Configuration:TransportConfig,
 	/// Whether the transport is currently connected.
-	Connected: Arc<RwLock<bool>>,
+	Connected:Arc<RwLock<bool>>,
 	/// Transport statistics.
-	Statistics: Arc<RwLock<TransportStats>>,
+	Statistics:Arc<RwLock<TransportStats>>,
 }
 
 impl gRPCTransport {
 	/// Creates a new gRPC transport with the given address.
-	pub fn New(Address: &str) -> anyhow::Result<Self> {
+	pub fn New(Address:&str) -> anyhow::Result<Self> {
 		Ok(Self {
-			Endpoint: Address.to_string(),
-			Channel: Arc::new(RwLock::new(None)),
-			Configuration: TransportConfig::default(),
-			Connected: Arc::new(RwLock::new(false)),
-			Statistics: Arc::new(RwLock::new(TransportStats::default())),
+			Endpoint:Address.to_string(),
+			Channel:Arc::new(RwLock::new(None)),
+			Configuration:TransportConfig::default(),
+			Connected:Arc::new(RwLock::new(false)),
+			Statistics:Arc::new(RwLock::new(TransportStats::default())),
 		})
 	}
 
 	/// Creates a new gRPC transport with custom configuration.
-	pub fn WithConfiguration(
-		Address: &str,
-		Configuration: TransportConfig,
-	) -> anyhow::Result<Self> {
+	pub fn WithConfiguration(Address:&str, Configuration:TransportConfig) -> anyhow::Result<Self> {
 		Ok(Self {
-			Endpoint: Address.to_string(),
-			Channel: Arc::new(RwLock::new(None)),
+			Endpoint:Address.to_string(),
+			Channel:Arc::new(RwLock::new(None)),
 			Configuration,
-			Connected: Arc::new(RwLock::new(false)),
-			Statistics: Arc::new(RwLock::new(TransportStats::default())),
+			Connected:Arc::new(RwLock::new(false)),
+			Statistics:Arc::new(RwLock::new(TransportStats::default())),
 		})
 	}
 
@@ -108,7 +105,7 @@ impl TransportStrategy for gRPCTransport {
 	}
 
 	#[instrument(skip(self, request))]
-	async fn send(&self, request: &[u8]) -> Result<Vec<u8>, Self::Error> {
+	async fn send(&self, request:&[u8]) -> Result<Vec<u8>, Self::Error> {
 		let Start = std::time::Instant::now();
 
 		if !self.is_connected() {
@@ -117,7 +114,7 @@ impl TransportStrategy for gRPCTransport {
 
 		debug!("Sending gRPC request ({} bytes)", request.len());
 
-		let Response: Vec<u8> = vec![];
+		let Response:Vec<u8> = vec![];
 		let LatencyMicroseconds = Start.elapsed().as_micros() as u64;
 
 		let mut Stats = self.Statistics.write().await;
@@ -129,7 +126,7 @@ impl TransportStrategy for gRPCTransport {
 	}
 
 	#[instrument(skip(self, data))]
-	async fn send_no_response(&self, data: &[u8]) -> Result<(), Self::Error> {
+	async fn send_no_response(&self, data:&[u8]) -> Result<(), Self::Error> {
 		if !self.is_connected() {
 			return Err(gRPCTransportError::NotConnected);
 		}
@@ -179,13 +176,11 @@ pub enum gRPCTransportError {
 }
 
 impl From<tonic::transport::Error> for gRPCTransportError {
-	fn from(Error: tonic::transport::Error) -> Self {
-		gRPCTransportError::ConnectionFailed(Error.to_string())
-	}
+	fn from(Error:tonic::transport::Error) -> Self { gRPCTransportError::ConnectionFailed(Error.to_string()) }
 }
 
 impl From<tonic::Status> for gRPCTransportError {
-	fn from(Status: tonic::Status) -> Self { gRPCTransportError::Error(Status.to_string()) }
+	fn from(Status:tonic::Status) -> Self { gRPCTransportError::Error(Status.to_string()) }
 }
 
 #[cfg(test)]

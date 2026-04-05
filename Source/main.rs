@@ -14,10 +14,10 @@ use grove::{
 		Main::Entry::{BuildResult, Entry, ExtensionInfo, ValidationResult},
 	},
 	Transport::{
-		gRPCTransport::gRPCTransport,
 		IPCTransport::IPCTransport,
 		Strategy::Transport as TransportEnum,
 		WASMTransport::WASMTransportImpl,
+		gRPCTransport::gRPCTransport,
 	},
 };
 
@@ -195,11 +195,7 @@ async fn run_standalone(
 	let transport = match transport_type.as_str() {
 		"grpc" => TransportEnum::gRPC(gRPCTransport::New(&grpc_address)?),
 		"ipc" => TransportEnum::IPC(IPCTransport::New()?),
-		"wasm" => TransportEnum::WASM(WASMTransportImpl::new(
-			wasi,
-			memory_limit_mb,
-			max_execution_time_ms,
-		)?),
+		"wasm" => TransportEnum::WASM(WASMTransportImpl::new(wasi, memory_limit_mb, max_execution_time_ms)?),
 		_ => TransportEnum::default(),
 	};
 

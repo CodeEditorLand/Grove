@@ -195,15 +195,12 @@ impl Entry {
 			"grpc" => {
 				use crate::Transport::gRPCTransport::gRPCTransport;
 				Ok(Transport::gRPC(
-					gRPCTransport::New(&args.grpc_address)
-						.context("Failed to create gRPC transport")?,
+					gRPCTransport::New(&args.grpc_address).context("Failed to create gRPC transport")?,
 				))
 			},
 			"ipc" => {
 				use crate::Transport::IPCTransport::IPCTransport;
-				Ok(Transport::IPC(
-					IPCTransport::New().context("Failed to create IPC transport")?,
-				))
+				Ok(Transport::IPC(IPCTransport::New().context("Failed to create IPC transport")?))
 			},
 			"wasm" => {
 				use crate::Transport::WASMTransport::WASMTransportImpl;

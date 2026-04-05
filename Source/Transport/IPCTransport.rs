@@ -22,17 +22,17 @@ use crate::Transport::{
 #[derive(Clone, Debug)]
 pub struct IPCTransport {
 	/// Unix domain socket path (macOS/Linux).
-	SocketPath: Option<PathBuf>,
+	SocketPath:Option<PathBuf>,
 	/// Named pipe identifier (Windows).
 	#[allow(dead_code)]
-	PipeName: Option<String>,
+	PipeName:Option<String>,
 	/// Transport configuration.
 	#[allow(dead_code)]
-	Configuration: TransportConfig,
+	Configuration:TransportConfig,
 	/// Whether the transport is currently connected.
-	Connected: Arc<RwLock<bool>>,
+	Connected:Arc<RwLock<bool>>,
 	/// Transport statistics.
-	Statistics: Arc<RwLock<TransportStats>>,
+	Statistics:Arc<RwLock<TransportStats>>,
 }
 
 impl IPCTransport {
@@ -42,22 +42,22 @@ impl IPCTransport {
 		{
 			let SocketPath = Self::DefaultSocketPath();
 			Ok(Self {
-				SocketPath: Some(SocketPath),
-				PipeName: None,
-				Configuration: TransportConfig::default(),
-				Connected: Arc::new(RwLock::new(false)),
-				Statistics: Arc::new(RwLock::new(TransportStats::default())),
+				SocketPath:Some(SocketPath),
+				PipeName:None,
+				Configuration:TransportConfig::default(),
+				Connected:Arc::new(RwLock::new(false)),
+				Statistics:Arc::new(RwLock::new(TransportStats::default())),
 			})
 		}
 
 		#[cfg(windows)]
 		{
 			Ok(Self {
-				SocketPath: None,
-				PipeName: Some(r"\\.\pipe\grove-ipc".to_string()),
-				Configuration: TransportConfig::default(),
-				Connected: Arc::new(RwLock::new(false)),
-				Statistics: Arc::new(RwLock::new(TransportStats::default())),
+				SocketPath:None,
+				PipeName:Some(r"\\.\pipe\grove-ipc".to_string()),
+				Configuration:TransportConfig::default(),
+				Connected:Arc::new(RwLock::new(false)),
+				Statistics:Arc::new(RwLock::new(TransportStats::default())),
 			})
 		}
 
@@ -68,15 +68,15 @@ impl IPCTransport {
 	}
 
 	/// Creates a new IPC transport with a custom Unix domain socket path.
-	pub fn WithSocketPath<P: AsRef<Path>>(SocketPath: P) -> anyhow::Result<Self> {
+	pub fn WithSocketPath<P:AsRef<Path>>(SocketPath:P) -> anyhow::Result<Self> {
 		#[cfg(unix)]
 		{
 			Ok(Self {
-				SocketPath: Some(SocketPath.as_ref().to_path_buf()),
-				PipeName: None,
-				Configuration: TransportConfig::default(),
-				Connected: Arc::new(RwLock::new(false)),
-				Statistics: Arc::new(RwLock::new(TransportStats::default())),
+				SocketPath:Some(SocketPath.as_ref().to_path_buf()),
+				PipeName:None,
+				Configuration:TransportConfig::default(),
+				Connected:Arc::new(RwLock::new(false)),
+				Statistics:Arc::new(RwLock::new(TransportStats::default())),
 			})
 		}
 
@@ -148,14 +148,14 @@ impl TransportStrategy for IPCTransport {
 	}
 
 	#[instrument(skip(self, request))]
-	async fn send(&self, request: &[u8]) -> Result<Vec<u8>, Self::Error> {
+	async fn send(&self, request:&[u8]) -> Result<Vec<u8>, Self::Error> {
 		if !self.is_connected() {
 			return Err(IPCTransportError::NotConnected);
 		}
 
 		debug!("Sending IPC request ({} bytes)", request.len());
 
-		let Response: Vec<u8> = vec![];
+		let Response:Vec<u8> = vec![];
 
 		let mut Stats = self.Statistics.write().await;
 		Stats.record_sent(request.len() as u64, 0);
@@ -165,7 +165,7 @@ impl TransportStrategy for IPCTransport {
 	}
 
 	#[instrument(skip(self, data))]
-	async fn send_no_response(&self, data: &[u8]) -> Result<(), Self::Error> {
+	async fn send_no_response(&self, data:&[u8]) -> Result<(), Self::Error> {
 		if !self.is_connected() {
 			return Err(IPCTransportError::NotConnected);
 		}

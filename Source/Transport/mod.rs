@@ -34,6 +34,7 @@ pub mod Strategy;
 pub mod WASMTransport;
 
 use std::time::Duration;
+
 use anyhow::Result;
 // Types accessed via full paths: Transport::Strategy::Transport, etc.
 
@@ -47,28 +48,28 @@ pub const DEFAULT_REQUEST_TIMEOUT_MS:u64 = 30000;
 #[derive(Debug, Clone)]
 pub struct TransportConfig {
 	/// Connection timeout.
-	pub ConnectionTimeout: Duration,
+	pub ConnectionTimeout:Duration,
 	/// Request timeout.
-	pub RequestTimeout: Duration,
+	pub RequestTimeout:Duration,
 	/// Maximum number of retries.
-	pub MaximumRetries: u32,
+	pub MaximumRetries:u32,
 	/// Delay between retries.
-	pub RetryDelay: Duration,
+	pub RetryDelay:Duration,
 	/// Whether keepalive is enabled.
-	pub KeepaliveEnabled: bool,
+	pub KeepaliveEnabled:bool,
 	/// Keepalive interval.
-	pub KeepaliveInterval: Duration,
+	pub KeepaliveInterval:Duration,
 }
 
 impl Default for TransportConfig {
 	fn default() -> Self {
 		Self {
-			ConnectionTimeout: Duration::from_millis(DEFAULT_CONNECTION_TIMEOUT_MS),
-			RequestTimeout: Duration::from_millis(DEFAULT_REQUEST_TIMEOUT_MS),
-			MaximumRetries: 3,
-			RetryDelay: Duration::from_millis(1000),
-			KeepaliveEnabled: true,
-			KeepaliveInterval: Duration::from_secs(30),
+			ConnectionTimeout:Duration::from_millis(DEFAULT_CONNECTION_TIMEOUT_MS),
+			RequestTimeout:Duration::from_millis(DEFAULT_REQUEST_TIMEOUT_MS),
+			MaximumRetries:3,
+			RetryDelay:Duration::from_millis(1000),
+			KeepaliveEnabled:true,
+			KeepaliveInterval:Duration::from_secs(30),
 		}
 	}
 }
@@ -78,31 +79,31 @@ impl TransportConfig {
 	pub fn New() -> Self { Self::default() }
 
 	/// Sets the connection timeout.
-	pub fn WithConnectionTimeout(mut self, Timeout: Duration) -> Self {
+	pub fn WithConnectionTimeout(mut self, Timeout:Duration) -> Self {
 		self.ConnectionTimeout = Timeout;
 		self
 	}
 
 	/// Sets the request timeout.
-	pub fn WithRequestTimeout(mut self, Timeout: Duration) -> Self {
+	pub fn WithRequestTimeout(mut self, Timeout:Duration) -> Self {
 		self.RequestTimeout = Timeout;
 		self
 	}
 
 	/// Sets the maximum number of retries.
-	pub fn WithMaximumRetries(mut self, MaximumRetries: u32) -> Self {
+	pub fn WithMaximumRetries(mut self, MaximumRetries:u32) -> Self {
 		self.MaximumRetries = MaximumRetries;
 		self
 	}
 
 	/// Sets the retry delay.
-	pub fn WithRetryDelay(mut self, Delay: Duration) -> Self {
+	pub fn WithRetryDelay(mut self, Delay:Duration) -> Self {
 		self.RetryDelay = Delay;
 		self
 	}
 
 	/// Enables or disables keepalive.
-	pub fn WithKeepalive(mut self, Enabled: bool) -> Self {
+	pub fn WithKeepalive(mut self, Enabled:bool) -> Self {
 		self.KeepaliveEnabled = Enabled;
 		self
 	}
@@ -112,7 +113,7 @@ impl TransportConfig {
 pub fn CreateDefaultTransport() -> Strategy::Transport { Strategy::Transport::default() }
 
 /// Creates a gRPC transport connecting to the given address.
-pub fn CreategRPCTransport(Address: &str) -> Result<Strategy::Transport> {
+pub fn CreategRPCTransport(Address:&str) -> Result<Strategy::Transport> {
 	Ok(Strategy::Transport::gRPC(gRPCTransport::gRPCTransport::New(Address)?))
 }
 
@@ -123,9 +124,9 @@ pub fn CreateIPCTransport() -> Result<Strategy::Transport> {
 
 /// Creates a WASM transport with the given configuration.
 pub fn CreateWASMTransport(
-	EnableWASI: bool,
-	MemoryLimitMegabytes: u64,
-	MaxExecutionTimeMilliseconds: u64,
+	EnableWASI:bool,
+	MemoryLimitMegabytes:u64,
+	MaxExecutionTimeMilliseconds:u64,
 ) -> Result<Strategy::Transport> {
 	Ok(Strategy::Transport::WASM(WASMTransport::WASMTransportImpl::new(
 		EnableWASI,
@@ -161,9 +162,7 @@ mod tests {
 	fn TestTransportDefault() {
 		let TransportValue = CreateDefaultTransport();
 		match TransportValue {
-			Strategy::Transport::gRPC(_)
-			| Strategy::Transport::IPC(_)
-			| Strategy::Transport::WASM(_) => {},
+			Strategy::Transport::gRPC(_) | Strategy::Transport::IPC(_) | Strategy::Transport::WASM(_) => {},
 		}
 	}
 }

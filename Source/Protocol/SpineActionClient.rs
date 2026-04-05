@@ -1,6 +1,6 @@
 //! # Grove Spine Connection
 //!
-//! ☀️ 🟡 MOUNTAIN_GROVE_WASM - Grove (WASM+Rhai) connection to Mountain Spine
+//!  ☀️ 🟡 MOUNTAIN_GROVE_WASM - Grove (WASM+Rhai) connection to Mountain Spine
 //!
 //! Bidirectional gRPC connection with EchoAction support.
 //!
@@ -60,7 +60,7 @@ use crate::{
 
 /// Grove Spine Action Client
 ///
-/// ☀️ 🟡 MOUNTAIN_GROVE_WASM - EchoAction client + gRPC connection
+///  ☀️ 🟡 MOUNTAIN_GROVE_WASM - EchoAction client + gRPC connection
 pub struct SpineActionClient {
 	/// Mountain connection details
 	config:SpineConfig,
@@ -93,7 +93,7 @@ pub struct SpineActionClient {
 
 /// Spine configuration
 ///
-/// ☀️ 🟡 MOUNTAIN_GROVE_WASM
+///  ☀️ 🟡 MOUNTAIN_GROVE_WASM
 #[derive(Clone, Debug)]
 pub struct SpineConfig {
 	/// Mountain gRPC URL
@@ -111,7 +111,7 @@ pub struct SpineConfig {
 
 /// Grove host capabilities
 ///
-/// ☀️ 🟡 MOUNTAIN_GROVE_WASM
+///  ☀️ 🟡 MOUNTAIN_GROVE_WASM
 #[derive(Clone, Debug)]
 pub struct GroveCapabilities {
 	/// Supports WASM
@@ -153,7 +153,7 @@ impl Default for SpineConfig {
 
 /// Reconnect strategy
 ///
-/// ☀️ 🟡 MOUNTAIN_GROVE_WASM
+///  ☀️ 🟡 MOUNTAIN_GROVE_WASM
 #[derive(Clone, Debug)]
 pub enum ReconnectStrategy {
 	/// Never reconnect
@@ -175,7 +175,7 @@ impl Default for ReconnectStrategy {
 
 /// Host information from Mountain
 ///
-/// ☀️ 🟡 MOUNTAIN_GROVE_WASM
+///  ☀️ 🟡 MOUNTAIN_GROVE_WASM
 #[derive(Clone, Debug)]
 pub struct HostInfo {
 	pub host_id:String,
@@ -186,7 +186,7 @@ pub struct HostInfo {
 impl SpineActionClient {
 	/// Create new Spine action client
 	///
-	/// ☀️ 🟡 MOUNTAIN_GROVE_WASM
+	///  ☀️ 🟡 MOUNTAIN_GROVE_WASM
 	#[instrument(skip(config))]
 	pub async fn new(config:SpineConfig) -> Result<Self> {
 		let host_id = format!("grove-{}", uuid::Uuid::new_v4());
@@ -209,7 +209,7 @@ impl SpineActionClient {
 
 	/// Connect to Mountain
 	///
-	/// ☀️ 🟡 MOUNTAIN_GROVE_WASM
+	///  ☀️ 🟡 MOUNTAIN_GROVE_WASM
 	#[instrument(skip(self))]
 	pub async fn connect(&mut self) -> Result<()> {
 		info!("Connecting to Mountain at: {}", self.config.mountain_url);
@@ -238,7 +238,7 @@ impl SpineActionClient {
 
 	/// Disconnection from Mountain
 	///
-	/// ☀️ 🟡 MOUNTAIN_GROVE_WASM
+	///  ☀️ 🟡 MOUNTAIN_GROVE_WASM
 	#[instrument(skip(self))]
 	pub async fn disconnect(&mut self) -> Result<()> {
 		info!("Disconnecting from Mountain");
@@ -255,7 +255,7 @@ impl SpineActionClient {
 
 	/// Register Grove as an extension host
 	///
-	/// ☀️ 🟡 MOUNTAIN_GROVE_WASM - Host registration with Mountain
+	///  ☀️ 🟡 MOUNTAIN_GROVE_WASM - Host registration with Mountain
 	#[instrument(skip(self))]
 	pub async fn register(&self) -> Result<HostInfo> {
 		let client = self
@@ -339,7 +339,7 @@ impl SpineActionClient {
 
 	/// Send EchoAction to Mountain
 	///
-	/// ☀️ 🟡 MOUNTAIN_GROVE_WASM
+	///  ☀️ 🟡 MOUNTAIN_GROVE_WASM
 	#[instrument(skip(self, action))]
 	pub async fn send_echo_action(&self, action:EchoAction) -> Result<EchoActionResponse> {
 		let client = self
@@ -369,7 +369,7 @@ impl SpineActionClient {
 
 	/// Send RPC via EchoAction
 	///
-	/// ☀️ 🟡 MOUNTAIN_GROVE_WASM
+	///  ☀️ 🟡 MOUNTAIN_GROVE_WASM
 	#[instrument(skip(self, payload))]
 	pub async fn send_rpc_via_action(
 		&self,
@@ -403,7 +403,7 @@ impl SpineActionClient {
 
 	/// Send event via EchoAction
 	///
-	/// ☀️ 🟡 MOUNTAIN_GROVE_WASM
+	///  ☀️ 🟡 MOUNTAIN_GROVE_WASM
 	pub async fn send_event(&self, event_name:&str, payload:Vec<u8>, metadata:HashMap<String, String>) -> Result<()> {
 		let mut headers = vec![
 			("event_name".to_string(), event_name.to_string()),
@@ -431,7 +431,7 @@ impl SpineActionClient {
 
 	/// Start heartbeat loop
 	///
-	/// ☀️ 🟡 MOUNTAIN_GROVE_WASM
+	///  ☀️ 🟡 MOUNTAIN_GROVE_WASM
 	/// Sends periodic heartbeat EchoActions to maintain connection
 	async fn start_heartbeat_loop(&self) -> Result<()> {
 		let connected = Arc::clone(&self.connected);
@@ -461,7 +461,7 @@ impl SpineActionClient {
 
 	/// Start EchoAction listener
 	///
-	/// ☀️ 🟡 MOUNTAIN_GROVE_WASM - Receives EchoActions from Mountain
+	///  ☀️ 🟡 MOUNTAIN_GROVE_WASM - Receives EchoActions from Mountain
 	/// Listens for EchoAction messages from Mountain over the bidirectional
 	/// gRPC stream. Currently implemented as a stub that logs when the
 	/// listener is active.
@@ -485,7 +485,7 @@ impl SpineActionClient {
 
 	/// Get connection status
 	///
-	/// ☀️ 🟡 MOUNTAIN_GROVE_WASM
+	///  ☀️ 🟡 MOUNTAIN_GROVE_WASM
 	pub async fn get_status(&self) -> ConnectionStatus {
 		let connected = *self.connected.read().await;
 		let start = *self.connection_start_time.read().await;
@@ -501,17 +501,17 @@ impl SpineActionClient {
 
 	/// Set WASM runtime
 	///
-	/// ☀️ 🟡 MOUNTAIN_GROVE_WASM
+	///  ☀️ 🟡 MOUNTAIN_GROVE_WASM
 	pub fn set_wasm_runtime(&mut self, runtime:Arc<WASMRuntime>) { self.wasm_runtime = Some(runtime); }
 
 	/// Set API Bridge
 	///
-	/// ☀️ 🟡 MOUNTAIN_GROVE_WASM
+	///  ☀️ 🟡 MOUNTAIN_GROVE_WASM
 	pub fn set_api_bridge(&mut self, bridge:Arc<APIBridge>) { self.api_bridge = Some(bridge); }
 
 	/// Attempt to reconnect
 	///
-	/// ☀️ 🟡 MOUNTAIN_GROVE_WASM
+	///  ☀️ 🟡 MOUNTAIN_GROVE_WASM
 	#[instrument(skip(self))]
 	pub async fn reconnect(&mut self) -> Result<()> {
 		warn!("Attempting to reconnect to Mountain");
@@ -528,7 +528,7 @@ impl SpineActionClient {
 
 /// Connection status
 ///
-/// ☀️ 🟡 MOUNTAIN_GROVE_WASM
+///  ☀️ 🟡 MOUNTAIN_GROVE_WASM
 #[derive(Clone, Debug)]
 pub struct ConnectionStatus {
 	pub connected:bool,
@@ -543,7 +543,7 @@ pub struct ConnectionStatus {
 
 /// Calculate backoff delay based on attempt number
 ///
-/// ☀️ 🟡 MOUNTAIN_GROVE_WASM
+///  ☀️ 🟡 MOUNTAIN_GROVE_WASM
 fn calculate_backoff(attempt:u32, strategy:&ReconnectStrategy) -> std::time::Duration {
 	match strategy {
 		ReconnectStrategy::Never => return std::time::Duration::from_secs(0),

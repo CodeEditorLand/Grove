@@ -9,11 +9,7 @@ use async_trait::async_trait;
 use bytes::Bytes;
 use serde::{Deserialize, Serialize};
 
-use crate::Transport::{
-	gRPCTransport::gRPCTransport,
-	IPCTransport::IPCTransport,
-	WASMTransport::WASMTransportImpl,
-};
+use crate::Transport::{IPCTransport::IPCTransport, WASMTransport::WASMTransportImpl, gRPCTransport::gRPCTransport};
 
 /// Transport strategy trait
 ///
@@ -222,8 +218,7 @@ impl Default for Transport {
 	fn default() -> Self {
 		Self::gRPC(
 			gRPCTransport::New("127.0.0.1:50050").unwrap_or_else(|_| {
-				gRPCTransport::New("0.0.0.0:50050")
-					.expect("Failed to create default gRPC transport")
+				gRPCTransport::New("0.0.0.0:50050").expect("Failed to create default gRPC transport")
 			}),
 		)
 	}

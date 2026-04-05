@@ -260,13 +260,23 @@ impl LanguageNamespace {
 	pub fn register_rename_provider(&self, _selector:DocumentSelector) -> Disposable { Disposable::new() }
 
 	/// Register document formatting provider
-	pub fn register_document_formatting_edit_provider(&self, _selector:DocumentSelector) -> Disposable { Disposable::new() }
+	pub fn register_document_formatting_edit_provider(&self, _selector:DocumentSelector) -> Disposable {
+		Disposable::new()
+	}
 
 	/// Register document range formatting provider
-	pub fn register_document_range_formatting_edit_provider(&self, _selector:DocumentSelector) -> Disposable { Disposable::new() }
+	pub fn register_document_range_formatting_edit_provider(&self, _selector:DocumentSelector) -> Disposable {
+		Disposable::new()
+	}
 
 	/// Register on-type formatting provider
-	pub fn register_on_type_formatting_edit_provider(&self, _selector:DocumentSelector, _trigger_characters:Vec<String>) -> Disposable { Disposable::new() }
+	pub fn register_on_type_formatting_edit_provider(
+		&self,
+		_selector:DocumentSelector,
+		_trigger_characters:Vec<String>,
+	) -> Disposable {
+		Disposable::new()
+	}
 
 	/// Register signature help provider
 	pub fn register_signature_help_provider(&self, _selector:DocumentSelector) -> Disposable { Disposable::new() }
@@ -281,7 +291,9 @@ impl LanguageNamespace {
 	pub fn register_selection_range_provider(&self, _selector:DocumentSelector) -> Disposable { Disposable::new() }
 
 	/// Register semantic tokens provider
-	pub fn register_document_semantic_tokens_provider(&self, _selector:DocumentSelector) -> Disposable { Disposable::new() }
+	pub fn register_document_semantic_tokens_provider(&self, _selector:DocumentSelector) -> Disposable {
+		Disposable::new()
+	}
 
 	/// Register inlay hints provider
 	pub fn register_inlay_hints_provider(&self, _selector:DocumentSelector) -> Disposable { Disposable::new() }
