@@ -1,5 +1,5 @@
 [package]
-name = "grove"
+name = "Grove"
 version = "0.1.0"
 edition = "2021"
 authors = ["Grove Contributors"]
@@ -10,12 +10,12 @@ keywords = ["vscode", "extension", "wasm", "rust", "host"]
 categories = ["development-tools", "wasm"]
 
 [lib]
-name = "grove"
+name = "Grove"
 path = "Source/lib.rs"
 crate-type = ["cdylib", "rlib"]
 
 [[bin]]
-name = "grove"
+name = "Grove"
 path = "Source/main.rs"
 
 [dependencies]
