@@ -215,7 +215,7 @@ impl WorkspaceConfiguration {
 	}
 }
 
-/// Languages namespace — mirrors the full vscode.languages API surface.
+/// Languages namespace - mirrors the full vscode.languages API surface.
 /// Each register*Provider method returns a Disposable and communicates
 /// with Mountain via the transport layer (gRPC/IPC/WASM).
 #[derive(Debug, Clone)]

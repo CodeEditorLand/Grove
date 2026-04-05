@@ -158,16 +158,22 @@ impl TransportStrategy for gRPCTransport {
 /// gRPC transport error variants.
 #[derive(Debug, thiserror::Error)]
 pub enum gRPCTransportError {
+	/// Failed to establish connection to gRPC server
 	#[error("Connection failed: {0}")]
 	ConnectionFailed(String),
+	/// Failed to send message to gRPC server
 	#[error("Send failed: {0}")]
 	SendFailed(String),
+	/// Failed to receive message from gRPC server
 	#[error("Receive failed: {0}")]
 	ReceiveFailed(String),
+	/// Transport is not connected
 	#[error("Not connected")]
 	NotConnected,
+	/// Operation timed out
 	#[error("Timeout")]
 	Timeout,
+	/// Generic gRPC error
 	#[error("gRPC error: {0}")]
 	Error(String),
 }

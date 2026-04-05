@@ -24,8 +24,8 @@
 //! # Key Components
 //!
 //! - [`Strategy`] - Transport strategy trait
-//! - [`GrpcTransport`] - gRPC-based communication
-//! - [`IpcTransport`] - Inter-process communication
+//! - [`gRPCTransport`] - gRPC-based communication
+//! - [`IPCTransport`] - Inter-process communication
 //! - [`WASMTransport`] - Direct WASM module communication
 
 pub mod gRPCTransport;

@@ -206,20 +206,28 @@ impl TransportStrategy for IPCTransport {
 /// IPC transport error variants.
 #[derive(Debug, thiserror::Error)]
 pub enum IPCTransportError {
+	/// Failed to establish IPC connection
 	#[error("Connection failed: {0}")]
 	ConnectionFailed(String),
+	/// Failed to send message via IPC
 	#[error("Send failed: {0}")]
 	SendFailed(String),
+	/// Failed to receive message via IPC
 	#[error("Receive failed: {0}")]
 	ReceiveFailed(String),
+	/// Transport is not connected
 	#[error("Not connected")]
 	NotConnected,
+	/// IPC not supported on this platform
 	#[error("IPC not supported on this platform")]
 	NotSupported,
+	/// Failed to clean up IPC resources
 	#[error("Cleanup failed: {0}")]
 	CleanupFailed(String),
+	/// Socket communication error
 	#[error("Socket error: {0}")]
 	SocketError(String),
+	/// Operation timed out
 	#[error("Timeout")]
 	Timeout,
 }
