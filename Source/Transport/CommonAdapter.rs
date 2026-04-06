@@ -7,7 +7,7 @@
 //! and `WASMTransportImpl` to be used through the unified Common transport
 //! interface, enabling transport-agnostic code in the application.
 
-use std::sync::Arc;
+use std::{collections::HashMap, sync::Arc, time::Duration};
 
 use async_trait::async_trait;
 use CommonLibrary::{
@@ -60,8 +60,10 @@ use crate::Transport::{
 pub struct TransportAdapter {
 	/// The underlying Grove transport (wrapped in Arc for thread sharing)
 	transport:Arc<GroveTransport>,
-	/// Configuration for timeout and retry handling
+	/// Grove-side transport configuration
 	config:GroveTransportConfig,
+	/// Common-library TransportConfig view (built from grove config at construction)
+	common_config:TransportConfig,
 	/// Correlation ID generator (use default UUID generator)
 	correlation_generator:fn() -> String,
 }
@@ -77,26 +79,50 @@ impl TransportAdapter {
 	///
 	/// A new `TransportAdapter` ready for use as a Common `TransportStrategy`.
 	pub fn new(transport:GroveTransport) -> Self {
+		let Config = GroveTransportConfig::default();
+		let CommonConfig = Self::BuildCommonConfig(&Config);
 		Self {
 			transport:Arc::new(transport),
-			config:GroveTransportConfig::default(),
+			config:Config,
+			common_config:CommonConfig,
 			correlation_generator:|| uuid::Uuid::new_v4().to_string(),
 		}
 	}
 
 	/// Creates a new `TransportAdapter` with custom configuration.
 	pub fn with_config(transport:GroveTransport, config:GroveTransportConfig) -> Self {
+		let CommonConfig = Self::BuildCommonConfig(&config);
 		Self {
 			transport:Arc::new(transport),
 			config,
+			common_config:CommonConfig,
 			correlation_generator:|| uuid::Uuid::new_v4().to_string(),
+		}
+	}
+
+	/// Builds a `CommonLibrary::Transport::TransportConfig` from a
+	/// `GroveTransportConfig`, mapping the overlapping fields.
+	fn BuildCommonConfig(Grove:&GroveTransportConfig) -> TransportConfig {
+		TransportConfig {
+			DefaultTimeout:Grove.RequestTimeout,
+			MaximumRetries:Grove.MaximumRetries,
+			RetryBaseDelay:Grove.RetryDelay,
+			RetryMaximumDelay:Grove.RetryDelay * 10,
+			RetryJitterEnabled:true,
+			CircuitBreakerFailureThreshold:5,
+			CircuitBreakerResetTimeout:Duration::from_secs(30),
+			HealthChecksEnabled:true,
+			HealthCheckInterval:Grove.KeepaliveInterval,
+			MetricsEnabled:true,
+			TransportConfigurations:HashMap::new(),
+			..TransportConfig::default()
 		}
 	}
 
 	/// Gets the underlying Grove transport.
 	pub fn grove_transport(&self) -> &GroveTransport { &self.transport }
 
-	/// Gets the transport configuration.
+	/// Gets the Grove-side transport configuration.
 	pub fn config(&self) -> &GroveTransportConfig { &self.config }
 
 	/// Converts a Grove `TransportType` to a Common `TransportType`.
@@ -250,41 +276,9 @@ impl TransportStrategy for TransportAdapter {
 	}
 
 	fn config(&self) -> &TransportConfig {
-		// We need to convert Grove's TransportConfig to Common's TransportConfig.
-		// This is tricky because they are different types. We could create a Common
-		// TransportConfig from Grove's config. For simplicity, we'll return a dummy
-		// common config. In a real implementation, we'd store a Common
-		// TransportConfig separately or adapt it. For now, let's create a translated
-		// one. Actually we don't have a Common TransportConfig stored. We could
-		// create on-the-fly.
-		let common_config = TransportConfig {
-			default_timeout:self.config.request_timeout,
-			max_retries:self.config.max_retries,
-			retry_base_delay:self.config.retry_delay,
-			retry_max_delay:Duration::from_secs(10),
-			retry_jitter_enabled:false,
-			circuit_breaker_failure_threshold:5,
-			circuit_breaker_reset_timeout:Duration::from_secs(60),
-			health_checks_enabled:true,
-			health_check_interval:Duration::from_secs(30),
-			metrics_enabled:true,
-			transport_configs:std::collections::HashMap::new(),
-			allowed_transports:Vec::new(),
-			forbidden_transports:Vec::new(),
-		};
-		// But we can't return a reference to a temporary. So we need to store it.
-		// Let's change the struct to hold a Common TransportConfig as well.
-		// For now, we'll use a static empty config, but that's not ideal.
-		// Actually the method signature is `&self -> &TransportConfig`, so we need to
-		// have it stored. I'll need to adjust the struct to hold an
-		// `Arc<TransportConfig>` or store it directly. But I'm not storing it
-		// currently. Let's revise the struct to include a common config. I'll need to
-		// rewrite the struct. For now, I'll return a reference to an empty static
-		// config via lazy_static or something. But simpler: I'll add a field
-		// `common_config` to the adapter. Since we want the adapter to be usable,
-		// let's modify the struct. I'll do a rewrite of this file with a proper
-		// storage of common config.
-		unimplemented!("config() method needs proper storage of common config")
+		// common_config is built from GroveTransportConfig at construction time
+		// via TransportAdapter::BuildCommonConfig.
+		&self.common_config
 	}
 
 	fn supports_streaming(&self) -> bool {

@@ -9,7 +9,7 @@
 </h3>
 </td>
 <td align="left" valign="middle">
-<h3 align="left"> + </h3>
+<h3 align="left"> + </h3>
 </td>
 <td align="left" valign="middle">
 <h3 align="left">
@@ -108,7 +108,7 @@ surface.
 
 ---
 
-## `Grove` in the Land Ecosystem&#x2001;🌳 + 🏞️
+## `Grove` in the Land Ecosystem&#x2001;🌳 + 🏞️
 
 | Component                     | Role & Key Responsibilities                                                   |
 | :---------------------------- | :---------------------------------------------------------------------------- |
