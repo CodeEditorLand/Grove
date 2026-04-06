@@ -8,7 +8,7 @@ use std::path::PathBuf;
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 use tracing::{error, info};
-use grove::{
+use Grove::{
 	Binary::{
 		Build::{RuntimeBuild, ServiceRegister},
 		Main::Entry::{BuildResult, Entry, ExtensionInfo, ValidationResult},
