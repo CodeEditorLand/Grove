@@ -12,8 +12,7 @@ use std::sync::{
 
 use serde::{Deserialize, Serialize};
 
-use crate::API::types::*;
-use crate::Transport::Strategy::Transport;
+use crate::{API::types::*, Transport::Strategy::Transport};
 
 // ============================================================================
 // Provider Registration Store
@@ -50,12 +49,7 @@ impl ProviderStore {
 
 	/// Returns the number of active registrations.
 	#[allow(dead_code)]
-	fn len(&self) -> usize {
-		self.entries
-			.lock()
-			.map(|G| G.len())
-			.unwrap_or(0)
-	}
+	fn len(&self) -> usize { self.entries.lock().map(|G| G.len()).unwrap_or(0) }
 }
 
 /// VS Code API facade - the main entry point for extensions
@@ -76,7 +70,8 @@ pub struct VSCodeAPI {
 }
 
 impl VSCodeAPI {
-	/// Create a new VS Code API facade (no transport — registrations stored locally only)
+	/// Create a new VS Code API facade (no transport — registrations stored
+	/// locally only)
 	pub fn new() -> Self {
 		Self {
 			commands:Arc::new(CommandNamespace::new()),
@@ -89,7 +84,8 @@ impl VSCodeAPI {
 	}
 
 	/// Create a VS Code API facade wired to a Mountain transport.
-	/// Provider registrations will be forwarded to Mountain via `send_no_response`.
+	/// Provider registrations will be forwarded to Mountain via
+	/// `send_no_response`.
 	pub fn new_with_transport(transport:Arc<Transport>) -> Self {
 		Self {
 			commands:Arc::new(CommandNamespace::new()),
@@ -294,9 +290,7 @@ pub struct LanguageNamespace {
 }
 
 impl Clone for LanguageNamespace {
-	fn clone(&self) -> Self {
-		Self { store:Arc::clone(&self.store), transport:self.transport.clone() }
-	}
+	fn clone(&self) -> Self { Self { store:Arc::clone(&self.store), transport:self.transport.clone() } }
 }
 
 impl LanguageNamespace {
@@ -304,7 +298,8 @@ impl LanguageNamespace {
 	pub fn new() -> Self { Self { store:Arc::new(ProviderStore::default()), transport:None } }
 
 	/// Create a new LanguageNamespace wired to a Mountain transport.
-	/// Registrations are forwarded via `send_no_response` as JSON notifications.
+	/// Registrations are forwarded via `send_no_response` as JSON
+	/// notifications.
 	pub fn new_with_transport(transport:Arc<Transport>) -> Self {
 		Self { store:Arc::new(ProviderStore::default()), transport:Some(transport) }
 	}
@@ -314,19 +309,25 @@ impl LanguageNamespace {
 
 	/// Internal helper: register a provider, return a disposable handle.
 	fn register(&self, provider_type:&str, selector:&DocumentSelector) -> Disposable {
+		let ProviderTypeOwned = provider_type.to_string();
 		let SelectorStr = selector
 			.iter()
 			.filter_map(|F| F.language.as_deref())
 			.collect::<Vec<_>>()
 			.join(",");
-		let Handle = self.store.insert(provider_type, &SelectorStr);
+		let Handle = self.store.insert(&ProviderTypeOwned, &SelectorStr);
 		let Store = Arc::clone(&self.store);
-		tracing::debug!("[LanguageNamespace] registered {} handle={} selector={}", provider_type, Handle, SelectorStr);
+		tracing::debug!(
+			"[LanguageNamespace] registered {} handle={} selector={}",
+			ProviderTypeOwned,
+			Handle,
+			SelectorStr
+		);
 
 		// Forward registration to Mountain if transport is wired
 		if let Some(Transport) = &self.transport {
 			let Notification = serde_json::json!({
-				"method": format!("register_{}", provider_type),
+				"method": format!("register_{}", ProviderTypeOwned),
 				"parameters": {
 					"handle": Handle,
 					"language_selector": SelectorStr,
@@ -343,7 +344,7 @@ impl LanguageNamespace {
 
 		Disposable::with_callback(Box::new(move || {
 			Store.remove(Handle);
-			tracing::debug!("[LanguageNamespace] disposed {} handle={}", provider_type, Handle);
+			tracing::debug!("[LanguageNamespace] disposed {} handle={}", ProviderTypeOwned, Handle);
 		}))
 	}
 
@@ -358,9 +359,7 @@ impl LanguageNamespace {
 	}
 
 	/// Register hover provider
-	pub fn register_hover_provider(&self, selector:DocumentSelector) -> Disposable {
-		self.register("hover", &selector)
-	}
+	pub fn register_hover_provider(&self, selector:DocumentSelector) -> Disposable { self.register("hover", &selector) }
 
 	/// Register definition provider
 	pub fn register_definition_provider(&self, selector:DocumentSelector) -> Disposable {
@@ -388,9 +387,7 @@ impl LanguageNamespace {
 	}
 
 	/// Register workspace symbol provider
-	pub fn register_workspace_symbol_provider(&self) -> Disposable {
-		self.register("workspaceSymbol", &Vec::new())
-	}
+	pub fn register_workspace_symbol_provider(&self) -> Disposable { self.register("workspaceSymbol", &Vec::new()) }
 
 	/// Register rename provider
 	pub fn register_rename_provider(&self, selector:DocumentSelector) -> Disposable {
@@ -483,7 +480,10 @@ impl LanguageNamespace {
 
 	/// Set language configuration
 	pub fn set_language_configuration(&self, language:String) -> Disposable {
-		self.register("languageConfiguration", &vec![DocumentFilter { language:Some(language), scheme:None, pattern:None }])
+		self.register(
+			"languageConfiguration",
+			&vec![DocumentFilter { language:Some(language), scheme:None, pattern:None }],
+		)
 	}
 }
 
@@ -601,7 +601,9 @@ pub struct Disposable {
 
 impl std::fmt::Debug for Disposable {
 	fn fmt(&self, f:&mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		f.debug_struct("Disposable").field("has_callback", &self.callback.is_some()).finish()
+		f.debug_struct("Disposable")
+			.field("has_callback", &self.callback.is_some())
+			.finish()
 	}
 }
 
@@ -616,9 +618,7 @@ impl Disposable {
 	pub fn new() -> Self { Self { callback:None } }
 
 	/// Create a disposable with a callback invoked on `dispose()`.
-	pub fn with_callback(callback:Box<dyn FnOnce() + Send + Sync>) -> Self {
-		Self { callback:Some(callback) }
-	}
+	pub fn with_callback(callback:Box<dyn FnOnce() + Send + Sync>) -> Self { Self { callback:Some(callback) } }
 
 	/// Dispose the resource, invoking the registered callback if present.
 	pub fn dispose(mut self) {
