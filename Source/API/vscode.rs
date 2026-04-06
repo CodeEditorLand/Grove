@@ -13,6 +13,7 @@ use std::sync::{
 use serde::{Deserialize, Serialize};
 
 use crate::API::types::*;
+use crate::Transport::Strategy::Transport;
 
 // ============================================================================
 // Provider Registration Store
@@ -75,13 +76,26 @@ pub struct VSCodeAPI {
 }
 
 impl VSCodeAPI {
-	/// Create a new VS Code API facade
+	/// Create a new VS Code API facade (no transport — registrations stored locally only)
 	pub fn new() -> Self {
 		Self {
 			commands:Arc::new(CommandNamespace::new()),
 			window:Arc::new(Window::new()),
 			workspace:Arc::new(Workspace::new()),
 			languages:Arc::new(LanguageNamespace::new()),
+			extensions:Arc::new(ExtensionNamespace::new()),
+			env:Arc::new(Env::new()),
+		}
+	}
+
+	/// Create a VS Code API facade wired to a Mountain transport.
+	/// Provider registrations will be forwarded to Mountain via `send_no_response`.
+	pub fn new_with_transport(transport:Arc<Transport>) -> Self {
+		Self {
+			commands:Arc::new(CommandNamespace::new()),
+			window:Arc::new(Window::new()),
+			workspace:Arc::new(Workspace::new()),
+			languages:Arc::new(LanguageNamespace::new_with_transport(Arc::clone(&transport))),
 			extensions:Arc::new(ExtensionNamespace::new()),
 			env:Arc::new(Env::new()),
 		}
@@ -267,24 +281,33 @@ impl WorkspaceConfiguration {
 /// Each `register_*_provider` method:
 /// 1. Assigns a unique handle from the atomic counter
 /// 2. Stores the registration in `ProviderStore` for lifecycle tracking
-/// 3. Returns a `Disposable` that removes the registration on dispose
-///
-/// Mountain gRPC forwarding (P4 task) will be added in Grove-Vine Connection:
-/// each registration will additionally send a `RegisterProviderRequest` via the
-/// Spine connection to Mountain's CocoonService.
+/// 3. If a Mountain `Transport` is wired, forwards a `send_no_response` JSON
+///    notification matching Mountain's `GenericNotification` format so that
+///    Mountain can store the provider in its `ProviderRegistry`
+/// 4. Returns a `Disposable` that removes the registration on dispose
 #[derive(Debug)]
 pub struct LanguageNamespace {
 	/// Active provider registration store.
 	store:Arc<ProviderStore>,
+	/// Optional transport to Mountain for forwarding registrations.
+	transport:Option<Arc<Transport>>,
 }
 
 impl Clone for LanguageNamespace {
-	fn clone(&self) -> Self { Self { store:Arc::clone(&self.store) } }
+	fn clone(&self) -> Self {
+		Self { store:Arc::clone(&self.store), transport:self.transport.clone() }
+	}
 }
 
 impl LanguageNamespace {
-	/// Create a new LanguageNamespace instance.
-	pub fn new() -> Self { Self { store:Arc::new(ProviderStore::default()) } }
+	/// Create a new LanguageNamespace instance (local storage only).
+	pub fn new() -> Self { Self { store:Arc::new(ProviderStore::default()), transport:None } }
+
+	/// Create a new LanguageNamespace wired to a Mountain transport.
+	/// Registrations are forwarded via `send_no_response` as JSON notifications.
+	pub fn new_with_transport(transport:Arc<Transport>) -> Self {
+		Self { store:Arc::new(ProviderStore::default()), transport:Some(transport) }
+	}
 
 	/// Returns the number of active provider registrations.
 	pub fn active_registration_count(&self) -> usize { self.store.len() }
@@ -299,6 +322,25 @@ impl LanguageNamespace {
 		let Handle = self.store.insert(provider_type, &SelectorStr);
 		let Store = Arc::clone(&self.store);
 		tracing::debug!("[LanguageNamespace] registered {} handle={} selector={}", provider_type, Handle, SelectorStr);
+
+		// Forward registration to Mountain if transport is wired
+		if let Some(Transport) = &self.transport {
+			let Notification = serde_json::json!({
+				"method": format!("register_{}", provider_type),
+				"parameters": {
+					"handle": Handle,
+					"language_selector": SelectorStr,
+					"extension_id": "grove-extension",
+				}
+			});
+			if let Ok(Bytes) = serde_json::to_vec(&Notification) {
+				let TransportClone = Arc::clone(Transport);
+				tokio::spawn(async move {
+					let _ = TransportClone.send_no_response(&Bytes).await;
+				});
+			}
+		}
+
 		Disposable::with_callback(Box::new(move || {
 			Store.remove(Handle);
 			tracing::debug!("[LanguageNamespace] disposed {} handle={}", provider_type, Handle);

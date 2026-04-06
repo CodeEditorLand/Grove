@@ -8,21 +8,13 @@ jobs = 8
 # Target settings
 [target.wasm32-wasi]
 # WASMtime linker for WASM builds
-rustflags = [
-    "-C", "link-arg=-zstack-size=1048576",
-]
+rustflags = ["-C", "link-arg=-zstack-size=1048576"]
 
 [target.x86_64-apple-darwin]
-rustflags = [
-    "-C", "link-arg=-undefined",
-    "-C", "link-arg=dynamic_lookup",
-]
+rustflags = ["-C", "link-arg=-undefined", "-C", "link-arg=dynamic_lookup"]
 
 [target.aarch64-apple-darwin]
-rustflags = [
-    "-C", "link-arg=-undefined",
-    "-C", "link-arg=dynamic_lookup",
-]
+rustflags = ["-C", "link-arg=-undefined", "-C", "link-arg=dynamic_lookup"]
 
 [net]
 # Git fetch with retry
