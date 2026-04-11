@@ -70,7 +70,7 @@ pub struct VSCodeAPI {
 }
 
 impl VSCodeAPI {
-	/// Create a new VS Code API facade (no transport — registrations stored
+	/// Create a new VS Code API facade (no transport - registrations stored
 	/// locally only)
 	pub fn new() -> Self {
 		Self {
@@ -272,7 +272,7 @@ impl WorkspaceConfiguration {
 	}
 }
 
-/// Languages namespace — mirrors the full vscode.languages API surface.
+/// Languages namespace - mirrors the full vscode.languages API surface.
 ///
 /// Each `register_*_provider` method:
 /// 1. Assigns a unique handle from the atomic counter

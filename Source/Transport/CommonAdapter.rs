@@ -62,7 +62,8 @@ pub struct TransportAdapter {
 	transport:Arc<GroveTransport>,
 	/// Grove-side transport configuration
 	config:GroveTransportConfig,
-	/// Common-library TransportConfig view (built from grove config at construction)
+	/// Common-library TransportConfig view (built from grove config at
+	/// construction)
 	common_config:TransportConfig,
 	/// Correlation ID generator (use default UUID generator)
 	correlation_generator:fn() -> String,
