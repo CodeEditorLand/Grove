@@ -138,7 +138,7 @@ message ExtensionStatus {
     ERROR = 4;
   }
 
-  State State = 1;
+  State CurrentState = 1;
   string ErrorMessage = 2; // Error message if in ERROR state
   int64 ActivationTimeMs = 3; // Time since activation
   string Transport = 4; // Transport method used
@@ -246,7 +246,7 @@ message ExtensionEvent {
     CONFIGURATION_CHANGED = 4;
   }
 
-  EventType EventType = 1;
+  EventType Kind = 1;
   ExtensionIdentifier ExtensionId = 2;
   bytes EventData = 3; // Event data (JSON)
   int64 TimestampMs = 4; // Event timestamp
