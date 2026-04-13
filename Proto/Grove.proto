@@ -5,9 +5,12 @@
 
 syntax = "proto3";
 
+
 package Grove;
 
+
 import "google/protobuf/empty.proto";
+
 
 // ===================================================================
 // Grove Service
@@ -17,26 +20,37 @@ import "google/protobuf/empty.proto";
 service GroveService {
   // Extension lifecycle
   rpc LoadExtension(LoadExtensionRequest) returns (LoadExtensionResponse);
+
   rpc UnloadExtension(UnloadExtensionRequest) returns (google.protobuf.Empty);
+
 
   // Activation
   rpc ActivateExtension(ActivationRequest) returns (ActivationResponse);
+
   rpc DeactivateExtension(DeactivationRequest) returns (google.protobuf.Empty);
+
 
   // Extension queries
   rpc GetExtensionStatus(ExtensionStatusRequest) returns (ExtensionStatusResponse);
+
   rpc ListExtensions(ListExtensionsRequest) returns (ListExtensionsResponse);
+
 
   // API calls from extension to host
   rpc ExtensionApiCall(ApiCallRequest) returns (ApiCallResponse);
 
+
   // Configuration
   rpc GetConfiguration(ConfigurationRequest) returns (ConfigurationResponse);
+
   rpc UpdateConfiguration(UpdateConfigurationRequest) returns (google.protobuf.Empty);
+
 
   // WASM operations
   rpc LoadWASMModule(WASMModuleRequest) returns (WASMModuleResponse);
+
   rpc UnloadWASMModule(WASMModuleRequest) returns (google.protobuf.Empty);
+
 
   // Health check
   rpc HealthCheck(google.protobuf.Empty) returns (HealthCheckResponse);
@@ -48,26 +62,46 @@ service GroveService {
 // ===================================================================
 
 message ExtensionIdentifier {
-  string Id = 1; // Extension identifier (e.g., "publisher.extension-name")
-  string Version = 2; // Extension version (e.g., "1.0.0")
+  // Extension identifier (e.g., "publisher.extension-name")
+  string Id = 1;
+
+  // Extension version (e.g., "1.0.0")
+  string Version = 2;
 }
 
 message ExtensionMetadata {
   ExtensionIdentifier Identifier = 1;
+
   string DisplayName = 2;
+
   string Description = 3;
+
   repeated string ActivationEvents = 4;
-  repeated string Contributes = 5; // Extension contributions
-  bool EnginesVscode = 6; // Requires VS Code engine
-  string MinVscodeVersion = 7; // Minimum VS Code version required
-  map<string, string> Capabilities = 8; // Extension capabilities
+
+  // Extension contributions
+  repeated string Contributes = 5;
+
+  // Requires VS Code engine
+  bool EnginesVscode = 6;
+
+  // Minimum VS Code version required
+  string MinVscodeVersion = 7;
+
+  // Extension capabilities
+  map<string, string> Capabilities = 8;
 }
 
 message ExtensionManifest {
   ExtensionMetadata Metadata = 1;
-  string EntryPoint = 2; // Main entry point file
-  map<string, string> Configuration = 3; // Default configuration
-  bytes BinaryData = 4; // Extension binary data (WASM or native)
+
+  // Main entry point file
+  string EntryPoint = 2;
+
+  // Default configuration
+  map<string, string> Configuration = 3;
+
+  // Extension binary data (WASM or native)
+  bytes BinaryData = 4;
 }
 
 // ===================================================================
@@ -77,13 +111,19 @@ message ExtensionManifest {
 
 message LoadExtensionRequest {
   ExtensionManifest Manifest = 1;
-  string Transport = 2; // "wasm", "native", "ipc"
-  bool Lazy = 3; // Load lazily on activation
+
+  // "wasm", "native", "ipc"
+  string Transport = 2;
+
+  // Load lazily on activation
+  bool Lazy = 3;
 }
 
 message LoadExtensionResponse {
   bool Success = 1;
+
   string Message = 2;
+
   ExtensionIdentifier ExtensionId = 3;
 }
 
@@ -97,23 +137,37 @@ message UnloadExtensionRequest {
 // ===================================================================
 
 message ActivationContext {
-  string WorkspacePath = 1; // Workspace root path
-  map<string, string> Environment = 2; // Environment variables
-  bytes StartupOptions = 3; // Startup options (JSON)
-  repeated string ActivatedExtensions = 4; // Already activated extensions
+  // Workspace root path
+  string WorkspacePath = 1;
+
+  // Environment variables
+  map<string, string> Environment = 2;
+
+  // Startup options (JSON)
+  bytes StartupOptions = 3;
+
+  // Already activated extensions
+  repeated string ActivatedExtensions = 4;
 }
 
 message ActivationRequest {
   ExtensionIdentifier ExtensionId = 1;
+
   repeated string ActivationEvents = 2;
+
   ActivationContext Context = 3;
 }
 
 message ActivationResponse {
   bool Activated = 1;
+
   string Message = 2;
-  int64 ActivationTimeMs = 3; // Time taken to activate in milliseconds
-  repeated string APISubscriptions = 4; // API events subscribed to
+
+  // Time taken to activate in milliseconds
+  int64 ActivationTimeMs = 3;
+
+  // API events subscribed to
+  repeated string APISubscriptions = 4;
 }
 
 message DeactivationRequest {
@@ -132,21 +186,34 @@ message ExtensionStatusRequest {
 message ExtensionStatus {
   enum State {
     UNKNOWN = 0;
+
     LOADED = 1;
+
     ACTIVATED = 2;
+
     DEACTIVATED = 3;
+
     ERROR = 4;
+
   }
 
   State CurrentState = 1;
-  string ErrorMessage = 2; // Error message if in ERROR state
-  int64 ActivationTimeMs = 3; // Time since activation
-  string Transport = 4; // Transport method used
+
+  // Error message if in ERROR state
+  string ErrorMessage = 2;
+
+  // Time since activation
+  int64 ActivationTimeMs = 3;
+
+  // Transport method used
+  string Transport = 4;
 }
 
 message ExtensionStatusResponse {
   ExtensionStatus Status = 1;
-  ExtensionMetadata Metadata = 2; // Extension metadata
+
+  // Extension metadata
+  ExtensionMetadata Metadata = 2;
 }
 
 message ListExtensionsRequest {
@@ -155,6 +222,7 @@ message ListExtensionsRequest {
 
 message ListExtensionsResponse {
   repeated ExtensionManifest Extensions = 1;
+
   repeated ExtensionStatus Statuses = 2;
 }
 
@@ -165,16 +233,28 @@ message ListExtensionsResponse {
 
 message ApiCallRequest {
   ExtensionIdentifier ExtensionId = 1;
-  string APIMethod = 2; // API method being called
-  bytes Arguments = 3; // Method arguments (JSON or binary)
-  string CorrelationId = 4; // Correlation ID for async calls
+
+  // API method being called
+  string APIMethod = 2;
+
+  // Method arguments (JSON or binary)
+  bytes Arguments = 3;
+
+  // Correlation ID for async calls
+  string CorrelationId = 4;
 }
 
 message ApiCallResponse {
   bool Success = 1;
-  bytes ResponseData = 2; // Response data (JSON or binary)
-  string ErrorMessage = 3; // Error message if failed
-  string CorrelationId = 4; // Echoes the request correlation ID
+
+  // Response data (JSON or binary)
+  bytes ResponseData = 2;
+
+  // Error message if failed
+  string ErrorMessage = 3;
+
+  // Echoes the request correlation ID
+  string CorrelationId = 4;
 }
 
 // ===================================================================
@@ -184,7 +264,9 @@ message ApiCallResponse {
 
 message ConfigurationRequest {
   ExtensionIdentifier ExtensionId = 1;
-  repeated string Keys = 2; // Configuration keys to retrieve (empty = all)
+
+  // Configuration keys to retrieve (empty = all)
+  repeated string Keys = 2;
 }
 
 message ConfigurationResponse {
@@ -193,8 +275,11 @@ message ConfigurationResponse {
 
 message UpdateConfigurationRequest {
   ExtensionIdentifier ExtensionId = 1;
+
   map<string, string> Configuration = 2;
-  bool Merge = 3; // True to merge, false to replace
+
+  // True to merge, false to replace
+  bool Merge = 3;
 }
 
 // ===================================================================
@@ -204,18 +289,34 @@ message UpdateConfigurationRequest {
 
 message WASMModuleRequest {
   ExtensionIdentifier ExtensionId = 1;
-  bytes WASMBytes = 2; // WASM binary data
-  uint64 MemoryLimitMb = 3; // Memory limit in MB
-  bool EnableWASI = 4; // Enable WASI support
-  uint64 MaxExecutionTimeMs = 5; // Max execution time limit
+
+  // WASM binary data
+  bytes WASMBytes = 2;
+
+  // Memory limit in MB
+  uint64 MemoryLimitMb = 3;
+
+  // Enable WASI support
+  bool EnableWASI = 4;
+
+  // Max execution time limit
+  uint64 MaxExecutionTimeMs = 5;
 }
 
 message WASMModuleResponse {
   bool Loaded = 1;
-  string ModuleId = 2; // Unique module identifier
-  uint64 MemoryUsedMb = 3; // Memory footprint
-  repeated string ExportedFunctions = 4; // Exported functions list
-  string ErrorMessage = 5; // Error message if failed
+
+  // Unique module identifier
+  string ModuleId = 2;
+
+  // Memory footprint
+  uint64 MemoryUsedMb = 3;
+
+  // Exported functions list
+  repeated string ExportedFunctions = 4;
+
+  // Error message if failed
+  string ErrorMessage = 5;
 }
 
 // ===================================================================
@@ -225,11 +326,20 @@ message WASMModuleResponse {
 
 message HealthCheckResponse {
   bool Healthy = 1;
-  string Version = 2; // Grove version
+
+  // Grove version
+  string Version = 2;
+
   string StatusMessage = 3;
-  int32 ExtensionsLoaded = 4; // Number of loaded extensions
-  int32 ExtensionsActive = 5; // Number of active extensions
-  uint64 UptimeSeconds = 6; // Uptime in seconds
+
+  // Number of loaded extensions
+  int32 ExtensionsLoaded = 4;
+
+  // Number of active extensions
+  int32 ExtensionsActive = 5;
+
+  // Uptime in seconds
+  uint64 UptimeSeconds = 6;
 }
 
 // ===================================================================
@@ -240,16 +350,27 @@ message HealthCheckResponse {
 message ExtensionEvent {
   enum EventType {
     ACTIVATED = 0;
+
     DEACTIVATED = 1;
+
     ERROR = 2;
+
     API_CALL = 3;
+
     CONFIGURATION_CHANGED = 4;
+
   }
 
   EventType Kind = 1;
+
   ExtensionIdentifier ExtensionId = 2;
-  bytes EventData = 3; // Event data (JSON)
-  int64 TimestampMs = 4; // Event timestamp
+
+  // Event data (JSON)
+  bytes EventData = 3;
+
+  // Event timestamp
+  int64 TimestampMs = 4;
+
   string CorrelationId = 5;
 }
 
@@ -259,6 +380,9 @@ service GroveEventStream {
 }
 
 message SubscribeRequest {
-  repeated ExtensionIdentifier Extensions = 1; // Specific extensions (empty = all)
-  repeated string EventTypes = 2; // Event types to subscribe to
+  // Specific extensions (empty = all)
+  repeated ExtensionIdentifier Extensions = 1;
+
+  // Event types to subscribe to
+  repeated string EventTypes = 2;
 }
