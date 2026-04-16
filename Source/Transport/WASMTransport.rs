@@ -10,7 +10,7 @@ use base64::Engine;
 use bytes::Bytes;
 use serde::{Deserialize, Serialize};
 use tokio::sync::RwLock;
-use tracing::{debug, info, instrument};
+use crate::dev_log;
 
 use crate::{
 	Transport::{
@@ -176,7 +176,6 @@ impl WASMTransportImpl {
 	}
 
 	/// Call a function in a WASM module
-	#[instrument(skip(self, module_id, function_name, args))]
 	pub async fn call_wasm_function(
 		&self,
 		module_id:&str,
@@ -185,12 +184,7 @@ impl WASMTransportImpl {
 	) -> anyhow::Result<Bytes> {
 		let start = std::time::Instant::now();
 
-		debug!(
-			"Calling WASM function: {}::{} with {} arguments",
-			module_id,
-			function_name,
-			args.len()
-		);
+		dev_log!("wasm", "Calling WASM function: {}::{} with {} arguments", module_id, function_name, args.len());
 
 		let modules = self.modules.read().await;
 		let _module = modules
@@ -223,19 +217,17 @@ impl WASMTransportImpl {
 impl TransportStrategy for WASMTransportImpl {
 	type Error = WASMTransportError;
 
-	#[instrument(skip(self))]
 	async fn connect(&self) -> Result<(), Self::Error> {
-		info!("WASM transport connecting");
+		dev_log!("transport", "WASM transport connecting");
 
 		// WASM transport is always "connected" locally
 		*self.connected.write().await = true;
 
-		info!("WASM transport connected");
+		dev_log!("transport", "WASM transport connected");
 
 		Ok(())
 	}
 
-	#[instrument(skip(self, request))]
 	async fn send(&self, request:&[u8]) -> Result<Vec<u8>, Self::Error> {
 		let start = std::time::Instant::now();
 
@@ -243,7 +235,7 @@ impl TransportStrategy for WASMTransportImpl {
 			return Err(WASMTransportError::NotConnected);
 		}
 
-		debug!("Sending WASM transport request ({} bytes)", request.len());
+		dev_log!("transport", "Sending WASM transport request ({} bytes)", request.len());
 
 		// Parse request - it should contain module ID and function name
 		// For simplicity, we use a minimal format: module_id:function_name:base64_args
@@ -278,31 +270,29 @@ impl TransportStrategy for WASMTransportImpl {
 
 		let latency_us = start.elapsed().as_micros() as u64;
 
-		debug!("WASM transport request completed in {}µs", latency_us);
+		dev_log!("transport", "WASM transport request completed in {}µs", latency_us);
 
 		Ok(response_vec)
 	}
 
-	#[instrument(skip(self, data))]
 	async fn send_no_response(&self, data:&[u8]) -> Result<(), Self::Error> {
 		if !self.is_connected() {
 			return Err(WASMTransportError::NotConnected);
 		}
 
-		debug!("Sending WASM transport request without response ({} bytes)", data.len());
+		dev_log!("transport", "Sending WASM transport request without response ({} bytes)", data.len());
 
 		// For fire-and-forget calls, we still execute but ignore the response
 		self.send(data).await?;
 		Ok(())
 	}
 
-	#[instrument(skip(self))]
 	async fn close(&self) -> Result<(), Self::Error> {
-		info!("Closing WASM transport");
+		dev_log!("transport", "Closing WASM transport");
 
 		*self.connected.write().await = false;
 
-		info!("WASM transport closed");
+		dev_log!("transport", "WASM transport closed");
 
 		Ok(())
 	}

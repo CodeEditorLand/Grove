@@ -38,7 +38,7 @@ use std::sync::Arc;
 
 use anyhow::Result;
 use tokio::sync::RwLock;
-use tracing::{debug, info, instrument, warn};
+use crate::dev_log;
 
 use crate::Protocol::ProtocolConfig;
 #[cfg(feature = "grove_echo")]
@@ -121,7 +121,6 @@ impl SpineConnectionImpl {
 	/// # Returns
 	///
 	/// A new SpineConnectionImpl instance
-	#[instrument(skip(config))]
 	pub fn new(config:ProtocolConfig) -> Self {
 		Self {
 			config:Arc::new(RwLock::new(config)),
@@ -137,24 +136,22 @@ impl SpineConnectionImpl {
 	}
 
 	/// Connect to the Spine service
-	#[instrument(skip(self))]
 	pub async fn Connect(&mut self) -> Result<()> {
 		let guard = self.config.read().await;
 		let url = guard.mountain_endpoint.clone();
 		drop(guard);
 
-		info!("Connecting to Spine at: {}", url);
+		dev_log!("grpc", "Connecting to Spine at: {}", url);
 		*self.state.write().await = ConnectionState::Connecting;
 		*self.state.write().await = ConnectionState::Connected;
 		*self.last_heartbeat.write().await = chrono::Utc::now();
-		info!("Successfully connected to Spine");
+		dev_log!("grpc", "Successfully connected to Spine");
 		Ok(())
 	}
 
 	/// Disconnect from the Spine service
-	#[instrument(skip(self))]
 	pub async fn Disconnect(&mut self) -> Result<()> {
-		info!("Disconnecting from Spine");
+		dev_log!("grpc", "Disconnecting from Spine");
 
 		#[cfg(feature = "grove_echo")]
 		{
@@ -162,7 +159,7 @@ impl SpineConnectionImpl {
 		}
 
 		*self.state.write().await = ConnectionState::Disconnected;
-		info!("Successfully disconnected from Spine");
+		dev_log!("grpc", "Successfully disconnected from Spine");
 		Ok(())
 	}
 
@@ -175,13 +172,12 @@ impl SpineConnectionImpl {
 	///
 	/// * `method` - The method name to call
 	/// * `payload` - The request payload
-	#[instrument(skip(self, _payload))]
 	pub async fn SendRequest(&self, method:&str, _payload:Vec<u8>) -> Result<Vec<u8>> {
 		if self.GetState().await != ConnectionState::Connected {
 			return Err(anyhow::anyhow!("Not connected to Spine"));
 		}
 
-		debug!("Sending request: {}", method);
+		dev_log!("grpc", "Sending request: {}", method);
 
 		let mut metrics = self.metrics.write().await;
 		metrics.total_requests += 1;
@@ -198,13 +194,12 @@ impl SpineConnectionImpl {
 
 #[cfg(feature = "grove_echo")]
 impl SpineConnectionImpl {
-	#[instrument(skip(self))]
 	pub async fn ConnectEchoClient(&mut self) -> Result<()> {
 		let guard = self.config.read().await;
 		let url = guard.mountain_endpoint.clone();
 		drop(guard);
 
-		info!("Connecting EchoAction client to: {}", url);
+		dev_log!("grpc", "Connecting EchoAction client to: {}", url);
 
 		let channel = tonic::transport::Channel::from_shared(url)
 			.context("Invalid Mountain URL")?
@@ -213,11 +208,10 @@ impl SpineConnectionImpl {
 			.context("Failed to connect EchoAction client")?;
 
 		self.echo_client = Some(EchoActionServiceClient::new(channel));
-		info!("EchoAction client connected");
+		dev_log!("grpc", "EchoAction client connected");
 		Ok(())
 	}
 
-	#[instrument(skip(self, action))]
 	pub async fn SendEchoAction(&self, action:EchoAction) -> Result<EchoActionResponse> {
 		if self.GetState().await != ConnectionState::Connected {
 			return Err(anyhow::anyhow!("Not connected to Spine"));

@@ -8,7 +8,7 @@ use std::{collections::HashMap, sync::Arc};
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use tokio::sync::RwLock;
-use tracing::{debug, instrument, warn};
+use crate::dev_log;
 
 /// API call request from an extension
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -165,7 +165,7 @@ impl APIBridgeImpl {
 		// Example: workspace.getConfiguration
 		// etc.
 
-		debug!("Registered built-in VS Code API methods");
+		dev_log!("extensions", "Registered built-in VS Code API methods");
 	}
 
 	/// Register a custom API method
@@ -180,7 +180,7 @@ impl APIBridgeImpl {
 		let mut methods = self.api_methods.write().await;
 
 		if methods.contains_key(name) {
-			warn!("API method already registered: {}", name);
+			dev_log!("extensions", "warn: API method already registered: {}", name);
 		}
 
 		methods.insert(
@@ -196,13 +196,12 @@ impl APIBridgeImpl {
 			},
 		);
 
-		debug!("Registered API method: {}", name);
+		dev_log!("extensions", "Registered API method: {}", name);
 
 		Ok(())
 	}
 
 	/// Create an API context for an extension
-	#[instrument(skip(self))]
 	pub async fn create_context(&self, extension_id:&str) -> Result<APIContext> {
 		let context_id = format!("{}-{}", extension_id, uuid::Uuid::new_v4());
 
@@ -225,7 +224,7 @@ impl APIBridgeImpl {
 		let mut stats = self.stats.write().await;
 		stats.active_contexts = contexts.len();
 
-		debug!("Created API context for extension: {}", extension_id);
+		dev_log!("extensions", "Created API context for extension: {}", extension_id);
 
 		Ok(context)
 	}
@@ -256,14 +255,10 @@ impl APIBridgeImpl {
 	}
 
 	/// Handle an API call from an extension
-	#[instrument(skip(self, request))]
 	pub async fn handle_call(&self, request:APICallRequest) -> Result<APICallResponse> {
 		let start = std::time::Instant::now();
 
-		debug!(
-			"Handling API call: {} from extension {}",
-			request.api_method, request.extension_id
-		);
+		dev_log!("extensions", "Handling API call: {} from extension {}", request.api_method, request.extension_id);
 
 		// Check if method exists
 		let exists = {
@@ -308,7 +303,7 @@ impl APIBridgeImpl {
 			}
 		}
 
-		debug!("API call {} completed in {}µs", request.api_method, elapsed_us);
+		dev_log!("extensions", "API call {} completed in {}µs", request.api_method, elapsed_us);
 
 		match result {
 			Ok(data) => {
@@ -362,7 +357,7 @@ impl APIBridgeImpl {
 		let removed = methods.remove(name).is_some();
 
 		if removed {
-			debug!("Unregistered API method: {}", name);
+			dev_log!("extensions", "Unregistered API method: {}", name);
 		}
 
 		Ok(removed)

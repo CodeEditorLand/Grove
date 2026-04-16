@@ -7,7 +7,7 @@ use std::path::PathBuf;
 
 use anyhow::Result;
 use clap::{Parser, Subcommand};
-use tracing::{error, info};
+use Grove::dev_log;
 use Grove::{
 	Binary::{
 		Build::{RuntimeBuild, ServiceRegister},
@@ -152,34 +152,7 @@ async fn main() -> Result<()> {
 }
 
 /// Initialize logging with appropriate level and format
-fn init_logging(verbose:u8, format:&str) -> Result<()> {
-	let level = match verbose {
-		0 => tracing::Level::WARN,
-		1 => tracing::Level::INFO,
-		2 => tracing::Level::DEBUG,
-		_ => tracing::Level::TRACE,
-	};
-
-	let env_filter = tracing_subscriber::EnvFilter::builder()
-		.with_default_directive(level.into())
-		.from_env_lossy();
-
-	if format == "json" {
-		tracing_subscriber::fmt()
-			.json()
-			.with_env_filter(env_filter)
-			.try_init()
-			.map_err(|e| anyhow::anyhow!("Failed to initialize JSON logging: {}", e))?;
-	} else {
-		tracing_subscriber::fmt()
-			.with_env_filter(env_filter)
-			.with_target(false)
-			.try_init()
-			.map_err(|e| anyhow::anyhow!("Failed to initialize logging: {}", e))?;
-	}
-
-	Ok(())
-}
+fn init_logging(_verbose:u8, _format:&str) -> Result<()> { Ok(()) }
 
 /// Run Grove in standalone mode
 async fn run_standalone(
@@ -190,7 +163,7 @@ async fn run_standalone(
 	memory_limit_mb:u64,
 	max_execution_time_ms:u64,
 ) -> Result<()> {
-	info!("Starting Grove in standalone mode...");
+	dev_log!("grove", "Starting Grove in standalone mode...");
 
 	let transport = match transport_type.as_str() {
 		"grpc" => TransportEnum::gRPC(gRPCTransport::New(&grpc_address)?),
@@ -199,22 +172,22 @@ async fn run_standalone(
 		_ => TransportEnum::default(),
 	};
 
-	info!("Using transport: {:?}", transport_type);
+	dev_log!("transport", "Using transport: {:?}", transport_type);
 
 	let host = RuntimeBuild::build_host_with_defaults(transport, wasi, memory_limit_mb, max_execution_time_ms).await?;
 
 	if let Some(path) = extension {
-		info!("Loading extension from: {:?}", path);
+		dev_log!("extensions", "Loading extension from: {:?}", path);
 		let ext_id = host.load_extension(&path).await.map_err(|e| {
-			error!("Failed to load extension: {}", e);
+			dev_log!("extensions", "error: failed to load extension: {}", e);
 			e
 		})?;
 
-		info!("Extension loaded successfully with ID: {}", ext_id);
+		dev_log!("extensions", "Extension loaded successfully with ID: {}", ext_id);
 		host.activate(&ext_id).await?;
-		info!("Extension activated");
+		dev_log!("extensions", "Extension activated");
 	} else {
-		info!("No extension specified, running in daemon mode");
+		dev_log!("grove", "No extension specified, running in daemon mode");
 		keep_running().await;
 	}
 
@@ -223,11 +196,11 @@ async fn run_standalone(
 
 /// Run Grove as a service connected to Mountain
 async fn run_service(mountain_address:String, service_name:Option<String>, auto_reconnect:bool) -> Result<()> {
-	info!("Starting Grove as service...");
+	dev_log!("grove", "Starting Grove as service...");
 
 	let name = service_name.unwrap_or_else(|| "grove-host".to_string());
-	info!("Service name: {}", name);
-	info!("Mountain address: {}", mountain_address);
+	dev_log!("grove", "Service name: {}", name);
+	dev_log!("grove", "Mountain address: {}", mountain_address);
 
 	// Register with Mountain
 	ServiceRegister::register_with_mountain(&name, &mountain_address, auto_reconnect).await?;
@@ -239,17 +212,17 @@ async fn run_service(mountain_address:String, service_name:Option<String>, auto_
 
 /// Validate an extension manifest
 async fn run_validation(manifest_path:PathBuf, detailed:bool) -> Result<()> {
-	info!("Validating extension manifest: {:?}", manifest_path);
+	dev_log!("extensions", "Validating extension manifest: {:?}", manifest_path);
 
 	let result:ValidationResult = Entry::validate_extension(&manifest_path, detailed).await?;
 
 	if result.is_valid {
-		info!("Extension manifest is valid");
+		dev_log!("extensions", "Extension manifest is valid");
 		if detailed {
 			println!("{:#?}", result);
 		}
 	} else {
-		error!("Extension manifest validation failed");
+		dev_log!("extensions", "error: extension manifest validation failed");
 		return Err(anyhow::anyhow!("Validation failed"));
 	}
 
@@ -258,16 +231,16 @@ async fn run_validation(manifest_path:PathBuf, detailed:bool) -> Result<()> {
 
 /// Build a WASM module from Rust source
 async fn run_build(source:PathBuf, output:PathBuf, opt_level:String, target:Option<String>) -> Result<()> {
-	info!("Building WASM module from: {:?}", source);
-	info!("Output path: {:?}", output);
-	info!("Optimization level: {}", opt_level);
+	dev_log!("wasm", "Building WASM module from: {:?}", source);
+	dev_log!("wasm", "Output path: {:?}", output);
+	dev_log!("wasm", "Optimization level: {}", opt_level);
 
 	let result:BuildResult = Entry::build_wasm_module(source, output, opt_level, target).await?;
 
 	if result.success() {
-		info!("WASM module built successfully");
+		dev_log!("wasm", "WASM module built successfully");
 	} else {
-		error!("WASM module build failed");
+		dev_log!("wasm", "error: WASM module build failed");
 		return Err(anyhow::anyhow!("Build failed"));
 	}
 
@@ -276,12 +249,12 @@ async fn run_build(source:PathBuf, output:PathBuf, opt_level:String, target:Opti
 
 /// List all loaded extensions
 async fn run_list(detailed:bool) -> Result<()> {
-	info!("Listing extensions...");
+	dev_log!("extensions", "Listing extensions...");
 
 	let extensions:Vec<ExtensionInfo> = Entry::list_extensions(detailed).await?;
 
 	if extensions.is_empty() {
-		info!("No extensions loaded");
+		dev_log!("extensions", "No extensions loaded");
 	} else {
 		println!("Loaded extensions:");
 		for ext in extensions {
@@ -298,11 +271,11 @@ async fn run_list(detailed:bool) -> Result<()> {
 
 /// Keep the process running
 async fn keep_running() {
-	info!("Grove is running. Press Ctrl+C to stop.");
+	dev_log!("lifecycle", "Grove is running. Press Ctrl+C to stop.");
 
 	tokio::signal::ctrl_c().await.expect("Failed to listen for ctrl+c");
 
-	info!("Shutting down Grove...");
+	dev_log!("lifecycle", "Shutting down Grove...");
 }
 
 #[cfg(test)]

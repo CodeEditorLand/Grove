@@ -45,7 +45,7 @@ use chrono::{DateTime, Utc};
 use futures::stream::StreamExt;
 use tokio::sync::RwLock;
 use tonic::transport::Channel;
-use tracing::{debug, error, info, instrument, warn};
+use crate::dev_log;
 
 use crate::{
 	api::vscode::APIBridge,
@@ -187,11 +187,11 @@ impl SpineActionClient {
 	/// Create new Spine action client
 	///
 	///  ☀️ 🟡 MOUNTAIN_GROVE_WASM
-	#[instrument(skip(config))]
+	
 	pub async fn new(config:SpineConfig) -> Result<Self> {
 		let host_id = format!("grove-{}", uuid::Uuid::new_v4());
 
-		info!("Creating Grove Spine client: {}", host_id);
+		dev_log!("grove", "Creating Grove Spine client: {}", host_id);
 
 		Ok(Self {
 			config,
@@ -210,9 +210,9 @@ impl SpineActionClient {
 	/// Connect to Mountain
 	///
 	///  ☀️ 🟡 MOUNTAIN_GROVE_WASM
-	#[instrument(skip(self))]
+	
 	pub async fn connect(&mut self) -> Result<()> {
-		info!("Connecting to Mountain at: {}", self.config.mountain_url);
+		dev_log!("grpc", "Connecting to Mountain at: {}", self.config.mountain_url);
 
 		// Create gRPC channel
 		let channel = Channel::from_static(self.config.mountain_url.as_str())
@@ -231,7 +231,7 @@ impl SpineActionClient {
 		*self.connected.write().await = true;
 		*self.connection_start_time.write().await = Some(Utc::now());
 
-		info!("Successfully connected to Mountain");
+		dev_log!("grpc", "Successfully connected to Mountain");
 
 		Ok(())
 	}
@@ -239,16 +239,16 @@ impl SpineActionClient {
 	/// Disconnection from Mountain
 	///
 	///  ☀️ 🟡 MOUNTAIN_GROVE_WASM
-	#[instrument(skip(self))]
+	
 	pub async fn disconnect(&mut self) -> Result<()> {
-		info!("Disconnecting from Mountain");
+		dev_log!("grpc", "Disconnecting from Mountain");
 
 		self.echo_client = None;
 		self.channel = None;
 		*self.connected.write().await = false;
 		*self.connection_start_time.write().await = None;
 
-		info!("Disconnected from Mountain");
+		dev_log!("grpc", "Disconnected from Mountain");
 
 		Ok(())
 	}
@@ -256,14 +256,14 @@ impl SpineActionClient {
 	/// Register Grove as an extension host
 	///
 	///  ☀️ 🟡 MOUNTAIN_GROVE_WASM - Host registration with Mountain
-	#[instrument(skip(self))]
+	
 	pub async fn register(&self) -> Result<HostInfo> {
 		let client = self
 			.echo_client
 			.as_ref()
 			.ok_or_else(|| anyhow::anyhow!("Not connected to Mountain"))?;
 
-		debug!("Registering Grove host: {}", self.host_id);
+		dev_log!("grove", "Registering Grove host: {}", self.host_id);
 
 		// Build registration request
 		let mut capabilities = HashMap::new();
@@ -316,7 +316,7 @@ impl SpineActionClient {
 			.context("Failed to register Grove host")?
 			.into_inner();
 
-		debug!("Grove host registered: {}", response.host_registry_id);
+		dev_log!("grove", "Grove host registered: {}", response.host_registry_id);
 
 		let host_info = HostInfo {
 			host_id:self.host_id.clone(),
@@ -332,7 +332,7 @@ impl SpineActionClient {
 		// Start EchoAction listener
 		self.start_echo_action_listener().await?;
 
-		info!("Grove host successfully registered and active");
+		dev_log!("grove", "Grove host successfully registered and active");
 
 		Ok(host_info)
 	}
@@ -340,14 +340,14 @@ impl SpineActionClient {
 	/// Send EchoAction to Mountain
 	///
 	///  ☀️ 🟡 MOUNTAIN_GROVE_WASM
-	#[instrument(skip(self, action))]
+	
 	pub async fn send_echo_action(&self, action:EchoAction) -> Result<EchoActionResponse> {
 		let client = self
 			.echo_client
 			.as_ref()
 			.ok_or_else(|| anyhow::anyhow!("Not connected to Mountain"))?;
 
-		debug!("Sending EchoAction: type={}, target={}", action.action_type, action.target);
+		dev_log!("grpc", "Sending EchoAction: type={}, target={}", action.action_type, action.target);
 
 		let response = client
 			.send_echo_action(action)
@@ -355,7 +355,8 @@ impl SpineActionClient {
 			.context("Failed to send EchoAction")?
 			.into_inner();
 
-		debug!(
+		dev_log!(
+			"grpc",
 			"EchoAction response: success={}, processing_time_ms={}",
 			response.success, response.processing_time_ms
 		);
@@ -370,7 +371,7 @@ impl SpineActionClient {
 	/// Send RPC via EchoAction
 	///
 	///  ☀️ 🟡 MOUNTAIN_GROVE_WASM
-	#[instrument(skip(self, payload))]
+	
 	pub async fn send_rpc_via_action(
 		&self,
 		rpc_method:&str,
@@ -447,7 +448,8 @@ impl SpineActionClient {
 					// Actual EchoAction heartbeat messages will be sent through
 					// the gRPC bidirectional streaming when EchoAction protocol
 					// is fully implemented
-					debug!(
+					dev_log!(
+						"grove",
 						"[SpineConnection] Heartbeat maintained (last: {})",
 						*last_heartbeat.read().await
 					);
@@ -455,7 +457,7 @@ impl SpineActionClient {
 			}
 		});
 
-		info!("[SpineConnection] Heartbeat loop started (interval: {}s)", interval_sec);
+		dev_log!("grove", "[SpineConnection] Heartbeat loop started (interval: {}s)", interval_sec);
 		Ok(())
 	}
 
@@ -478,8 +480,8 @@ impl SpineActionClient {
 		// 3. The client has access to the streaming endpoint
 		//
 		// For now, we log that the listener is ready for future implementation
-		info!("[SpineConnection] EchoAction listener initialized");
-		info!("[SpineConnection] Waiting for EchoAction protocol implementation");
+		dev_log!("grove", "[SpineConnection] EchoAction listener initialized");
+		dev_log!("grove", "[SpineConnection] Waiting for EchoAction protocol implementation");
 		Ok(())
 	}
 
@@ -512,15 +514,15 @@ impl SpineActionClient {
 	/// Attempt to reconnect
 	///
 	///  ☀️ 🟡 MOUNTAIN_GROVE_WASM
-	#[instrument(skip(self))]
+	
 	pub async fn reconnect(&mut self) -> Result<()> {
-		warn!("Attempting to reconnect to Mountain");
+		dev_log!("grpc", "warn: attempting to reconnect to Mountain");
 
 		self.disconnect().await?;
 		self.connect().await?;
 		self.register().await?;
 
-		info!("Successfully reconnected to Mountain");
+		dev_log!("grpc", "Successfully reconnected to Mountain");
 
 		Ok(())
 	}

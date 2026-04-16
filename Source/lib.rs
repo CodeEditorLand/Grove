@@ -67,6 +67,7 @@
 pub mod API;
 pub mod Binary;
 pub mod Common;
+pub mod DevLog;
 pub mod Host;
 pub mod Protocol;
 pub mod Services;
@@ -119,16 +120,8 @@ impl Default for GroveInfo {
 /// This sets up logging and other global state.
 /// Call once at application startup.
 pub fn init() -> anyhow::Result<()> {
-	// Initialize tracing subscriber with environment-based filtering
-	let filter = tracing_subscriber::EnvFilter::from_default_env().add_directive(tracing::Level::INFO.into());
-
-	tracing_subscriber::fmt()
-		.with_env_filter(filter)
-		.with_target(false)
-		.try_init()
-		.map_err(|e| anyhow::anyhow!("Failed to initialize tracing: {}", e))?;
-
-	tracing::info!("Grove v{} initialized", VERSION);
+	use crate::dev_log;
+	dev_log!("grove", "Grove v{} initialized", VERSION);
 
 	Ok(())
 }

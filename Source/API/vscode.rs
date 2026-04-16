@@ -12,7 +12,7 @@ use std::sync::{
 
 use serde::{Deserialize, Serialize};
 
-use crate::{API::types::*, Transport::Strategy::Transport};
+use crate::{API::types::*, Transport::Strategy::Transport, dev_log};
 
 // ============================================================================
 // Provider Registration Store
@@ -183,12 +183,12 @@ impl OutputChannel {
 
 	/// Append a line to the channel
 	pub fn append_line(&self, line:&str) {
-		tracing::info!("[{}] {}", self.name, line);
+		dev_log!("output", "[{}] {}", self.name, line);
 	}
 
 	/// Append to the channel
 	pub fn append(&self, value:&str) {
-		tracing::info!("[{}] {}", self.name, value);
+		dev_log!("output", "[{}] {}", self.name, value);
 	}
 
 	/// Show the output channel
@@ -317,7 +317,8 @@ impl LanguageNamespace {
 			.join(",");
 		let Handle = self.store.insert(&ProviderTypeOwned, &SelectorStr);
 		let Store = Arc::clone(&self.store);
-		tracing::debug!(
+		dev_log!(
+			"extensions",
 			"[LanguageNamespace] registered {} handle={} selector={}",
 			ProviderTypeOwned,
 			Handle,
@@ -344,7 +345,7 @@ impl LanguageNamespace {
 
 		Disposable::with_callback(Box::new(move || {
 			Store.remove(Handle);
-			tracing::debug!("[LanguageNamespace] disposed {} handle={}", ProviderTypeOwned, Handle);
+			dev_log!("extensions", "[LanguageNamespace] disposed {} handle={}", ProviderTypeOwned, Handle);
 		}))
 	}
 

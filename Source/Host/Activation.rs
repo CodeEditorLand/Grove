@@ -8,7 +8,7 @@ use std::{collections::HashMap, path::PathBuf, sync::Arc};
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 use tokio::sync::RwLock;
-use tracing::{debug, info, instrument, warn};
+use crate::dev_log;
 
 use crate::Host::{
 	ActivationResult,
@@ -168,9 +168,8 @@ impl ActivationEngine {
 	}
 
 	/// Activate an extension
-	#[instrument(skip(self, extension_id))]
 	pub async fn activate(&self, extension_id:&str) -> Result<ActivationResult> {
-		info!("Activating extension: {}", extension_id);
+		dev_log!("extensions", "Activating extension: {}", extension_id);
 
 		let start = std::time::Instant::now();
 
@@ -185,7 +184,7 @@ impl ActivationEngine {
 		let handlers = self.event_handlers.read().await;
 		if let Some(handler) = handlers.get(extension_id) {
 			if handler.is_active {
-				warn!("Extension already active: {}", extension_id);
+				dev_log!("extensions", "warn: extension already active: {}", extension_id);
 				return Ok(ActivationResult {
 					extension_id:extension_id.to_string(),
 					success:true,
@@ -253,7 +252,7 @@ impl ActivationEngine {
 			},
 		);
 
-		info!("Extension activated in {}ms: {}", elapsed_ms, extension_id);
+		dev_log!("extensions", "Extension activated in {}ms: {}", elapsed_ms, extension_id);
 
 		Ok(ActivationResult {
 			extension_id:extension_id.to_string(),
@@ -265,9 +264,8 @@ impl ActivationEngine {
 	}
 
 	/// Deactivate an extension
-	#[instrument(skip(self, extension_id))]
 	pub async fn deactivate(&self, extension_id:&str) -> Result<()> {
-		info!("Deactivating extension: {}", extension_id);
+		dev_log!("extensions", "Deactivating extension: {}", extension_id);
 
 		// Remove handler
 		let mut handlers = self.event_handlers.write().await;
@@ -280,15 +278,14 @@ impl ActivationEngine {
 			.update_state(extension_id, ExtensionState::Deactivated)
 			.await?;
 
-		info!("Extension deactivated: {}", extension_id);
+		dev_log!("extensions", "Extension deactivated: {}", extension_id);
 
 		Ok(())
 	}
 
 	/// Trigger activation for certain events
-	#[instrument(skip(self, event, _context))]
 	pub async fn trigger_activation(&self, event:&str, _context:&ActivationContext) -> Result<Vec<ActivationResult>> {
-		info!("Triggering activation for event: {}", event);
+		dev_log!("extensions", "Triggering activation for event: {}", event);
 
 		let activation_event = ActivationEvent::from_str(event)?;
 		let handlers = self.event_handlers.read().await;
@@ -302,11 +299,11 @@ impl ActivationEngine {
 			}
 
 			if self.should_activate(&activation_event, &handler.events) {
-				debug!("Activating extension {} for event: {}", extension_id, event);
+				dev_log!("extensions", "Activating extension {} for event: {}", extension_id, event);
 				match self.activate(extension_id).await {
 					Ok(result) => results.push(result),
 					Err(e) => {
-						warn!("Failed to activate extension {} for event {}: {}", extension_id, event, e);
+						dev_log!("extensions", "warn: failed to activate extension {} for event {}: {}", extension_id, event, e);
 					},
 				}
 			}
@@ -337,7 +334,7 @@ impl ActivationEngine {
 		// 3. Wait for activation to complete
 		// 4. Handle any errors
 
-		debug!("Performing activation for extension: {}", extension_id);
+		dev_log!("extensions", "Performing activation for extension: {}", extension_id);
 
 		// Placeholder implementation
 		Ok(ActivationResult {

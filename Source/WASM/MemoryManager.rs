@@ -10,7 +10,7 @@ use std::sync::{
 
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
-use tracing::{debug, instrument, warn};
+use crate::dev_log;
 #[allow(unused_imports)]
 use wasmtime::{Memory, MemoryType};
 
@@ -184,12 +184,8 @@ impl MemoryManagerImpl {
 	}
 
 	/// Allocate memory for a WASM instance
-	#[instrument(skip(self, instance_id))]
 	pub fn allocate_memory(&mut self, instance_id:&str, memory_type:&str, requested_bytes:u64) -> Result<u64> {
-		debug!(
-			"Allocating {} bytes for instance {} (type: {})",
-			requested_bytes, instance_id, memory_type
-		);
+		dev_log!("wasm", "Allocating {} bytes for instance {} (type: {})", requested_bytes, instance_id, memory_type);
 
 		let current_usage = self.current_usage_bytes();
 
@@ -229,15 +225,14 @@ impl MemoryManagerImpl {
 			self.peak_usage.store(new_peak, Ordering::Relaxed);
 		}
 
-		debug!("Memory allocated successfully. Total usage: {} MB", self.current_usage_mb());
+		dev_log!("wasm", "Memory allocated successfully. Total usage: {} MB", self.current_usage_mb());
 
 		Ok(requested_bytes)
 	}
 
 	/// Deallocate memory for a WASM instance
-	#[instrument(skip(self, instance_id))]
 	pub fn deallocate_memory(&mut self, instance_id:&str, memory_id:&str) -> Result<bool> {
-		debug!("Deallocating memory {} for instance {}", memory_id, instance_id);
+		dev_log!("wasm", "Deallocating memory {} for instance {}", memory_id, instance_id);
 
 		let pos = self
 			.allocations
@@ -250,22 +245,18 @@ impl MemoryManagerImpl {
 			// Update stats
 			Arc::make_mut(&mut self.stats).record_deallocation(allocation.size_bytes);
 
-			debug!(
-				"Memory deallocated successfully. Remaining usage: {} MB",
-				self.current_usage_mb()
-			);
+			dev_log!("wasm", "Memory deallocated successfully. Remaining usage: {} MB", self.current_usage_mb());
 
 			Ok(true)
 		} else {
-			warn!("Memory allocation not found: {} for instance {}", memory_id, instance_id);
+			dev_log!("wasm", "warn: memory allocation not found: {} for instance {}", memory_id, instance_id);
 			Ok(false)
 		}
 	}
 
 	/// Deallocate all memory for an instance
-	#[instrument(skip(self, instance_id))]
 	pub fn deallocate_all_for_instance(&mut self, instance_id:&str) -> usize {
-		debug!("Deallocating all memory for instance {}", instance_id);
+		dev_log!("wasm", "Deallocating all memory for instance {}", instance_id);
 
 		let initial_count = self.allocations.len();
 
@@ -274,22 +265,15 @@ impl MemoryManagerImpl {
 		let deallocated_count = initial_count - self.allocations.len();
 
 		if deallocated_count > 0 {
-			debug!(
-				"Deallocated {} memory allocations for instance {}",
-				deallocated_count, instance_id
-			);
+			dev_log!("wasm", "Deallocated {} memory allocations for instance {}", deallocated_count, instance_id);
 		}
 
 		deallocated_count
 	}
 
 	/// Grow existing memory allocation
-	#[instrument(skip(self, instance_id, memory_id))]
 	pub fn grow_memory(&mut self, instance_id:&str, memory_id:&str, additional_bytes:u64) -> Result<u64> {
-		debug!(
-			"Growing memory {} for instance {} by {} bytes",
-			memory_id, instance_id, additional_bytes
-		);
+		dev_log!("wasm", "Growing memory {} for instance {} by {} bytes", memory_id, instance_id, additional_bytes);
 
 		// Calculate current usage before mutable borrow
 		let current_usage = self.current_usage_bytes();
@@ -307,7 +291,7 @@ impl MemoryManagerImpl {
 
 		allocation.size_bytes += additional_bytes;
 
-		debug!("Memory grown successfully. New size: {} bytes", allocation.size_bytes);
+		dev_log!("wasm", "Memory grown successfully. New size: {} bytes", allocation.size_bytes);
 
 		Ok(allocation.size_bytes)
 	}
@@ -330,7 +314,7 @@ impl MemoryManagerImpl {
 		self.allocations.clear();
 		self.stats = Arc::new(MemoryStats::default());
 		self.peak_usage.store(0, Ordering::Relaxed);
-		debug!("Memory manager reset");
+		dev_log!("wasm", "Memory manager reset");
 	}
 }
 

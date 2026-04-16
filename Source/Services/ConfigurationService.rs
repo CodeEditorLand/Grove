@@ -12,7 +12,7 @@ use std::{
 use anyhow::{Context, Result};
 use serde_json::Value;
 use tokio::sync::RwLock;
-use tracing::{debug, info, instrument, warn};
+use crate::dev_log;
 
 use crate::Services::Service;
 
@@ -74,9 +74,8 @@ impl ConfigurationServiceImpl {
 	}
 
 	/// Get a configuration value
-	#[instrument(skip(self))]
 	pub async fn get(&self, key:&str) -> Option<Value> {
-		debug!("Getting configuration value: {}", key);
+		dev_log!("config", "Getting configuration value: {}", key);
 		self.config.read().await.get(key).map(|v| v.value.clone())
 	}
 
@@ -84,9 +83,8 @@ impl ConfigurationServiceImpl {
 	pub async fn get_with_default(&self, key:&str, default:Value) -> Value { self.get(key).await.unwrap_or(default) }
 
 	/// Set a configuration value
-	#[instrument(skip(self, value))]
 	pub async fn set(&self, key:String, value:Value, scope:ConfigurationScope) -> Result<()> {
-		debug!("Setting configuration value: {} = {:?}", key, value);
+		dev_log!("config", "Setting configuration value: {} = {:?}", key, value);
 
 		let now = std::time::SystemTime::now()
 			.duration_since(std::time::UNIX_EPOCH)
@@ -104,9 +102,8 @@ impl ConfigurationServiceImpl {
 	}
 
 	/// Remove a configuration value
-	#[instrument(skip(self))]
 	pub async fn remove(&self, key:String) -> Result<bool> {
-		debug!("Removing configuration value: {}", key);
+		dev_log!("config", "Removing configuration value: {}", key);
 
 		let removed = self.config.write().await.remove(&key).is_some();
 		Ok(removed)
@@ -134,9 +131,8 @@ impl ConfigurationServiceImpl {
 	}
 
 	/// Load configuration from a file
-	#[instrument(skip(self, path))]
 	pub async fn load_from_file(&self, path:&Path, scope:ConfigurationScope) -> Result<()> {
-		info!("Loading configuration from: {:?}", path);
+		dev_log!("config", "Loading configuration from: {:?}", path);
 
 		let content = tokio::fs::read_to_string(path)
 			.await
@@ -149,13 +145,12 @@ impl ConfigurationServiceImpl {
 		// Store path for future reference
 		self.config_paths.write().await.insert(scope, path.to_path_buf());
 
-		info!("Configuration loaded successfully");
+		dev_log!("config", "Configuration loaded successfully");
 
 		Ok(())
 	}
 
 	/// Load configuration from a value
-	#[instrument(skip(self, value))]
 	pub async fn load_from_value(&self, value:Value, scope:ConfigurationScope) -> Result<()> {
 		if let Value::Object(object) = value {
 			let mut config = self.config.write().await;
@@ -173,9 +168,8 @@ impl ConfigurationServiceImpl {
 	}
 
 	/// Save configuration to a file
-	#[instrument(skip(self, path))]
 	pub async fn save_to_file(&self, path:&Path, scope:ConfigurationScope) -> Result<()> {
-		info!("Saving configuration to: {:?}", path);
+		dev_log!("config", "Saving configuration to: {:?}", path);
 
 		let config = self.get_all_in_scope(scope).await;
 		let config_value = Value::Object(config.into_iter().map(|(k, v)| (k, v)).collect());
@@ -186,13 +180,12 @@ impl ConfigurationServiceImpl {
 			.await
 			.context("Failed to write configuration file")?;
 
-		info!("Configuration saved successfully");
+		dev_log!("config", "Configuration saved successfully");
 
 		Ok(())
 	}
 
 	/// Register a configuration watcher
-	#[instrument(skip(self, key, callback))]
 	pub async fn register_watcher<F>(&self, key:String, callback:F)
 	where
 		F: Fn(String, Value) -> Result<()> + Send + Sync + 'static, {
@@ -202,11 +195,10 @@ impl ConfigurationServiceImpl {
 			.entry(key)
 			.or_insert_with(Vec::new)
 			.push(Arc::new(RwLock::new(callback)));
-		debug!("Registered configuration watcher for: {}", key_clone);
+		dev_log!("config", "Registered configuration watcher for: {}", key_clone);
 	}
 
 	/// Unregister a configuration watcher
-	#[instrument(skip(self))]
 	pub async fn unregister_watcher(&self, key:String) -> Result<bool> {
 		let mut watchers = self.watchers.write().await;
 		let removed = watchers.remove(&key).is_some();
@@ -220,7 +212,7 @@ impl ConfigurationServiceImpl {
 		if let Some(callbacks) = watchers.get(&key) {
 			for callback in callbacks {
 				if let Err(e) = callback.read().await(key.clone(), value.clone()) {
-					warn!("Configuration watcher callback failed: {}", e);
+					dev_log!("config", "warn: configuration watcher callback failed: {}", e);
 				}
 			}
 		}
@@ -236,20 +228,20 @@ impl Service for ConfigurationServiceImpl {
 	fn name(&self) -> &str { &self.name }
 
 	async fn start(&self) -> Result<()> {
-		info!("Starting configuration service");
+		dev_log!("config", "Starting configuration service");
 
 		*self.running.write().await = true;
 
-		info!("Configuration service started");
+		dev_log!("config", "Configuration service started");
 		Ok(())
 	}
 
 	async fn stop(&self) -> Result<()> {
-		info!("Stopping configuration service");
+		dev_log!("config", "Stopping configuration service");
 
 		*self.running.write().await = false;
 
-		info!("Configuration service stopped");
+		dev_log!("config", "Configuration service stopped");
 		Ok(())
 	}
 

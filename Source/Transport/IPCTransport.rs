@@ -11,7 +11,7 @@ use std::{
 
 use async_trait::async_trait;
 use tokio::sync::RwLock;
-use tracing::{debug, info, instrument, warn};
+use crate::dev_log;
 
 use crate::Transport::{
 	Strategy::{TransportStats, TransportStrategy, TransportType},
@@ -109,7 +109,7 @@ impl IPCTransport {
 				tokio::fs::remove_file(SocketPath)
 					.await
 					.map_err(|E| anyhow::anyhow!("Failed to remove socket: {}", E))?;
-				debug!("Removed existing socket: {:?}", SocketPath);
+				dev_log!("transport", "Removed existing socket: {:?}", SocketPath);
 			}
 		}
 		Ok(())
@@ -120,9 +120,8 @@ impl IPCTransport {
 impl TransportStrategy for IPCTransport {
 	type Error = IPCTransportError;
 
-	#[instrument(skip(self))]
 	async fn connect(&self) -> Result<(), Self::Error> {
-		info!("Connecting to IPC transport");
+		dev_log!("transport", "Connecting to IPC transport");
 
 		#[cfg(unix)]
 		{
@@ -130,13 +129,13 @@ impl TransportStrategy for IPCTransport {
 				.await
 				.map_err(|E| IPCTransportError::ConnectionFailed(E.to_string()))?;
 			*self.Connected.write().await = true;
-			info!("IPC connection established: {:?}", self.SocketPath);
+			dev_log!("transport", "IPC connection established: {:?}", self.SocketPath);
 		}
 
 		#[cfg(windows)]
 		{
 			*self.Connected.write().await = true;
-			info!("IPC connection established via named pipe");
+			dev_log!("transport", "IPC connection established via named pipe");
 		}
 
 		#[cfg(not(any(unix, windows)))]
@@ -147,13 +146,12 @@ impl TransportStrategy for IPCTransport {
 		Ok(())
 	}
 
-	#[instrument(skip(self, request))]
 	async fn send(&self, request:&[u8]) -> Result<Vec<u8>, Self::Error> {
 		if !self.is_connected() {
 			return Err(IPCTransportError::NotConnected);
 		}
 
-		debug!("Sending IPC request ({} bytes)", request.len());
+		dev_log!("transport", "Sending IPC request ({} bytes)", request.len());
 
 		let Response:Vec<u8> = vec![];
 
@@ -164,22 +162,20 @@ impl TransportStrategy for IPCTransport {
 		Ok(Response)
 	}
 
-	#[instrument(skip(self, data))]
 	async fn send_no_response(&self, data:&[u8]) -> Result<(), Self::Error> {
 		if !self.is_connected() {
 			return Err(IPCTransportError::NotConnected);
 		}
 
-		debug!("Sending IPC notification ({} bytes)", data.len());
+		dev_log!("transport", "Sending IPC notification ({} bytes)", data.len());
 
 		let mut Stats = self.Statistics.write().await;
 		Stats.record_sent(data.len() as u64, 0);
 		Ok(())
 	}
 
-	#[instrument(skip(self))]
 	async fn close(&self) -> Result<(), Self::Error> {
-		info!("Closing IPC connection");
+		dev_log!("transport", "Closing IPC connection");
 		*self.Connected.write().await = false;
 
 		#[cfg(unix)]
@@ -187,14 +183,14 @@ impl TransportStrategy for IPCTransport {
 			if let Some(SocketPath) = &self.SocketPath {
 				if SocketPath.exists() {
 					tokio::fs::remove_file(SocketPath).await.map_err(|E| {
-						warn!("Failed to remove socket: {}", E);
+						dev_log!("transport", "warn: failed to remove socket: {}", E);
 						IPCTransportError::CleanupFailed(E.to_string())
 					})?;
 				}
 			}
 		}
 
-		info!("IPC connection closed");
+		dev_log!("transport", "IPC connection closed");
 		Ok(())
 	}
 

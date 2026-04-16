@@ -8,7 +8,7 @@ use std::{collections::HashMap, sync::Arc};
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use tokio::sync::RwLock;
-use tracing::{debug, info, instrument};
+use crate::dev_log;
 
 /// Lifecycle event types
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -117,9 +117,9 @@ impl LifecycleManager {
 	}
 
 	/// Register an extension for lifecycle management
-	#[instrument(skip(self, extension_id))]
+	
 	pub async fn register_extension(&self, extension_id:&str, initial_state:LifecycleState) -> Result<()> {
-		info!("Registering extension for lifecycle management: {}", extension_id);
+		dev_log!("extensions", "Registering extension for lifecycle management: {}", extension_id);
 
 		let mut handlers = self.handlers.write().await;
 		handlers.insert(
@@ -145,15 +145,15 @@ impl LifecycleManager {
 		let mut states = self.states.write().await;
 		states.insert(extension_id.to_string(), initial_state);
 
-		debug!("Extension registered: {}", extension_id);
+		dev_log!("extensions", "Extension registered: {}", extension_id);
 
 		Ok(())
 	}
 
 	/// Unregister an extension from lifecycle management
-	#[instrument(skip(self, extension_id))]
+	
 	pub async fn unregister_extension(&self, extension_id:&str) -> Result<()> {
-		info!("Unregistering extension from lifecycle management: {}", extension_id);
+		dev_log!("extensions", "Unregistering extension from lifecycle management: {}", extension_id);
 
 		let mut handlers = self.handlers.write().await;
 		handlers.remove(extension_id);
@@ -161,7 +161,7 @@ impl LifecycleManager {
 		let mut states = self.states.write().await;
 		states.remove(extension_id);
 
-		debug!("Extension unregistered: {}", extension_id);
+		dev_log!("extensions", "Extension unregistered: {}", extension_id);
 
 		Ok(())
 	}
@@ -172,9 +172,9 @@ impl LifecycleManager {
 	}
 
 	/// Transition an extension to a new state
-	#[instrument(skip(self, extension_id, event))]
+	
 	pub async fn transition(&self, extension_id:&str, event:LifecycleEvent) -> Result<LifecycleState> {
-		info!("Transitioning extension {} with event: {:?}", extension_id, event);
+		dev_log!("lifecycle", "Transitioning extension {} with event: {:?}", extension_id, event);
 
 		let start = std::time::Instant::now();
 
@@ -213,7 +213,8 @@ impl LifecycleManager {
 
 		self.event_history.write().await.push(record);
 
-		debug!(
+		dev_log!(
+			"lifecycle",
 			"Extension {} transitioned from {:?} to {:?} in {}ms",
 			extension_id, current_state, new_state, elapsed_ms
 		);
@@ -258,7 +259,8 @@ impl LifecycleManager {
 		// 2. Handle any errors
 		// 3. Rollback on failure
 
-		debug!(
+		dev_log!(
+			"lifecycle",
 			"Performing state transition for extension {}: {:?} -> {:?}",
 			extension_id, event, new_state
 		);
@@ -282,9 +284,9 @@ impl LifecycleManager {
 	}
 
 	/// Trigger a lifecycle event for an extension
-	#[instrument(skip(self, extension_id, event))]
+	
 	pub async fn trigger_event(&self, extension_id:&str, event:LifecycleEvent) -> Result<()> {
-		info!("Triggering lifecycle event for {}: {:?}", extension_id, event);
+		dev_log!("lifecycle", "Triggering lifecycle event for {}: {:?}", extension_id, event);
 
 		self.transition(extension_id, event).await?;
 

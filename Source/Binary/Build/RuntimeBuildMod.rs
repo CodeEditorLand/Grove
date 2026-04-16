@@ -6,7 +6,7 @@
 use std::sync::Arc;
 
 use anyhow::{Context, Result};
-use tracing::{debug, info, instrument};
+use crate::dev_log;
 
 use crate::{
 	Host::{ExtensionHost::ExtensionHostImpl, HostConfig},
@@ -19,13 +19,12 @@ pub struct RuntimeBuild;
 
 impl RuntimeBuild {
 	/// Build a Groove extension host with the specified configuration
-	#[instrument(skip(transport))]
 	pub async fn build_host(
 		transport:Transport,
 		_wasm_runtime:Arc<WASMRuntime>,
 		host_config:HostConfig,
 	) -> Result<ExtensionHostImpl> {
-		info!("Building Grove extension host");
+		dev_log!("grove", "Building Grove extension host");
 
 		// In a real implementation, we would use the provided wasm_runtime
 		// For now, we create the host with default configuration
@@ -34,7 +33,7 @@ impl RuntimeBuild {
 			.await
 			.context("Failed to build extension host")?;
 
-		info!("Extension host built successfully");
+		dev_log!("grove", "Extension host built successfully");
 
 		Ok(host)
 	}
@@ -46,7 +45,7 @@ impl RuntimeBuild {
 		memory_limit_mb:u64,
 		max_execution_time_ms:u64,
 	) -> Result<ExtensionHostImpl> {
-		info!("Building Grove extension host with defaults");
+		dev_log!("grove", "Building Grove extension host with defaults");
 
 		let wasm_config = WASMConfig::new(memory_limit_mb, max_execution_time_ms, wasi);
 		let wasm_runtime = Arc::new(WASMRuntime::new(wasm_config).await?);
@@ -57,9 +56,8 @@ impl RuntimeBuild {
 	}
 
 	/// Build a minimal extension host for testing
-	#[instrument(skip(transport))]
 	pub async fn build_minimal_host(transport:Transport) -> Result<ExtensionHostImpl> {
-		debug!("Building minimal extension host");
+		dev_log!("grove", "Building minimal extension host");
 
 		let host_config = HostConfig::default().with_max_extensions(10).with_lazy_activation(true);
 

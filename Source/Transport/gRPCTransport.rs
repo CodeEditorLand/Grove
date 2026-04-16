@@ -9,7 +9,7 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use tokio::sync::RwLock;
 use tonic::transport::{Channel, Endpoint};
-use tracing::{debug, info, instrument};
+use crate::dev_log;
 
 use crate::Transport::{
 	Strategy::{TransportStats, TransportStrategy, TransportType},
@@ -84,9 +84,8 @@ impl gRPCTransport {
 impl TransportStrategy for gRPCTransport {
 	type Error = gRPCTransportError;
 
-	#[instrument(skip(self))]
 	async fn connect(&self) -> Result<(), Self::Error> {
-		info!("Connecting to gRPC endpoint: {}", self.Endpoint);
+		dev_log!("grpc", "Connecting to gRPC endpoint: {}", self.Endpoint);
 
 		let EndpointValue = self
 			.BuildEndpoint()
@@ -100,11 +99,10 @@ impl TransportStrategy for gRPCTransport {
 		*self.Channel.write().await = Some(ChannelValue);
 		*self.Connected.write().await = true;
 
-		info!("gRPC connection established: {}", self.Endpoint);
+		dev_log!("grpc", "gRPC connection established: {}", self.Endpoint);
 		Ok(())
 	}
 
-	#[instrument(skip(self, request))]
 	async fn send(&self, request:&[u8]) -> Result<Vec<u8>, Self::Error> {
 		let Start = std::time::Instant::now();
 
@@ -112,7 +110,7 @@ impl TransportStrategy for gRPCTransport {
 			return Err(gRPCTransportError::NotConnected);
 		}
 
-		debug!("Sending gRPC request ({} bytes)", request.len());
+		dev_log!("grpc", "Sending gRPC request ({} bytes)", request.len());
 
 		let Response:Vec<u8> = vec![];
 		let LatencyMicroseconds = Start.elapsed().as_micros() as u64;
@@ -121,29 +119,27 @@ impl TransportStrategy for gRPCTransport {
 		Stats.record_sent(request.len() as u64, LatencyMicroseconds);
 		Stats.record_received(Response.len() as u64);
 
-		debug!("gRPC request completed in {}µs", LatencyMicroseconds);
+		dev_log!("grpc", "gRPC request completed in {}µs", LatencyMicroseconds);
 		Ok(Response)
 	}
 
-	#[instrument(skip(self, data))]
 	async fn send_no_response(&self, data:&[u8]) -> Result<(), Self::Error> {
 		if !self.is_connected() {
 			return Err(gRPCTransportError::NotConnected);
 		}
 
-		debug!("Sending gRPC notification ({} bytes)", data.len());
+		dev_log!("grpc", "Sending gRPC notification ({} bytes)", data.len());
 
 		let mut Stats = self.Statistics.write().await;
 		Stats.record_sent(data.len() as u64, 0);
 		Ok(())
 	}
 
-	#[instrument(skip(self))]
 	async fn close(&self) -> Result<(), Self::Error> {
-		info!("Closing gRPC connection: {}", self.Endpoint);
+		dev_log!("grpc", "Closing gRPC connection: {}", self.Endpoint);
 		*self.Channel.write().await = None;
 		*self.Connected.write().await = false;
-		info!("gRPC connection closed: {}", self.Endpoint);
+		dev_log!("grpc", "gRPC connection closed: {}", self.Endpoint);
 		Ok(())
 	}
 

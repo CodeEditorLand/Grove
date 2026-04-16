@@ -12,7 +12,7 @@ use std::{
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 use tokio::sync::RwLock;
-use tracing::{debug, info, instrument};
+use crate::dev_log;
 use wasmtime::{Instance, Linker, Module, Store, StoreLimits};
 
 use crate::WASM::Runtime::{WASMConfig, WASMRuntime};
@@ -147,9 +147,8 @@ impl ModuleLoaderImpl {
 	}
 
 	/// Load a WASM module from a file
-	#[instrument(skip(self, path))]
 	pub async fn load_from_file(&self, path:&Path) -> Result<WASMModule> {
-		info!("Loading WASM module from file: {:?}", path);
+		dev_log!("wasm", "Loading WASM module from file: {:?}", path);
 
 		let wasm_bytes = fs::read(path).context(format!("Failed to read WASM file: {:?}", path))?;
 
@@ -162,9 +161,8 @@ impl ModuleLoaderImpl {
 	}
 
 	/// Load a WASM module from memory
-	#[instrument(skip(self, wasm_bytes))]
 	pub async fn load_from_memory(&self, wasm_bytes:&[u8], source_type:ModuleSourceType) -> Result<WASMModule> {
-		info!("Loading WASM module from memory ({} bytes)", wasm_bytes.len());
+		dev_log!("wasm", "Loading WASM module from memory ({} bytes)", wasm_bytes.len());
 
 		// Validate if option is set
 		if ModuleLoadOptions::default().validate {
@@ -198,15 +196,14 @@ impl ModuleLoaderImpl {
 		let mut loaded = self.loaded_modules.write().await;
 		loaded.push(wasm_module.clone());
 
-		debug!("WASM module loaded successfully: {}", wasm_module.id);
+		dev_log!("wasm", "WASM module loaded successfully: {}", wasm_module.id);
 
 		Ok(wasm_module)
 	}
 
 	/// Load a WASM module from a URL
-	#[instrument(skip(self, url))]
 	pub async fn load_from_url(&self, url:&str) -> Result<WASMModule> {
-		info!("Loading WASM module from URL: {}", url);
+		dev_log!("wasm", "Loading WASM module from URL: {}", url);
 
 		// Fetch the module
 		let response = reqwest::get(url)
@@ -223,9 +220,8 @@ impl ModuleLoaderImpl {
 	}
 
 	/// Instantiate a loaded module
-	#[instrument(skip(self, module))]
 	pub async fn instantiate(&self, module:&Module, mut store:Store<StoreLimits>) -> Result<WASMInstance> {
-		debug!("Instantiating WASM module");
+		dev_log!("wasm", "Instantiating WASM module");
 
 		// Create linker with StoreLimits type
 		let linker = self.runtime.create_linker::<StoreLimits>(true)?;
@@ -237,7 +233,7 @@ impl ModuleLoaderImpl {
 
 		let instance_id = generate_instance_id();
 
-		debug!("WASM module instantiated: {}", instance_id);
+		dev_log!("wasm", "WASM module instantiated: {}", instance_id);
 
 		Ok(WASMInstance { instance, store, id:instance_id, module:Arc::new(module.clone()) })
 	}
@@ -258,7 +254,7 @@ impl ModuleLoaderImpl {
 
 		if let Some(pos) = pos {
 			loaded.remove(pos);
-			info!("WASM module unloaded: {}", id);
+			dev_log!("wasm", "WASM module unloaded: {}", id);
 			Ok(true)
 		} else {
 			Ok(false)

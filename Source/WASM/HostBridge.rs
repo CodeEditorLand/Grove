@@ -10,7 +10,7 @@ use anyhow::Result;
 use bytes::Bytes;
 use serde::{Serialize, de::DeserializeOwned};
 use tokio::sync::{RwLock, mpsc, oneshot};
-use tracing::{debug, instrument, warn};
+use crate::dev_log;
 #[allow(unused_imports)]
 use wasmtime::{Caller, Extern, Func, Linker, Store};
 
@@ -214,19 +214,18 @@ impl HostBridgeImpl {
 	}
 
 	/// Register a host function to be exported to WASM
-	#[instrument(skip(self, callback))]
 	pub async fn register_host_function(
 		&self,
 		name:&str,
 		signature:FunctionSignature,
 		callback:HostFunctionCallback,
 	) -> BridgeResult<()> {
-		debug!("Registering host function: {}", name);
+		dev_log!("wasm", "Registering host function: {}", name);
 
 		let mut functions = self.host_functions.write().await;
 
 		if functions.contains_key(name) {
-			warn!("Host function already registered: {}", name);
+			dev_log!("wasm", "warn: host function already registered: {}", name);
 		}
 
 		functions.insert(
@@ -234,19 +233,18 @@ impl HostBridgeImpl {
 			HostFunction { name:name.to_string(), signature, callback:Some(callback), async_callback:None },
 		);
 
-		debug!("Host function registered successfully: {}", name);
+		dev_log!("wasm", "Host function registered successfully: {}", name);
 		Ok(())
 	}
 
 	/// Register an async host function
-	#[instrument(skip(self, callback))]
 	pub async fn register_async_host_function(
 		&self,
 		name:&str,
 		signature:FunctionSignature,
 		callback:AsyncHostFunctionCallback,
 	) -> BridgeResult<()> {
-		debug!("Registering async host function: {}", name);
+		dev_log!("wasm", "Registering async host function: {}", name);
 
 		let mut functions = self.host_functions.write().await;
 
@@ -255,14 +253,13 @@ impl HostBridgeImpl {
 			HostFunction { name:name.to_string(), signature, callback:None, async_callback:Some(callback) },
 		);
 
-		debug!("Async host function registered successfully: {}", name);
+		dev_log!("wasm", "Async host function registered successfully: {}", name);
 		Ok(())
 	}
 
 	/// Call a host function from WASM
-	#[instrument(skip(self, args))]
 	pub async fn call_host_function(&self, function_name:&str, args:Vec<Bytes>) -> BridgeResult<Bytes> {
-		debug!("Calling host function: {}", function_name);
+		dev_log!("wasm", "Calling host function: {}", function_name);
 
 		let functions = self.host_functions.read().await;
 		let func = functions
@@ -273,7 +270,7 @@ impl HostBridgeImpl {
 			// Synchronous call
 			let result =
 				callback(args).map_err(|e| BridgeError::HostFunctionError(format!("{}: {}", function_name, e)))?;
-			debug!("Host function call completed: {}", function_name);
+			dev_log!("wasm", "Host function call completed: {}", function_name);
 			Ok(result)
 		} else if let Some(async_callback) = func.async_callback {
 			// Async call
@@ -281,7 +278,7 @@ impl HostBridgeImpl {
 			let result = future
 				.await
 				.map_err(|e| BridgeError::HostFunctionError(format!("{}: {}", function_name, e)))?;
-			debug!("Async host function call completed: {}", function_name);
+			dev_log!("wasm", "Async host function call completed: {}", function_name);
 			Ok(result)
 		} else {
 			Err(BridgeError::FunctionNotFound(format!(
@@ -292,11 +289,10 @@ impl HostBridgeImpl {
 	}
 
 	/// Send a message to WASM
-	#[instrument(skip(self, message))]
 	pub async fn send_to_wasm(&self, message:WASMMessage) -> BridgeResult<()> {
 		let function_name = message.function.clone();
 		self.host_to_wasm_tx.send(message).map_err(|_| BridgeError::BridgeClosed)?;
-		debug!("Message sent to WASM: {}", function_name);
+		dev_log!("wasm", "Message sent to WASM: {}", function_name);
 		Ok(())
 	}
 
@@ -304,7 +300,6 @@ impl HostBridgeImpl {
 	pub async fn receive_from_wasm(&mut self) -> Option<WASMMessage> { self.wasm_to_host_rx.recv().await }
 
 	/// Create async callback
-	#[instrument(skip(self))]
 	pub async fn create_async_callback(&self, message_id:String) -> (AsyncCallback, u64) {
 		let token = self.next_callback_token.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
 		let (tx, _rx) = oneshot::channel();
@@ -321,7 +316,6 @@ impl HostBridgeImpl {
 	}
 
 	/// Get callback by token
-	#[instrument(skip(self))]
 	pub async fn get_callback(&self, token:u64) -> Option<AsyncCallback> {
 		self.async_callbacks.write().await.remove(&token)
 	}
@@ -330,19 +324,18 @@ impl HostBridgeImpl {
 	pub async fn get_host_functions(&self) -> Vec<String> { self.host_functions.read().await.keys().cloned().collect() }
 
 	/// Unregister a host function
-	#[instrument(skip(self))]
 	pub async fn unregister_host_function(&self, name:&str) -> bool {
 		let mut functions = self.host_functions.write().await;
 		let removed = functions.remove(name).is_some();
 		if removed {
-			debug!("Host function unregistered: {}", name);
+			dev_log!("wasm", "Host function unregistered: {}", name);
 		}
 		removed
 	}
 
 	/// Clear all registered functions
 	pub async fn clear(&self) {
-		debug!("Clearing all registered host functions");
+		dev_log!("wasm", "Clearing all registered host functions");
 		self.host_functions.write().await.clear();
 		self.async_callbacks.write().await.clear();
 	}

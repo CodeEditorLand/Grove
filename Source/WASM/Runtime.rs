@@ -8,7 +8,7 @@ use std::sync::Arc;
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use tokio::sync::RwLock;
-use tracing::{debug, info, instrument, warn};
+use crate::dev_log;
 use wasmtime::{Engine, Linker, Module, Store, StoreLimits, StoreLimitsBuilder, WasmBacktraceDetails};
 
 use crate::WASM::{
@@ -68,7 +68,7 @@ impl WASMConfig {
 		if self.enable_wasi {
 			// WASI preview1 support is now handled through wasmtime_wasi::add_to_linker
 			// which will be called in create_linker()
-			debug!("[WASMRuntime] WASI support enabled, will be configured in linker");
+			dev_log!("wasm", "[WASMRuntime] WASI support enabled, will be configured in linker");
 		}
 
 		// Enable fuel metering for execution limits
@@ -112,9 +112,8 @@ pub struct WASMRuntime {
 
 impl WASMRuntime {
 	/// Create a new WASM runtime with the given configuration
-	#[instrument(skip(config))]
 	pub async fn new(config:WASMConfig) -> Result<Self> {
-		info!("Creating WASM runtime with config: {:?}", config);
+		dev_log!("wasm", "Creating WASM runtime with config: {:?}", config);
 
 		// Build the WASMtime engine
 		let engine_config = wasmtime::Config::new();
@@ -135,7 +134,7 @@ impl WASMRuntime {
 		};
 		let memory_manager = Arc::new(RwLock::new(MemoryManagerImpl::new(memory_limits)));
 
-		info!("WASM runtime created successfully");
+		dev_log!("wasm", "WASM runtime created successfully");
 
 		Ok(Self { engine, config, memory_manager, instances:Arc::new(RwLock::new(Vec::new())) })
 	}
@@ -192,7 +191,7 @@ impl WASMRuntime {
 			//
 			// For now, we log that WASI is available and will be configured
 			// when actual WASM instances with WASI requirements are loaded
-			debug!("[WASMRuntime] WASI support enabled, will be configured per-instance");
+			dev_log!("wasm", "[WASMRuntime] WASI support enabled, will be configured per-instance");
 		}
 
 		// Configure async support
@@ -204,32 +203,30 @@ impl WASMRuntime {
 	}
 
 	/// Compile a WASM module from bytes
-	#[instrument(skip(self, wasm_bytes))]
 	pub fn compile_module(&self, wasm_bytes:&[u8]) -> Result<Module> {
-		debug!("Compiling WASM module ({} bytes)", wasm_bytes.len());
+		dev_log!("wasm", "Compiling WASM module ({} bytes)", wasm_bytes.len());
 
 		let module = Module::from_binary(&self.engine, wasm_bytes)
 			.map_err(|e| anyhow::anyhow!("Failed to compile WASM module: {}", e))?;
 
-		debug!("WASM module compiled successfully");
+		dev_log!("wasm", "WASM module compiled successfully");
 
 		Ok(module)
 	}
 
 	/// Validate a WASM module without compiling
-	#[instrument(skip(self, wasm_bytes))]
 	pub fn validate_module(&self, wasm_bytes:&[u8]) -> Result<bool> {
-		debug!("Validating WASM module ({} bytes)", wasm_bytes.len());
+		dev_log!("wasm", "Validating WASM module ({} bytes)", wasm_bytes.len());
 
 		let result = Module::validate(&self.engine, wasm_bytes);
 
 		match result {
 			Ok(()) => {
-				debug!("WASM module validation passed");
+				dev_log!("wasm", "WASM module validation passed");
 				Ok(true)
 			},
 			Err(e) => {
-				debug!("WASM module validation failed: {}", e);
+				dev_log!("wasm", "WASM module validation failed: {}", e);
 				Ok(false)
 			},
 		}
@@ -265,19 +262,18 @@ impl WASMRuntime {
 	pub async fn instance_count(&self) -> usize { self.instances.read().await.len() }
 
 	/// Shutdown the runtime and cleanup resources
-	#[instrument(skip(self))]
 	pub async fn shutdown(&self) -> Result<()> {
-		info!("Shutting down WASM runtime");
+		dev_log!("wasm", "Shutting down WASM runtime");
 
 		let instance_count = self.instance_count().await;
 		if instance_count > 0 {
-			warn!("Shutting down with {} active instances", instance_count);
+			dev_log!("wasm", "warn: shutting down with {} active instances", instance_count);
 		}
 
 		// Clear instances
 		self.instances.write().await.clear();
 
-		info!("WASM runtime shutdown complete");
+		dev_log!("wasm", "WASM runtime shutdown complete");
 
 		Ok(())
 	}

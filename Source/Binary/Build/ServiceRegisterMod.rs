@@ -5,7 +5,7 @@
 
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
-use tracing::{debug, info, instrument, warn};
+use crate::dev_log;
 
 use crate::Protocol::{ProtocolConfig, SpineConnection::SpineConnectionImpl};
 
@@ -57,13 +57,12 @@ pub struct ServiceRegistrationResult {
 
 impl ServiceRegister {
 	/// Register Grove with Mountain
-	#[instrument(skip(service_name, mountain_address))]
 	pub async fn register_with_mountain(
 		service_name:&str,
 		mountain_address:&str,
 		auto_reconnect:bool,
 	) -> Result<ServiceRegistrationResult> {
-		info!("Registering service '{}' with Mountain at {}", service_name, mountain_address);
+		dev_log!("grove", "Registering service '{}' with Mountain at {}", service_name, mountain_address);
 
 		// Create Spine configuration
 		let spine_config = ProtocolConfig::new().with_mountain_endpoint(service_name.to_string());
@@ -91,7 +90,7 @@ impl ServiceRegister {
 			}),
 		};
 
-		debug!("Service registration: {:?}", registration);
+		dev_log!("grove", "Service registration: {:?}", registration);
 
 		// Send registration request (placeholder - in real implementation, use gRPC)
 		let result = ServiceRegistrationResult {
@@ -104,40 +103,37 @@ impl ServiceRegister {
 				.unwrap_or(0),
 		};
 
-		info!("Service registration result: {:?}", result);
+		dev_log!("grove", "Service registration result: {:?}", result);
 
 		Ok(result)
 	}
 
 	/// Unregister Grove from Mountain
-	#[instrument(skip(service_id))]
 	pub async fn unregister_from_mountain(service_id:&str) -> Result<()> {
-		info!("Unregistering service from Mountain: {}", service_id);
+		dev_log!("grove", "Unregistering service from Mountain: {}", service_id);
 
 		// Placeholder - in real implementation, call Mountain's unregister service
-		debug!("Service unregistered: {}", service_id);
+		dev_log!("grove", "Service unregistered: {}", service_id);
 
 		Ok(())
 	}
 
 	/// Heartbeat to keep service alive
-	#[instrument(skip(service_id))]
 	pub async fn send_heartbeat(service_id:&str) -> Result<()> {
-		debug!("Sending heartbeat for service: {}", service_id);
+		dev_log!("grove", "Sending heartbeat for service: {}", service_id);
 
 		// Placeholder - in real implementation, send heartbeat to Mountain
 		Ok(())
 	}
 
 	/// Update service information
-	#[instrument(skip(registration))]
 	pub async fn update_registration(
 		service_id:&str,
 		registration:ServiceRegistration,
 	) -> Result<ServiceRegistrationResult> {
-		info!("Updating service registration: {}", service_id);
+		dev_log!("grove", "Updating service registration: {}", service_id);
 
-		debug!("Updated registration: {:?}", registration);
+		dev_log!("grove", "Updated registration: {:?}", registration);
 
 		Ok(ServiceRegistrationResult {
 			success:true,
@@ -151,9 +147,8 @@ impl ServiceRegister {
 	}
 
 	/// Query service information
-	#[instrument(skip(service_id))]
 	pub async fn query_service(service_id:&str) -> Result<ServiceRegistration> {
-		debug!("Querying service information: {}", service_id);
+		dev_log!("grove", "Querying service information: {}", service_id);
 
 		// Placeholder - in real implementation, query Mountain for service info
 		Ok(ServiceRegistration {
@@ -167,28 +162,23 @@ impl ServiceRegister {
 	}
 
 	/// List all registered services
-	#[instrument]
 	pub async fn list_services() -> Result<Vec<ServiceRegistration>> {
-		debug!("Listing all registered services");
+		dev_log!("grove", "Listing all registered services");
 
 		// Placeholder - in real implementation, query Mountain for all services
 		Ok(Vec::new())
 	}
 
 	/// Start heartbeat loop
-	#[instrument(skip(service_id))]
 	pub async fn start_heartbeat_loop(service_id:&str, interval_sec:u64) -> Result<()> {
-		info!(
-			"Starting heartbeat loop for service: {} (interval: {}s)",
-			service_id, interval_sec
-		);
+		dev_log!("grove", "Starting heartbeat loop for service: {} (interval: {}s)", service_id, interval_sec);
 
 		let service_id_owned = service_id.to_string();
 		tokio::spawn(async move {
 			loop {
 				tokio::time::sleep(tokio::time::Duration::from_secs(interval_sec)).await;
 				if let Err(e) = Self::send_heartbeat(&service_id_owned).await {
-					warn!("Heartbeat failed: {}", e);
+					dev_log!("grove", "warn: heartbeat failed: {}", e);
 				}
 			}
 		});

@@ -6,7 +6,7 @@
 use std::path::PathBuf;
 
 use anyhow::{Context, Result};
-use tracing::{error, info, instrument};
+use crate::dev_log;
 
 use crate::{
 	Binary::Main::CliArgs,
@@ -19,10 +19,9 @@ pub struct Entry;
 
 impl Entry {
 	/// Main entry point for the Grove binary
-	#[instrument(skip(args))]
 	pub async fn run(args:CliArgs) -> Result<()> {
-		info!("Starting Grove v{}", env!("CARGO_PKG_VERSION"));
-		info!("Mode: {}", args.mode);
+		dev_log!("lifecycle", "Starting Grove v{}", env!("CARGO_PKG_VERSION"));
+		dev_log!("lifecycle", "Mode: {}", args.mode);
 
 		match args.mode.as_str() {
 			"standalone" => Self::run_standalone(args).await,
@@ -33,9 +32,8 @@ impl Entry {
 	}
 
 	/// Run in standalone mode
-	#[instrument(skip(args))]
 	async fn run_standalone(args:CliArgs) -> Result<()> {
-		info!("Starting Grove in standalone mode");
+		dev_log!("grove", "Starting Grove in standalone mode");
 
 		// Create transport
 		let transport = Self::create_transport(&args)?;
@@ -54,7 +52,7 @@ impl Entry {
 			host.load_extension(&path).await?;
 			host.activate_all().await?;
 		} else {
-			info!("No extension specified, running in daemon mode");
+			dev_log!("grove", "No extension specified, running in daemon mode");
 		}
 
 		// Keep running until interrupted
@@ -67,9 +65,8 @@ impl Entry {
 	}
 
 	/// Run as a service
-	#[instrument(skip(_args))]
 	async fn run_service(_args:CliArgs) -> Result<()> {
-		info!("Starting Grove as service");
+		dev_log!("grove", "Starting Grove as service");
 
 		// Create transport for Mountain communication
 		let _transport = Transport::default();
@@ -84,14 +81,14 @@ impl Entry {
 			)
 			.await
 			{
-				Ok(_) => info!("Registered with Mountain"),
-				Err(e) => warn!("Failed to register with Mountain: {}", e),
+				Ok(_) => dev_log!("grove", "Registered with Mountain"),
+				Err(e) => dev_log!("grove", "warn: failed to register with Mountain: {}", e),
 			}
 		}
 
 		#[cfg(not(feature = "gRPC"))]
 		{
-			info!("gRPC feature not enabled, skipping Mountain registration");
+			dev_log!("grpc", "gRPC feature not enabled, skipping Mountain registration");
 		}
 
 		// Keep running
@@ -101,9 +98,8 @@ impl Entry {
 	}
 
 	/// Validate an extension
-	#[instrument(skip(args))]
 	async fn run_validation(args:CliArgs) -> Result<()> {
-		info!("Validating extension");
+		dev_log!("extensions", "Validating extension");
 
 		let extension_path = args
 			.extension
@@ -113,17 +109,17 @@ impl Entry {
 		let result = Self::validate_extension(&path, false).await?;
 
 		if result.is_valid {
-			info!("Extension validation passed");
+			dev_log!("extensions", "Extension validation passed");
 			Ok(())
 		} else {
-			error!("Extension validation failed");
+			dev_log!("extensions", "error: extension validation failed");
 			Err(anyhow::anyhow!("Validation failed"))
 		}
 	}
 
 	/// Validate an extension manifest
 	pub async fn validate_extension(path:&PathBuf, detailed:bool) -> Result<ValidationResult> {
-		info!("Validating extension at: {:?}", path);
+		dev_log!("extensions", "Validating extension at: {:?}", path);
 
 		// Check if path exists
 		if !path.exists() {
@@ -139,7 +135,7 @@ impl Entry {
 				Ok(content) => {
 					match serde_json::from_str::<serde_json::Value>(&content) {
 						Ok(_) => {
-							info!("Valid package.json found");
+							dev_log!("extensions", "Valid package.json found");
 						},
 						Err(e) => {
 							errors.push(format!("Invalid package.json: {}", e));
@@ -158,7 +154,7 @@ impl Entry {
 
 		if detailed && !errors.is_empty() {
 			for error in &errors {
-				info!("Validation error: {}", error);
+				dev_log!("extensions", "Validation error: {}", error);
 			}
 		}
 
@@ -172,8 +168,8 @@ impl Entry {
 		_opt_level:String,
 		_target:Option<String>,
 	) -> Result<BuildResult> {
-		info!("Building WASM module from: {:?}", source);
-		info!("Output: {:?}", output);
+		dev_log!("wasm", "Building WASM module from: {:?}", source);
+		dev_log!("wasm", "Output: {:?}", output);
 
 		// For now, return a placeholder result
 		// In production, this would invoke rustc/cargo with wasm32-wasi target
@@ -182,7 +178,7 @@ impl Entry {
 
 	/// List loaded extensions
 	pub async fn list_extensions(_detailed:bool) -> Result<Vec<ExtensionInfo>> {
-		info!("Listing extensions");
+		dev_log!("extensions", "Listing extensions");
 
 		// For now, return empty list
 		// In production, this would query the extension manager
@@ -215,11 +211,11 @@ impl Entry {
 
 	/// Wait for shutdown signal
 	async fn wait_for_shutdown() {
-		info!("Grove is running. Press Ctrl+C to stop.");
+		dev_log!("lifecycle", "Grove is running. Press Ctrl+C to stop.");
 
 		tokio::signal::ctrl_c().await.expect("Failed to listen for ctrl+c");
 
-		info!("Shutdown signal received");
+		dev_log!("lifecycle", "Shutdown signal received");
 	}
 }
 

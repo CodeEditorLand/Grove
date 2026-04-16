@@ -12,7 +12,7 @@ use std::{
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 use tokio::sync::RwLock;
-use tracing::{debug, info, instrument, warn};
+use crate::dev_log;
 
 use crate::{Host::HostConfig, WASM::Runtime::WASMRuntime};
 
@@ -117,9 +117,8 @@ impl ExtensionManagerImpl {
 	}
 
 	/// Load an extension from a path
-	#[instrument(skip(self, path))]
 	pub async fn load_extension(&self, path:&PathBuf) -> Result<String> {
-		info!("Loading extension from: {:?}", path);
+		dev_log!("extensions", "Loading extension from: {:?}", path);
 
 		// Validate path
 		if !path.exists() {
@@ -133,7 +132,7 @@ impl ExtensionManagerImpl {
 		// Check if extension is already loaded
 		let extensions = self.extensions.read().await;
 		if extensions.contains_key(&extension_id) {
-			warn!("Extension already loaded: {}", extension_id);
+			dev_log!("extensions", "warn: extension already loaded: {}", extension_id);
 			return Ok(extension_id);
 		}
 		drop(extensions);
@@ -171,20 +170,19 @@ impl ExtensionManagerImpl {
 		let mut stats = self.stats.write().await;
 		stats.total_loaded += 1;
 
-		info!("Extension loaded successfully: {}", extension_id);
+		dev_log!("extensions", "Extension loaded successfully: {}", extension_id);
 
 		Ok(extension_id)
 	}
 
 	/// Unload an extension
-	#[instrument(skip(self, extension_id))]
 	pub async fn unload_extension(&self, extension_id:&str) -> Result<()> {
-		info!("Unloading extension: {}", extension_id);
+		dev_log!("extensions", "Unloading extension: {}", extension_id);
 
 		let mut extensions = self.extensions.write().await;
 		extensions.remove(extension_id);
 
-		info!("Extension unloaded: {}", extension_id);
+		dev_log!("extensions", "Extension unloaded: {}", extension_id);
 
 		Ok(())
 	}
@@ -209,7 +207,6 @@ impl ExtensionManagerImpl {
 	}
 
 	/// Update extension state
-	#[instrument(skip(self, extension_id))]
 	pub async fn update_state(&self, extension_id:&str, state:ExtensionState) -> Result<()> {
 		let mut extensions = self.extensions.write().await;
 		if let Some(info) = extensions.get_mut(extension_id) {
@@ -238,9 +235,8 @@ impl ExtensionManagerImpl {
 	pub async fn stats(&self) -> ExtensionStats { self.stats.read().await.clone() }
 
 	/// Discover extensions in configured paths
-	#[instrument(skip(self))]
 	pub async fn discover_extensions(&self) -> Result<Vec<PathBuf>> {
-		info!("Discovering extensions in configured paths");
+		dev_log!("extensions", "Discovering extensions in configured paths");
 
 		let mut extensions = Vec::new();
 
@@ -248,12 +244,12 @@ impl ExtensionManagerImpl {
 			match self.discover_in_path(discovery_path).await {
 				Ok(mut found) => extensions.append(&mut found),
 				Err(e) => {
-					warn!("Failed to discover extensions in {}: {}", discovery_path, e);
+					dev_log!("extensions", "warn: failed to discover extensions in {}: {}", discovery_path, e);
 				},
 			}
 		}
 
-		info!("Discovered {} extensions", extensions.len());
+		dev_log!("extensions", "Discovered {} extensions", extensions.len());
 
 		Ok(extensions)
 	}
@@ -287,7 +283,7 @@ impl ExtensionManagerImpl {
 
 			if manifest_path.exists() || alt_manifest_path.exists() {
 				extensions.push(entry_path.clone());
-				debug!("Discovered extension: {:?}", entry_path);
+				dev_log!("extensions", "Discovered extension: {:?}", entry_path);
 			}
 		}
 
