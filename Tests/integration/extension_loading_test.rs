@@ -86,7 +86,7 @@ async fn test_transport_creation() {
 /// Test API types
 #[test]
 fn test_api_types() {
-	use grove::API::types::*;
+	use grove::API::Types::*;
 
 	let position = Position::new(0, 0);
 	assert_eq!(position.line, 0);
