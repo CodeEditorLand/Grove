@@ -12,7 +12,7 @@ use std::sync::{
 
 use serde::{Deserialize, Serialize};
 
-use crate::{API::types::*, Transport::Strategy::Transport, dev_log};
+use crate::{API::Types::*, Transport::Strategy::Transport, dev_log};
 
 // ============================================================================
 // Provider Registration Store

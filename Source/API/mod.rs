@@ -3,12 +3,14 @@
 //! Provides the VS Code API facade and types for Grove.
 //! Implements compatible API surface with Cocoon for extension compatibility.
 
-pub mod types;
-pub mod vscode;
+#[path = "Types.rs"]
+pub mod Types;
+#[path = "VSCode.rs"]
+pub mod VSCode;
 
 // Re-exports for convenience
-pub use types::*;
-pub use vscode::*;
+pub use Types::*;
+pub use VSCode::*;
 
 /// VS Code API version compatibility
 pub const VS_CODE_API_VERSION:&str = "1.85.0";

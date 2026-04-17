@@ -3,12 +3,14 @@
 //! Provides shared utilities, traits, and error types
 //! used across the Grove codebase.
 
-pub mod error;
-pub mod traits;
+#[path = "Error.rs"]
+pub mod Error;
+#[path = "Traits.rs"]
+pub mod Traits;
 
 // Re-exports for convenience
-pub use error::{GroveError, GroveResult};
-pub use traits::{ExtensionContext, ExtensionMetadata};
+pub use Error::{GroveError, GroveResult};
+pub use Traits::{ExtensionContext, ExtensionMetadata};
 
 /// Common result type for Grove operations
 pub type Result<T> = anyhow::Result<T>;
