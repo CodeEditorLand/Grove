@@ -11,7 +11,7 @@ use tokio::sync::RwLock;
 use crate::dev_log;
 use wasmtime::{Caller, Linker};
 
-use crate::WASM::HostBridge::{FunctionSignature, HostBridgeImpl as HostBridge, HostFunctionCallback};
+use crate::WASM::HostBridge::{FunctionSignature, HostBridgeImpl, HostBridgeImpl as HostBridge, HostFunctionCallback, ParamType, ReturnType};
 
 /// Host function registry for WASM exports
 pub struct HostFunctionRegistry {

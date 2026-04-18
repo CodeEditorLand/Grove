@@ -8,10 +8,6 @@ pub mod Error;
 #[path = "Traits.rs"]
 pub mod Traits;
 
-// Re-exports for convenience
-pub use Error::{GroveError, GroveResult};
-pub use Traits::{ExtensionContext, ExtensionMetadata};
-
 /// Common result type for Grove operations
 pub type Result<T> = anyhow::Result<T>;
 

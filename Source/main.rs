@@ -3,11 +3,15 @@
 //! This is the entry point for running Grove as a standalone extension host.
 //! It can operate independently or connect to Mountain via gRPC.
 
+#![warn(missing_docs)]
+#![deny(unsafe_code)]
+#![warn(clippy::all)]
+#![allow(non_snake_case, non_camel_case_types, unexpected_cfgs)]
+
 use std::path::PathBuf;
 
 use anyhow::Result;
 use clap::{Parser, Subcommand};
-use Grove::dev_log;
 use Grove::{
 	Binary::{
 		Build::{RuntimeBuild, ServiceRegister},
@@ -19,6 +23,7 @@ use Grove::{
 		WASMTransport::WASMTransportImpl,
 		gRPCTransport::gRPCTransport,
 	},
+	dev_log,
 };
 
 /// Grove - Rust/WASM Extension Host for VS Code
@@ -174,7 +179,9 @@ async fn run_standalone(
 
 	dev_log!("transport", "Using transport: {:?}", transport_type);
 
-	let host = RuntimeBuild::build_host_with_defaults(transport, wasi, memory_limit_mb, max_execution_time_ms).await?;
+	let host =
+		RuntimeBuild::RuntimeBuild::build_host_with_defaults(transport, wasi, memory_limit_mb, max_execution_time_ms)
+			.await?;
 
 	if let Some(path) = extension {
 		dev_log!("extensions", "Loading extension from: {:?}", path);
@@ -203,7 +210,7 @@ async fn run_service(mountain_address:String, service_name:Option<String>, auto_
 	dev_log!("grove", "Mountain address: {}", mountain_address);
 
 	// Register with Mountain
-	ServiceRegister::register_with_mountain(&name, &mountain_address, auto_reconnect).await?;
+	ServiceRegister::ServiceRegister::register_with_mountain(&name, &mountain_address, auto_reconnect).await?;
 
 	keep_running().await;
 

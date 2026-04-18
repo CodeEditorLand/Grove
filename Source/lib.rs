@@ -74,22 +74,6 @@ pub mod Services;
 pub mod Transport;
 pub mod WASM;
 
-// Re-exports for convenience
-pub use API::{types, vscode};
-pub use Binary::{
-	Build::{RuntimeBuild, ServiceRegister},
-	Main::Entry::{BuildResult, Entry, ExtensionInfo, ValidationResult},
-};
-pub use Common::{
-	error::{GroveError, GroveResult},
-	traits::ExtensionContext,
-};
-// Transport module exports are already re-exported in Transport/mod.rs
-// Use grove::Transport::{Transport, TransportType, TransportStats, GrpcTransport, IPCTransportImpl,
-// WASMTransportImpl}
-pub use WASM::Runtime;
-// Note: ExtensionHost, ExtensionManager must be accessed via module prefix
-
 // Library version
 const VERSION:&str = env!("CARGO_PKG_VERSION");
 

@@ -8,10 +8,6 @@ pub mod Types;
 #[path = "VSCode.rs"]
 pub mod VSCode;
 
-// Re-exports for convenience
-pub use Types::*;
-pub use VSCode::*;
-
 /// VS Code API version compatibility
 pub const VS_CODE_API_VERSION:&str = "1.85.0";
 

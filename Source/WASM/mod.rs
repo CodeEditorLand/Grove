@@ -42,9 +42,8 @@ pub mod MemoryManager;
 pub mod ModuleLoader;
 pub mod Runtime;
 
-// Re-exports for convenience - use module prefix to avoid E0255 conflicts
-pub use Runtime::{WASMConfig, WASMRuntime};
-// Note: ModuleLoader, MemoryManager, HostBridge, FunctionExport must be accessed via module prefix
+// Note: ModuleLoader, MemoryManager, HostBridge, FunctionExport must be
+// accessed via module prefix
 use anyhow::Result;
 
 /// Default configuration for WASM runtime
@@ -94,7 +93,9 @@ impl Default for WASMStats {
 /// # Ok(())
 /// # }
 /// ```
-pub async fn init_wasm_runtime() -> Result<WASMRuntime> { WASMRuntime::new(WASMConfig::default()).await }
+pub async fn init_wasm_runtime() -> Result<Runtime::WASMRuntime> {
+	Runtime::WASMRuntime::new(Runtime::WASMConfig::default()).await
+}
 
 #[cfg(test)]
 mod tests {
@@ -102,7 +103,7 @@ mod tests {
 
 	#[test]
 	fn test_default_config() {
-		let config = WASMConfig::default();
+		let config = Runtime::WASMConfig::default();
 		assert_eq!(config.memory_limit_mb, DEFAULT_MEMORY_LIMIT_MB);
 	}
 

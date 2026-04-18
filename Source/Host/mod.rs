@@ -37,12 +37,6 @@ pub mod ExtensionHost;
 pub mod ExtensionManager;
 pub mod Lifecycle;
 
-// Re-exports for convenience - use module prefix to avoid E0255 conflicts
-pub use Activation::{ActivationEngine, ActivationEvent};
-pub use Lifecycle::{LifecycleEvent, LifecycleManager};
-// Note: ExtensionHost, ExtensionManager, APIBridge must be accessed via module
-// prefix
-
 /// Host configuration
 #[derive(Debug, Clone)]
 pub struct HostConfig {

@@ -6,10 +6,6 @@
 pub mod Build;
 pub mod Main;
 
-// Re-exports for convenience
-pub use Build::{RuntimeBuild, ServiceRegister};
-pub use Main::Entry;
-
 /// Binary configuration
 #[derive(Debug, Clone)]
 pub struct BinaryConfig {
