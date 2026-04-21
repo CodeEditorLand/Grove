@@ -3,11 +3,11 @@
 All notable changes to the Grove element are documented in this file. Format:
 [Keep a Changelog](https://keepachangelog.com/).
 
-Grove is the WASM extension sandbox — an isolated runtime for executing VS Code
+Grove is the WASM extension sandbox - an isolated runtime for executing VS Code
 extensions in WebAssembly with WASI, providing secure boundaries between
 extension code and the host editor.
 
-## [v2.1] — Q2 2026: DevLog + Refinement
+## [v2.1] - Q2 2026: DevLog + Refinement
 
 ### Changed
 
@@ -16,7 +16,7 @@ extension code and the host editor.
 - Rust formatting standardized across all 68 .rs source files
 - Documentation and table formatting refined in `DeepDive.md`
 
-## [v2.0] — Q1 2026: Module Expansion
+## [v2.0] - Q1 2026: Module Expansion
 
 ### Added
 
@@ -27,7 +27,7 @@ extension code and the host editor.
 - Comprehensive README with architecture tables and module breakdown
 - CI/CD workflows (`.github/workflows/`) and Dependabot configuration
 
-## [v1.2] — Q3-Q4 2025: Foundation Build
+## [v1.2] - Q3-Q4 2025: Foundation Build
 
 ### Added
 
@@ -37,7 +37,7 @@ extension code and the host editor.
   `CODE_OF_CONDUCT.md`)
 - GitHub Actions integration for Rust builds
 
-## [v1.1] — Q2 2025: Project Inception
+## [v1.1] - Q2 2025: Project Inception
 
 ### Added
 

@@ -1,4 +1,4 @@
-# Grove — Deep Dive
+# Grove - Deep Dive
 
 This document provides the technical foundation for the Grove Rust/WASM
 extension host within the Land ecosystem. **Grove** provides a native, sandboxed
@@ -16,7 +16,7 @@ communicates with Mountain, and shared utility modules.
 
 ```mermaid
 graph TB
-    subgraph "Grove — Rust/WASM Extension Host"
+    subgraph "Grove - Rust/WASM Extension Host"
         Main["main.rs / lib.rs\nBinary + Library entry"]
         Binary["Binary/\nCLI and startup"]
         Host["Host/\nExtension Host Controller"]
@@ -40,7 +40,7 @@ graph TB
         Common["Common/\nShared utilities"]
     end
 
-    subgraph "Mountain — Rust Backend"
+    subgraph "Mountain - Rust Backend"
         VineGRPC["Vine gRPC Server"]
     end
 
