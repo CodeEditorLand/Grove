@@ -61,7 +61,13 @@ opentelemetry-semantic-conventions = { version = "0.31", optional = true }
 tracing-opentelemetry = { version = "0.32", optional = true }
 
 [build-dependencies]
+# tonic 0.14 split proto-compilation into the `tonic-prost-build` crate.
+# `tonic-build` now only ships manual codegen + `CodeGenBuilder`; the
+# `configure()` / `compile_protos()` flow the build script needs lives in
+# `tonic-prost-build`. Both are pinned to the same 0.14.x workspace version
+# so tonic / prost / tonic-prost stay in lockstep.
 tonic-build = "0.14"
+tonic-prost-build = "0.14"
 anyhow = { workspace = true }
 vergen = { version = "9", features = ["build", "cargo", "rustc"] }
 

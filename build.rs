@@ -9,8 +9,18 @@
 use std::{env, path::PathBuf};
 
 fn main() -> anyhow::Result<()> {
-	// Generate build timestamp using vergen 8.x for EmitBuilder API compatibility
-	vergen::EmitBuilder::builder().all_build().all_cargo().all_rustc().emit()?;
+	// vergen 9 replaced the 8.x `EmitBuilder` facade with per-domain builders
+	// (`BuildBuilder`, `CargoBuilder`, `RustcBuilder`) fed into a shared
+	// `Emitter`. Same `VERGEN_*` env vars are emitted so downstream
+	// `env!("VERGEN_…")` reads in Grove continue to work unchanged.
+	let BuildInstructions = vergen::BuildBuilder::all_build()?;
+	let CargoInstructions = vergen::CargoBuilder::all_cargo()?;
+	let RustcInstructions = vergen::RustcBuilder::all_rustc()?;
+	vergen::Emitter::default()
+		.add_instructions(&BuildInstructions)?
+		.add_instructions(&CargoInstructions)?
+		.add_instructions(&RustcInstructions)?
+		.emit()?;
 	let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
 	let proto_dir = manifest_dir.join("Proto");
 
@@ -50,8 +60,10 @@ fn compile_protos() {
 	// Create the output directory if it doesn't exist
 	std::fs::create_dir_all(&out_dir).expect(&format!("Failed to create directory: {:?}", out_dir));
 
-	// Using tonic-build 0.12 for configure() API stability
-	tonic_build::configure()
+	// tonic-build 0.14 split the `configure()` → `Builder` → `compile_protos`
+	// flow into `tonic-prost-build`. Same fluent surface (`build_server`,
+	// `build_client`, `out_dir`, `compile_protos`) - just a different crate.
+	tonic_prost_build::configure()
 		.build_server(true)
 		.build_client(true)
 		.out_dir(&out_dir)
