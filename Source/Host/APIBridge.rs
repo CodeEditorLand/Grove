@@ -255,7 +255,7 @@ impl APIBridgeImpl {
 	}
 
 	/// Handle an API call from an extension
-	pub async fn handle_call(&self, request:APICallRequest) -> Result<APICallResponse> {
+	pub async fn Call(&self, request:APICallRequest) -> Result<APICallResponse> {
 		let start = std::time::Instant::now();
 
 		dev_log!("extensions", "Handling API call: {} from extension {}", request.api_method, request.extension_id);
