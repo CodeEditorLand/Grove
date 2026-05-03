@@ -10,9 +10,10 @@ use std::sync::{
 
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
-use crate::dev_log;
 #[allow(unused_imports)]
 use wasmtime::{Memory, MemoryType};
+
+use crate::dev_log;
 
 /// Memory limits for WASM instances
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -185,7 +186,13 @@ impl MemoryManagerImpl {
 
 	/// Allocate memory for a WASM instance
 	pub fn allocate_memory(&mut self, instance_id:&str, memory_type:&str, requested_bytes:u64) -> Result<u64> {
-		dev_log!("wasm", "Allocating {} bytes for instance {} (type: {})", requested_bytes, instance_id, memory_type);
+		dev_log!(
+			"wasm",
+			"Allocating {} bytes for instance {} (type: {})",
+			requested_bytes,
+			instance_id,
+			memory_type
+		);
 
 		let current_usage = self.current_usage_bytes();
 
@@ -225,7 +232,11 @@ impl MemoryManagerImpl {
 			self.peak_usage.store(new_peak, Ordering::Relaxed);
 		}
 
-		dev_log!("wasm", "Memory allocated successfully. Total usage: {} MB", self.current_usage_mb());
+		dev_log!(
+			"wasm",
+			"Memory allocated successfully. Total usage: {} MB",
+			self.current_usage_mb()
+		);
 
 		Ok(requested_bytes)
 	}
@@ -245,11 +256,20 @@ impl MemoryManagerImpl {
 			// Update stats
 			Arc::make_mut(&mut self.stats).record_deallocation(allocation.size_bytes);
 
-			dev_log!("wasm", "Memory deallocated successfully. Remaining usage: {} MB", self.current_usage_mb());
+			dev_log!(
+				"wasm",
+				"Memory deallocated successfully. Remaining usage: {} MB",
+				self.current_usage_mb()
+			);
 
 			Ok(true)
 		} else {
-			dev_log!("wasm", "warn: memory allocation not found: {} for instance {}", memory_id, instance_id);
+			dev_log!(
+				"wasm",
+				"warn: memory allocation not found: {} for instance {}",
+				memory_id,
+				instance_id
+			);
 			Ok(false)
 		}
 	}
@@ -265,7 +285,12 @@ impl MemoryManagerImpl {
 		let deallocated_count = initial_count - self.allocations.len();
 
 		if deallocated_count > 0 {
-			dev_log!("wasm", "Deallocated {} memory allocations for instance {}", deallocated_count, instance_id);
+			dev_log!(
+				"wasm",
+				"Deallocated {} memory allocations for instance {}",
+				deallocated_count,
+				instance_id
+			);
 		}
 
 		deallocated_count
@@ -273,7 +298,13 @@ impl MemoryManagerImpl {
 
 	/// Grow existing memory allocation
 	pub fn grow_memory(&mut self, instance_id:&str, memory_id:&str, additional_bytes:u64) -> Result<u64> {
-		dev_log!("wasm", "Growing memory {} for instance {} by {} bytes", memory_id, instance_id, additional_bytes);
+		dev_log!(
+			"wasm",
+			"Growing memory {} for instance {} by {} bytes",
+			memory_id,
+			instance_id,
+			additional_bytes
+		);
 
 		// Calculate current usage before mutable borrow
 		let current_usage = self.current_usage_bytes();

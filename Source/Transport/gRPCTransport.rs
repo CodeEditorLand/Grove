@@ -9,11 +9,13 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use tokio::sync::RwLock;
 use tonic::transport::{Channel, Endpoint};
-use crate::dev_log;
 
-use crate::Transport::{
-	Strategy::{TransportStats, TransportStrategy, TransportType},
-	TransportConfig,
+use crate::{
+	Transport::{
+		Strategy::{TransportStats, TransportStrategy, TransportType},
+		TransportConfig,
+	},
+	dev_log,
 };
 
 /// gRPC transport for communication with Mountain and other gRPC services.

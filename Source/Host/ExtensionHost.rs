@@ -8,12 +8,12 @@ use std::{path::PathBuf, sync::Arc};
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 use tokio::sync::RwLock;
-use crate::dev_log;
 
 use crate::{
 	Host::{Activation, ExtensionManager::ExtensionManagerImpl, HostConfig},
 	Transport::Strategy::Transport,
 	WASM::Runtime::{WASMConfig, WASMRuntime},
+	dev_log,
 };
 
 /// Main extension host controller
@@ -87,10 +87,10 @@ impl ExtensionHostImpl {
 	/// # Ok(())
 	/// # }
 	/// ```
-		pub async fn new(transport:Transport) -> Result<Self> { Self::with_config(transport, HostConfig::default()).await }
+	pub async fn new(transport:Transport) -> Result<Self> { Self::with_config(transport, HostConfig::default()).await }
 
 	/// Create a new extension host with custom configuration
-		pub async fn with_config(transport:Transport, config:HostConfig) -> Result<Self> {
+	pub async fn with_config(transport:Transport, config:HostConfig) -> Result<Self> {
 		dev_log!("grove", "Creating extension host with config: {:?}", config);
 
 		// Connect transport
@@ -123,7 +123,7 @@ impl ExtensionHostImpl {
 	}
 
 	/// Load an extension from a path
-		pub async fn load_extension(&self, path:&PathBuf) -> Result<String> {
+	pub async fn load_extension(&self, path:&PathBuf) -> Result<String> {
 		dev_log!("extensions", "Loading extension from: {:?}", path);
 
 		let extension_id = self
@@ -140,7 +140,7 @@ impl ExtensionHostImpl {
 	}
 
 	/// Unload an extension
-		pub async fn unload_extension(&self, extension_id:&str) -> Result<()> {
+	pub async fn unload_extension(&self, extension_id:&str) -> Result<()> {
 		dev_log!("extensions", "Unloading extension: {}", extension_id);
 
 		self.extension_manager
@@ -154,7 +154,7 @@ impl ExtensionHostImpl {
 	}
 
 	/// Activate an extension
-		pub async fn activate(&self, extension_id:&str) -> Result<()> {
+	pub async fn activate(&self, extension_id:&str) -> Result<()> {
 		dev_log!("extensions", "Activating extension: {}", extension_id);
 
 		let start = std::time::Instant::now();
@@ -185,7 +185,7 @@ impl ExtensionHostImpl {
 	}
 
 	/// Deactivate an extension
-		pub async fn deactivate(&self, extension_id:&str) -> Result<()> {
+	pub async fn deactivate(&self, extension_id:&str) -> Result<()> {
 		dev_log!("extensions", "Deactivating extension: {}", extension_id);
 
 		self.activation_engine
@@ -203,7 +203,7 @@ impl ExtensionHostImpl {
 	}
 
 	/// Activate all loaded extensions
-		pub async fn activate_all(&self) -> Result<Vec<String>> {
+	pub async fn activate_all(&self) -> Result<Vec<String>> {
 		dev_log!("extensions", "Activating all extensions");
 
 		let extensions = self.extension_manager.list_extensions().await;
@@ -220,13 +220,18 @@ impl ExtensionHostImpl {
 			}
 		}
 
-		dev_log!("extensions", "warn: activated {} extensions, {} failed", activated.len(), failed.len());
+		dev_log!(
+			"extensions",
+			"warn: activated {} extensions, {} failed",
+			activated.len(),
+			failed.len()
+		);
 
 		Ok(activated)
 	}
 
 	/// Deactivate all active extensions
-		pub async fn deactivate_all(&self) -> Result<()> {
+	pub async fn deactivate_all(&self) -> Result<()> {
 		dev_log!("extensions", "Deactivating all extensions");
 
 		let active = self.active_extensions.read().await.clone();
@@ -275,7 +280,7 @@ impl ExtensionHostImpl {
 	pub fn wasm_runtime(&self) -> &Arc<WASMRuntime> { &self.wasm_runtime }
 
 	/// Shutdown the host and clean up resources
-		pub async fn shutdown(&self) -> Result<()> {
+	pub async fn shutdown(&self) -> Result<()> {
 		dev_log!("lifecycle", "Shutting down extension host");
 
 		*self.state.write().await = HostState::ShuttingDown;

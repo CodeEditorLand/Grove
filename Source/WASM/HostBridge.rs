@@ -10,9 +10,10 @@ use anyhow::Result;
 use bytes::Bytes;
 use serde::{Serialize, de::DeserializeOwned};
 use tokio::sync::{RwLock, mpsc, oneshot};
-use crate::dev_log;
 #[allow(unused_imports)]
 use wasmtime::{Caller, Extern, Func, Linker, Store};
+
+use crate::dev_log;
 
 /// Host bridge error types
 #[derive(Debug, thiserror::Error)]

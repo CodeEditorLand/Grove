@@ -345,7 +345,12 @@ impl LanguageNamespace {
 
 		Disposable::with_callback(Box::new(move || {
 			Store.remove(Handle);
-			dev_log!("extensions", "[LanguageNamespace] disposed {} handle={}", ProviderTypeOwned, Handle);
+			dev_log!(
+				"extensions",
+				"[LanguageNamespace] disposed {} handle={}",
+				ProviderTypeOwned,
+				Handle
+			);
 		}))
 	}
 

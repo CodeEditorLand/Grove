@@ -38,9 +38,8 @@ use std::sync::Arc;
 
 use anyhow::Result;
 use tokio::sync::RwLock;
-use crate::dev_log;
 
-use crate::Protocol::ProtocolConfig;
+use crate::{Protocol::ProtocolConfig, dev_log};
 #[cfg(feature = "grove_echo")]
 use crate::vine::generated::vine::{
 	EchoAction,

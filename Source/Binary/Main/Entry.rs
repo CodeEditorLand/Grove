@@ -6,12 +6,12 @@
 use std::path::PathBuf;
 
 use anyhow::{Context, Result};
-use crate::dev_log;
 
 use crate::{
 	Binary::Main::CliArgs,
 	Host::{ExtensionHost::ExtensionHostImpl, HostConfig},
 	Transport::Strategy::Transport,
+	dev_log,
 };
 
 /// Grove entry point manager

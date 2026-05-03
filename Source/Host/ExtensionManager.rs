@@ -12,9 +12,8 @@ use std::{
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 use tokio::sync::RwLock;
-use crate::dev_log;
 
-use crate::{Host::HostConfig, WASM::Runtime::WASMRuntime};
+use crate::{Host::HostConfig, WASM::Runtime::WASMRuntime, dev_log};
 
 /// Extension manager for handling extension lifecycle
 pub struct ExtensionManagerImpl {

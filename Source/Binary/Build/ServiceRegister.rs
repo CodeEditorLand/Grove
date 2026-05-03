@@ -5,9 +5,11 @@
 
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
-use crate::dev_log;
 
-use crate::Protocol::{ProtocolConfig, SpineConnection::SpineConnectionImpl};
+use crate::{
+	Protocol::{ProtocolConfig, SpineConnection::SpineConnectionImpl},
+	dev_log,
+};
 
 /// Service register for managing Grove's registration with Mountain
 pub struct ServiceRegister;
@@ -62,7 +64,12 @@ impl ServiceRegister {
 		mountain_address:&str,
 		auto_reconnect:bool,
 	) -> Result<ServiceRegistrationResult> {
-		dev_log!("grove", "Registering service '{}' with Mountain at {}", service_name, mountain_address);
+		dev_log!(
+			"grove",
+			"Registering service '{}' with Mountain at {}",
+			service_name,
+			mountain_address
+		);
 
 		// Create Spine configuration
 		let spine_config = ProtocolConfig::new().with_mountain_endpoint(service_name.to_string());
@@ -171,7 +178,12 @@ impl ServiceRegister {
 
 	/// Start heartbeat loop
 	pub async fn start_heartbeat_loop(service_id:&str, interval_sec:u64) -> Result<()> {
-		dev_log!("grove", "Starting heartbeat loop for service: {} (interval: {}s)", service_id, interval_sec);
+		dev_log!(
+			"grove",
+			"Starting heartbeat loop for service: {} (interval: {}s)",
+			service_id,
+			interval_sec
+		);
 
 		let service_id_owned = service_id.to_string();
 		tokio::spawn(async move {

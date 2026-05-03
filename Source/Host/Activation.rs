@@ -8,12 +8,14 @@ use std::{collections::HashMap, path::PathBuf, sync::Arc};
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 use tokio::sync::RwLock;
-use crate::dev_log;
 
-use crate::Host::{
-	ActivationResult,
-	ExtensionManager::{ExtensionManagerImpl, ExtensionState},
-	HostConfig,
+use crate::{
+	Host::{
+		ActivationResult,
+		ExtensionManager::{ExtensionManagerImpl, ExtensionState},
+		HostConfig,
+	},
+	dev_log,
 };
 
 /// Extension activation event types
@@ -303,7 +305,13 @@ impl ActivationEngine {
 				match self.activate(extension_id).await {
 					Ok(result) => results.push(result),
 					Err(e) => {
-						dev_log!("extensions", "warn: failed to activate extension {} for event {}: {}", extension_id, event, e);
+						dev_log!(
+							"extensions",
+							"warn: failed to activate extension {} for event {}: {}",
+							extension_id,
+							event,
+							e
+						);
 					},
 				}
 			}

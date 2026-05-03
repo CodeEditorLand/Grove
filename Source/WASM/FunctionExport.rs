@@ -8,10 +8,19 @@ use std::{collections::HashMap, sync::Arc};
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use tokio::sync::RwLock;
-use crate::dev_log;
 use wasmtime::{Caller, Linker};
 
-use crate::WASM::HostBridge::{FunctionSignature, HostBridgeImpl, HostBridgeImpl as HostBridge, HostFunctionCallback, ParamType, ReturnType};
+use crate::{
+	WASM::HostBridge::{
+		FunctionSignature,
+		HostBridgeImpl,
+		HostBridgeImpl as HostBridge,
+		HostFunctionCallback,
+		ParamType,
+		ReturnType,
+	},
+	dev_log,
+};
 
 /// Host function registry for WASM exports
 pub struct HostFunctionRegistry {
@@ -294,7 +303,12 @@ impl FunctionExportImpl {
 					let args_bytes = match serde_json::to_vec(&input_param).map(bytes::Bytes::from) {
 						Ok(b) => b,
 						Err(e) => {
-							dev_log!("wasm", "warn: serialization error for function '{}': {}", func_name_for_logging, e);
+							dev_log!(
+								"wasm",
+								"warn: serialization error for function '{}': {}",
+								func_name_for_logging,
+								e
+							);
 							return -1i32;
 						},
 					};
@@ -308,7 +322,11 @@ impl FunctionExportImpl {
 							let result_val:serde_json::Value = match serde_json::from_slice(&response_bytes) {
 								Ok(v) => v,
 								Err(_) => {
-									dev_log!("wasm", "warn: error deserializing response for function '{}'", func_name_for_logging);
+									dev_log!(
+										"wasm",
+										"warn: error deserializing response for function '{}'",
+										func_name_for_logging
+									);
 									return -1i32;
 								},
 							};
@@ -321,7 +339,11 @@ impl FunctionExportImpl {
 									} else if let Some(f) = n.as_f64() {
 										f as i32
 									} else {
-										dev_log!("wasm", "warn: invalid number format for function '{}'", func_name_for_logging);
+										dev_log!(
+											"wasm",
+											"warn: invalid number format for function '{}'",
+											func_name_for_logging
+										);
 										-1i32
 									}
 								},
@@ -333,20 +355,34 @@ impl FunctionExportImpl {
 									}
 								},
 								_ => {
-									dev_log!("wasm", "warn: unsupported response type for function '{}', expected number or bool", func_name_for_logging);
+									dev_log!(
+										"wasm",
+										"warn: unsupported response type for function '{}', expected number or bool",
+										func_name_for_logging
+									);
 									-1i32
 								},
 							};
 
 							// Log successful call
 							let duration = start.elapsed();
-							dev_log!("wasm", "[FunctionExport] Host function '{}' executed successfully in {}µs", func_name_for_logging, duration.as_micros());
+							dev_log!(
+								"wasm",
+								"[FunctionExport] Host function '{}' executed successfully in {}µs",
+								func_name_for_logging,
+								duration.as_micros()
+							);
 
 							ret_val
 						},
 						Err(e) => {
 							// Error handling - return error code to WASM caller
-							dev_log!("wasm", "[FunctionExport] Host function '{}' returned error: {}", func_name_for_logging, e);
+							dev_log!(
+								"wasm",
+								"[FunctionExport] Host function '{}' returned error: {}",
+								func_name_for_logging,
+								e
+							);
 							// Return -1 to indicate error to WASM caller
 							-1i32
 						},
@@ -354,11 +390,20 @@ impl FunctionExportImpl {
 				},
 			)
 			.map_err(|e| {
-				dev_log!("wasm", "warn: [FunctionExport] failed to wrap host function '{}': {}", func_name_for_debug, e);
+				dev_log!(
+					"wasm",
+					"warn: [FunctionExport] failed to wrap host function '{}': {}",
+					func_name_for_debug,
+					e
+				);
 				e
 			})?;
 
-		dev_log!("wasm", "[FunctionExport] Host function '{}' registered successfully", func_name_for_debug);
+		dev_log!(
+			"wasm",
+			"[FunctionExport] Host function '{}' registered successfully",
+			func_name_for_debug
+		);
 
 		Ok(())
 	}

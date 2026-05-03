@@ -12,9 +12,8 @@ use std::{
 use anyhow::{Context, Result};
 use serde_json::Value;
 use tokio::sync::RwLock;
-use crate::dev_log;
 
-use crate::Services::Service;
+use crate::{Services::Service, dev_log};
 
 /// Configuration scope
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]

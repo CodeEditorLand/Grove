@@ -6,12 +6,12 @@
 use std::sync::Arc;
 
 use anyhow::{Context, Result};
-use crate::dev_log;
 
 use crate::{
 	Host::{ExtensionHost::ExtensionHostImpl, HostConfig},
 	Transport::Strategy::Transport,
 	WASM::Runtime::{WASMConfig, WASMRuntime},
+	dev_log,
 };
 
 /// Runtime build utilities

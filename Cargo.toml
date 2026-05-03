@@ -19,6 +19,7 @@ name = "Grove"
 path = "Source/main.rs"
 
 [dependencies]
+Common = { workspace = true }
 tokio = { workspace = true }
 tokio-util = { version = "0.7", features = ["codec"] }
 wasmtime = { version = "44", features = [

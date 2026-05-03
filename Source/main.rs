@@ -135,6 +135,10 @@ enum Mode {
 async fn main() -> Result<()> {
 	let cli = Cli::parse();
 
+	// [Boot] [Telemetry] Bring up shared dual-pipe (PostHog + OTLP). No-op
+	// in release builds and when `Capture=false`.
+	CommonLibrary::Telemetry::Initialize::Fn(CommonLibrary::Telemetry::Tier::Tier::Grove).await;
+
 	// Initialize logging
 	init_logging(cli.verbose, &cli.log_format)?;
 

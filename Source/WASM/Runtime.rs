@@ -8,13 +8,15 @@ use std::sync::Arc;
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use tokio::sync::RwLock;
-use crate::dev_log;
 use wasmtime::{Engine, Linker, Module, Store, StoreLimits, StoreLimitsBuilder, WasmBacktraceDetails};
 
-use crate::WASM::{
-	DEFAULT_MAX_EXECUTION_TIME_MS,
-	DEFAULT_MEMORY_LIMIT_MB,
-	MemoryManager::{MemoryLimits, MemoryManagerImpl},
+use crate::{
+	WASM::{
+		DEFAULT_MAX_EXECUTION_TIME_MS,
+		DEFAULT_MEMORY_LIMIT_MB,
+		MemoryManager::{MemoryLimits, MemoryManagerImpl},
+	},
+	dev_log,
 };
 
 /// Configuration for the WASM runtime

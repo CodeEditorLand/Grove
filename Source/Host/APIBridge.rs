@@ -8,6 +8,7 @@ use std::{collections::HashMap, sync::Arc};
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use tokio::sync::RwLock;
+
 use crate::dev_log;
 
 /// API call request from an extension
@@ -258,7 +259,12 @@ impl APIBridgeImpl {
 	pub async fn Call(&self, request:APICallRequest) -> Result<APICallResponse> {
 		let start = std::time::Instant::now();
 
-		dev_log!("extensions", "Handling API call: {} from extension {}", request.api_method, request.extension_id);
+		dev_log!(
+			"extensions",
+			"Handling API call: {} from extension {}",
+			request.api_method,
+			request.extension_id
+		);
 
 		// Check if method exists
 		let exists = {

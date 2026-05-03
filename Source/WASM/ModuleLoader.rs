@@ -12,10 +12,12 @@ use std::{
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 use tokio::sync::RwLock;
-use crate::dev_log;
 use wasmtime::{Instance, Linker, Module, Store, StoreLimits};
 
-use crate::WASM::Runtime::{WASMConfig, WASMRuntime};
+use crate::{
+	WASM::Runtime::{WASMConfig, WASMRuntime},
+	dev_log,
+};
 
 /// WASM module wrapper with metadata
 #[derive(Debug, Clone, Serialize, Deserialize)]

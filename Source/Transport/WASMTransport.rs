@@ -10,7 +10,6 @@ use base64::Engine;
 use bytes::Bytes;
 use serde::{Deserialize, Serialize};
 use tokio::sync::RwLock;
-use crate::dev_log;
 
 use crate::{
 	Transport::{
@@ -23,6 +22,7 @@ use crate::{
 		Runtime::{WASMConfig, WASMRuntime},
 		WASMStats,
 	},
+	dev_log,
 };
 
 /// WASM transport for direct module communication
@@ -184,7 +184,13 @@ impl WASMTransportImpl {
 	) -> anyhow::Result<Bytes> {
 		let start = std::time::Instant::now();
 
-		dev_log!("wasm", "Calling WASM function: {}::{} with {} arguments", module_id, function_name, args.len());
+		dev_log!(
+			"wasm",
+			"Calling WASM function: {}::{} with {} arguments",
+			module_id,
+			function_name,
+			args.len()
+		);
 
 		let modules = self.modules.read().await;
 		let _module = modules
@@ -280,7 +286,11 @@ impl TransportStrategy for WASMTransportImpl {
 			return Err(WASMTransportError::NotConnected);
 		}
 
-		dev_log!("transport", "Sending WASM transport request without response ({} bytes)", data.len());
+		dev_log!(
+			"transport",
+			"Sending WASM transport request without response ({} bytes)",
+			data.len()
+		);
 
 		// For fire-and-forget calls, we still execute but ignore the response
 		self.send(data).await?;

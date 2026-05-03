@@ -11,11 +11,13 @@ use std::{
 
 use async_trait::async_trait;
 use tokio::sync::RwLock;
-use crate::dev_log;
 
-use crate::Transport::{
-	Strategy::{TransportStats, TransportStrategy, TransportType},
-	TransportConfig,
+use crate::{
+	Transport::{
+		Strategy::{TransportStats, TransportStrategy, TransportType},
+		TransportConfig,
+	},
+	dev_log,
 };
 
 /// IPC transport for local process communication.

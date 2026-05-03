@@ -8,6 +8,7 @@ use std::{collections::HashMap, sync::Arc};
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use tokio::sync::RwLock;
+
 use crate::dev_log;
 
 /// Lifecycle event types
@@ -117,7 +118,7 @@ impl LifecycleManager {
 	}
 
 	/// Register an extension for lifecycle management
-	
+
 	pub async fn register_extension(&self, extension_id:&str, initial_state:LifecycleState) -> Result<()> {
 		dev_log!("extensions", "Registering extension for lifecycle management: {}", extension_id);
 
@@ -151,9 +152,13 @@ impl LifecycleManager {
 	}
 
 	/// Unregister an extension from lifecycle management
-	
+
 	pub async fn unregister_extension(&self, extension_id:&str) -> Result<()> {
-		dev_log!("extensions", "Unregistering extension from lifecycle management: {}", extension_id);
+		dev_log!(
+			"extensions",
+			"Unregistering extension from lifecycle management: {}",
+			extension_id
+		);
 
 		let mut handlers = self.handlers.write().await;
 		handlers.remove(extension_id);
@@ -172,7 +177,7 @@ impl LifecycleManager {
 	}
 
 	/// Transition an extension to a new state
-	
+
 	pub async fn transition(&self, extension_id:&str, event:LifecycleEvent) -> Result<LifecycleState> {
 		dev_log!("lifecycle", "Transitioning extension {} with event: {:?}", extension_id, event);
 
@@ -216,7 +221,10 @@ impl LifecycleManager {
 		dev_log!(
 			"lifecycle",
 			"Extension {} transitioned from {:?} to {:?} in {}ms",
-			extension_id, current_state, new_state, elapsed_ms
+			extension_id,
+			current_state,
+			new_state,
+			elapsed_ms
 		);
 
 		Ok(new_state)
@@ -262,7 +270,9 @@ impl LifecycleManager {
 		dev_log!(
 			"lifecycle",
 			"Performing state transition for extension {}: {:?} -> {:?}",
-			extension_id, event, new_state
+			extension_id,
+			event,
+			new_state
 		);
 
 		// Update state
@@ -284,7 +294,7 @@ impl LifecycleManager {
 	}
 
 	/// Trigger a lifecycle event for an extension
-	
+
 	pub async fn trigger_event(&self, extension_id:&str, event:LifecycleEvent) -> Result<()> {
 		dev_log!("lifecycle", "Triggering lifecycle event for {}: {:?}", extension_id, event);
 
