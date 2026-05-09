@@ -26,6 +26,7 @@ use crate::{API::Types::*, Transport::Strategy::Transport, dev_log};
 struct ProviderStore {
 	/// Map from handle → (provider_type, selector) for diagnostics.
 	entries:Mutex<std::collections::HashMap<u32, (String, String)>>,
+
 	/// Monotonically increasing handle counter.
 	next_handle:AtomicU32,
 }
@@ -34,9 +35,11 @@ impl ProviderStore {
 	/// Returns the next unique handle and inserts a registration record.
 	fn insert(&self, provider_type:&str, selector:&str) -> u32 {
 		let Handle = self.next_handle.fetch_add(1, Ordering::Relaxed);
+
 		if let Ok(mut Guard) = self.entries.lock() {
 			Guard.insert(Handle, (provider_type.to_string(), selector.to_string()));
 		}
+
 		Handle
 	}
 
@@ -57,14 +60,19 @@ impl ProviderStore {
 pub struct VSCodeAPI {
 	/// Commands namespace
 	pub commands:Arc<CommandNamespace>,
+
 	/// Window namespace
 	pub window:Arc<Window>,
+
 	/// Workspace namespace
 	pub workspace:Arc<Workspace>,
+
 	/// Languages namespace
 	pub languages:Arc<LanguageNamespace>,
+
 	/// Extensions namespace
 	pub extensions:Arc<ExtensionNamespace>,
+
 	/// Environment namespace
 	pub env:Arc<Env>,
 }
@@ -75,10 +83,15 @@ impl VSCodeAPI {
 	pub fn new() -> Self {
 		Self {
 			commands:Arc::new(CommandNamespace::new()),
+
 			window:Arc::new(Window::new()),
+
 			workspace:Arc::new(Workspace::new()),
+
 			languages:Arc::new(LanguageNamespace::new()),
+
 			extensions:Arc::new(ExtensionNamespace::new()),
+
 			env:Arc::new(Env::new()),
 		}
 	}
@@ -89,10 +102,15 @@ impl VSCodeAPI {
 	pub fn new_with_transport(transport:Arc<Transport>) -> Self {
 		Self {
 			commands:Arc::new(CommandNamespace::new()),
+
 			window:Arc::new(Window::new()),
+
 			workspace:Arc::new(Workspace::new()),
+
 			languages:Arc::new(LanguageNamespace::new_with_transport(Arc::clone(&transport))),
+
 			extensions:Arc::new(ExtensionNamespace::new()),
+
 			env:Arc::new(Env::new()),
 		}
 	}
@@ -118,7 +136,9 @@ impl CommandNamespace {
 	/// Execute a command
 	pub async fn execute_command<T:serde::de::DeserializeOwned>(
 		&self,
+
 		command_id:String,
+
 		_args:Vec<serde_json::Value>,
 	) -> Result<T, String> {
 		// Placeholder implementation
@@ -193,16 +213,19 @@ impl OutputChannel {
 
 	/// Show the output channel
 	pub fn show(&self) {
+
 		// Placeholder - in real implementation, would show the channel
 	}
 
 	/// Hide the output channel
 	pub fn hide(&self) {
+
 		// Placeholder - in real implementation, would hide the channel
 	}
 
 	/// Dispose the output channel
 	pub fn dispose(&self) {
+
 		// Placeholder - in real implementation, would dispose resources
 	}
 }
@@ -285,6 +308,7 @@ impl WorkspaceConfiguration {
 pub struct LanguageNamespace {
 	/// Active provider registration store.
 	store:Arc<ProviderStore>,
+
 	/// Optional transport to Mountain for forwarding registrations.
 	transport:Option<Arc<Transport>>,
 }
@@ -310,13 +334,17 @@ impl LanguageNamespace {
 	/// Internal helper: register a provider, return a disposable handle.
 	fn register(&self, provider_type:&str, selector:&DocumentSelector) -> Disposable {
 		let ProviderTypeOwned = provider_type.to_string();
+
 		let SelectorStr = selector
 			.iter()
 			.filter_map(|F| F.language.as_deref())
 			.collect::<Vec<_>>()
 			.join(",");
+
 		let Handle = self.store.insert(&ProviderTypeOwned, &SelectorStr);
+
 		let Store = Arc::clone(&self.store);
+
 		dev_log!(
 			"extensions",
 			"[LanguageNamespace] registered {} handle={} selector={}",
@@ -335,8 +363,10 @@ impl LanguageNamespace {
 					"extension_id": "grove-extension",
 				}
 			});
+
 			if let Ok(Bytes) = serde_json::to_vec(&Notification) {
 				let TransportClone = Arc::clone(Transport);
+
 				tokio::spawn(async move {
 					let _ = TransportClone.send_no_response(&Bytes).await;
 				});
@@ -357,8 +387,11 @@ impl LanguageNamespace {
 	/// Register completion item provider
 	pub async fn register_completion_item_provider<T:CompletionItemProvider>(
 		&self,
+
 		selector:DocumentSelector,
+
 		_provider:T,
+
 		_trigger_characters:Option<Vec<String>>,
 	) -> Result<Disposable, String> {
 		Ok(self.register("completion", &selector))
@@ -413,7 +446,9 @@ impl LanguageNamespace {
 	/// Register on-type formatting provider
 	pub fn register_on_type_formatting_edit_provider(
 		&self,
+
 		selector:DocumentSelector,
+
 		_trigger_characters:Vec<String>,
 	) -> Disposable {
 		self.register("onTypeFormatting", &selector)
@@ -525,9 +560,13 @@ pub trait CompletionItemProvider: Send + Sync {
 	/// A vector of completion items
 	fn provide_completion_items(
 		&self,
+
 		document:TextDocumentIdentifier,
+
 		position:Position,
+
 		context:CompletionContext,
+
 		token:Option<String>,
 	) -> Vec<CompletionItem>;
 }
@@ -578,21 +617,25 @@ impl DiagnosticCollection {
 
 	/// Set diagnostics for a resource
 	pub fn set(&self, _uri:String, _diagnostics:Vec<Diagnostic>) {
+
 		// Placeholder implementation
 	}
 
 	/// Delete diagnostics for a resource
 	pub fn delete(&self, _uri:String) {
+
 		// Placeholder implementation
 	}
 
 	/// Clear all diagnostics
 	pub fn clear(&self) {
+
 		// Placeholder implementation
 	}
 
 	/// Dispose the collection
 	pub fn dispose(&self) {
+
 		// Placeholder implementation
 	}
 }
@@ -700,30 +743,36 @@ impl Env {
 
 #[cfg(test)]
 mod tests {
+
 	use super::*;
 
 	#[test]
 	fn test_vscode_api_creation() {
 		let _api = VSCodeAPI::new();
+
 		// Arc fields are always initialized, so just verify creation works
 	}
 
 	#[test]
 	fn test_position_operations() {
 		let pos = Position::new(5, 10);
+
 		assert_eq!(pos.line, 5);
+
 		assert_eq!(pos.character, 10);
 	}
 
 	#[test]
 	fn test_output_channel() {
 		let channel = OutputChannel::new("test".to_string());
+
 		channel.append_line("test message");
 	}
 
 	#[test]
 	fn test_disposable() {
 		let disposable = Disposable::new();
+
 		disposable.dispose();
 	}
 }

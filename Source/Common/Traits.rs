@@ -240,8 +240,10 @@ pub trait Retryable {
 		for attempt in 0..=max_retries {
 			match operation() {
 				Ok(result) => return Ok(result),
+
 				Err(e) => {
 					last_error = Some(e.to_string());
+
 					if attempt < max_retries {
 						std::thread::sleep(std::time::Duration::from_millis(delay_ms));
 					}
@@ -259,14 +261,17 @@ pub trait Retryable {
 
 #[cfg(test)]
 mod tests {
+
 	use super::*;
 
 	#[test]
 	fn test_grove_error_display() {
 		let err = GroveError::ExtensionNotFound("test.ext".to_string());
+
 		assert_eq!(err.to_string(), "Extension not found: test.ext");
 
 		let err = GroveError::Timeout;
+
 		assert_eq!(err.to_string(), "Operation timed out");
 	}
 
@@ -278,8 +283,11 @@ mod tests {
 		}
 
 		let test = TestStruct { value:42 };
+
 		let json = test.to_json().unwrap();
+
 		let deserialized:TestStruct = TestStruct::from_json(&json).unwrap();
+
 		assert_eq!(test, deserialized);
 	}
 
@@ -288,6 +296,7 @@ mod tests {
 		let retryable = RetryableTrait;
 
 		let mut attempt_count = 0;
+
 		let result = retryable.execute_with_retry(
 			|| {
 				attempt_count += 1;
@@ -298,7 +307,9 @@ mod tests {
 		);
 
 		assert!(result.is_ok());
+
 		assert_eq!(result.unwrap(), "Success");
+
 		assert_eq!(attempt_count, 3);
 	}
 }

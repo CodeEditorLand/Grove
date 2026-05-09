@@ -21,7 +21,9 @@ impl RuntimeBuild {
 	/// Build a Groove extension host with the specified configuration
 	pub async fn build_host(
 		transport:Transport,
+
 		_wasm_runtime:Arc<WASMRuntime>,
+
 		host_config:HostConfig,
 	) -> Result<ExtensionHostImpl> {
 		dev_log!("grove", "Building Grove extension host");
@@ -41,13 +43,17 @@ impl RuntimeBuild {
 	/// Build a Grove extension host with default WASM configuration
 	pub async fn build_host_with_defaults(
 		transport:Transport,
+
 		wasi:bool,
+
 		memory_limit_mb:u64,
+
 		max_execution_time_ms:u64,
 	) -> Result<ExtensionHostImpl> {
 		dev_log!("grove", "Building Grove extension host with defaults");
 
 		let wasm_config = WASMConfig::new(memory_limit_mb, max_execution_time_ms, wasi);
+
 		let wasm_runtime = Arc::new(WASMRuntime::new(wasm_config).await?);
 
 		let host_config = HostConfig::default().with_activation_timeout(max_execution_time_ms);
@@ -62,6 +68,7 @@ impl RuntimeBuild {
 		let host_config = HostConfig::default().with_max_extensions(10).with_lazy_activation(true);
 
 		let wasm_config = WASMConfig::new(64, 10000, false);
+
 		let wasm_runtime = Arc::new(WASMRuntime::new(wasm_config).await?);
 
 		Self::build_host(transport, wasm_runtime, host_config).await
@@ -87,11 +94,13 @@ impl Default for RuntimeBuild {
 
 #[cfg(test)]
 mod tests {
+
 	use super::*;
 
 	#[test]
 	fn test_runtime_build_default() {
 		let builder = RuntimeBuild::default();
+
 		// Just test that it can be created
 		let _ = builder;
 	}
@@ -99,10 +108,13 @@ mod tests {
 	#[test]
 	fn test_validate_config() {
 		let valid_config = HostConfig::default();
+
 		assert!(RuntimeBuild::validate_config(&valid_config).is_ok());
 
 		let mut invalid_config = HostConfig::default();
+
 		invalid_config.max_extensions = 0;
+
 		assert!(RuntimeBuild::validate_config(&invalid_config).is_err());
 	}
 }

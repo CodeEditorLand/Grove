@@ -101,11 +101,17 @@ impl Diagnostic {
 	pub fn new(range:Range, message:String) -> Self {
 		Self {
 			range,
+
 			severity:None,
+
 			code:None,
+
 			source:None,
+
 			message,
+
 			tags:None,
+
 			related_information:None,
 		}
 	}
@@ -229,11 +235,17 @@ impl CompletionItem {
 	pub fn new(label:String) -> Self {
 		Self {
 			label,
+
 			kind:None,
+
 			detail:None,
+
 			documentation:None,
+
 			preselect:None,
+
 			sort_text:None,
+
 			filter_text:None,
 		}
 	}
@@ -244,52 +256,76 @@ impl CompletionItem {
 pub enum CompletionItemKind {
 	/// Text completion
 	Text = 1,
+
 	/// Method completion
 	Method = 2,
+
 	/// Function completion
 	Function = 3,
+
 	/// Constructor completion
 	Constructor = 4,
+
 	/// Field completion
 	Field = 5,
+
 	/// Variable completion
 	Variable = 6,
+
 	/// Class completion
 	Class = 7,
+
 	/// Interface completion
 	Interface = 8,
+
 	/// Module completion
 	Module = 9,
+
 	/// Property completion
 	Property = 10,
+
 	/// Unit completion
 	Unit = 11,
+
 	/// Value completion
 	Value = 12,
+
 	/// Enum completion
 	Enum = 13,
+
 	/// Keyword completion
 	Keyword = 14,
+
 	/// Snippet completion
 	Snippet = 15,
+
 	/// Color completion
 	Color = 16,
+
 	/// File completion
 	File = 17,
+
 	/// Reference completion
 	Reference = 18,
+
 	/// Folder completion
 	Folder = 19,
+
 	/// Enum member completion
 	EnumMember = 20,
+
 	/// Constant completion
 	Constant = 21,
+
 	/// Struct completion
 	Struct = 22,
+
 	/// Event completion
 	Event = 23,
+
 	/// Operator completion
 	Operator = 24,
+
 	/// Type parameter completion
 	TypeParameter = 25,
 }
@@ -415,26 +451,34 @@ pub struct CreateFileOptions {
 
 #[cfg(test)]
 mod tests {
+
 	use super::*;
 
 	#[test]
 	fn test_position() {
 		let pos = Position::new(5, 10);
+
 		assert_eq!(pos.line, 5);
+
 		assert_eq!(pos.character, 10);
 
 		let default = Position::default();
+
 		assert_eq!(default.line, 0);
+
 		assert_eq!(default.character, 0);
 	}
 
 	#[test]
 	fn test_range() {
 		let start = Position::new(0, 0);
+
 		let end = Position::new(5, 10);
+
 		let range = Range::new(start, end);
 
 		assert!(range.contains(Position::new(3, 5)));
+
 		assert!(!range.contains(Position::new(6, 0)));
 	}
 
@@ -443,18 +487,22 @@ mod tests {
 		let range = Range::new(Position::new(0, 0), Position::new(0, 5));
 
 		let replace = TextEdit::replace(range, "new text".to_string());
+
 		assert_eq!(replace.new_text, "new text");
 
 		let delete = TextEdit::delete(range);
+
 		assert_eq!(delete.new_text, "");
 
 		let insert = TextEdit::insert(Position::new(0, 0), "inserted".to_string());
+
 		assert_eq!(insert.new_text, "inserted");
 	}
 
 	#[test]
 	fn test_completion_item() {
 		let item = CompletionItem::new("testFunction".to_string());
+
 		assert_eq!(item.label, "testFunction");
 	}
 }

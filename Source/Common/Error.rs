@@ -15,6 +15,7 @@ pub enum GroveError {
 	ExtensionNotFound {
 		/// The extension identifier
 		extension_id:String,
+
 		/// Optional error message
 		message:Option<String>,
 	},
@@ -23,8 +24,10 @@ pub enum GroveError {
 	ExtensionLoadFailed {
 		/// The extension identifier
 		extension_id:String,
+
 		/// The failure reason
 		reason:String,
+
 		/// Optional path to the extension
 		path:Option<String>,
 	},
@@ -33,6 +36,7 @@ pub enum GroveError {
 	ActivationFailed {
 		/// The extension identifier
 		extension_id:String,
+
 		/// The failure reason
 		reason:String,
 	},
@@ -41,6 +45,7 @@ pub enum GroveError {
 	DeactivationFailed {
 		/// The extension identifier
 		extension_id:String,
+
 		/// The failure reason
 		reason:String,
 	},
@@ -49,6 +54,7 @@ pub enum GroveError {
 	WASMRuntimeError {
 		/// The error reason
 		reason:String,
+
 		/// Optional module identifier
 		module_id:Option<String>,
 	},
@@ -57,6 +63,7 @@ pub enum GroveError {
 	WASMCompilationFailed {
 		/// The failure reason
 		reason:String,
+
 		/// Optional path to the module
 		module_path:Option<String>,
 	},
@@ -71,6 +78,7 @@ pub enum GroveError {
 	TransportError {
 		/// The transport type
 		transport_type:String,
+
 		/// The error reason
 		reason:String,
 	},
@@ -79,6 +87,7 @@ pub enum GroveError {
 	ConnectionError {
 		/// The endpoint that failed
 		endpoint:String,
+
 		/// The error reason
 		reason:String,
 	},
@@ -87,8 +96,10 @@ pub enum GroveError {
 	APIError {
 		/// The API method that failed
 		api_method:String,
+
 		/// The error reason
 		reason:String,
+
 		/// Optional error code
 		error_code:Option<i32>,
 	},
@@ -97,6 +108,7 @@ pub enum GroveError {
 	ConfigurationError {
 		/// The configuration key
 		key:String,
+
 		/// The error reason
 		reason:String,
 	},
@@ -105,8 +117,10 @@ pub enum GroveError {
 	IoError {
 		/// Optional path related to the error
 		path:Option<String>,
+
 		/// The operation that failed
 		operation:String,
+
 		/// The error reason
 		reason:String,
 	},
@@ -115,6 +129,7 @@ pub enum GroveError {
 	SerializationError {
 		/// The type name being serialized
 		type_name:String,
+
 		/// The error reason
 		reason:String,
 	},
@@ -123,6 +138,7 @@ pub enum GroveError {
 	DeserializationError {
 		/// The type name being deserialized
 		type_name:String,
+
 		/// The error reason
 		reason:String,
 	},
@@ -131,6 +147,7 @@ pub enum GroveError {
 	Timeout {
 		/// The operation that timed out
 		operation:String,
+
 		/// The timeout duration in milliseconds
 		timeout_ms:u64,
 	},
@@ -139,6 +156,7 @@ pub enum GroveError {
 	InvalidArgument {
 		/// The argument name
 		argument_name:String,
+
 		/// The error reason
 		reason:String,
 	},
@@ -153,6 +171,7 @@ pub enum GroveError {
 	PermissionDenied {
 		/// The resource that was denied
 		resource:String,
+
 		/// The error reason
 		reason:String,
 	},
@@ -161,6 +180,7 @@ pub enum GroveError {
 	ResourceExhausted {
 		/// The resource that was exhausted
 		resource:String,
+
 		/// The error reason
 		reason:String,
 	},
@@ -169,6 +189,7 @@ pub enum GroveError {
 	InternalError {
 		/// The error reason
 		reason:String,
+
 		/// Optional backtrace (skipped during serialization)
 		#[serde(skip)]
 		backtrace:Option<String>,
@@ -228,24 +249,43 @@ impl GroveError {
 	pub fn error_code(&self) -> &'static str {
 		match self {
 			Self::ExtensionNotFound { .. } => "EXT_NOT_FOUND",
+
 			Self::ExtensionLoadFailed { .. } => "EXT_LOAD_FAILED",
+
 			Self::ActivationFailed { .. } => "ACTIVATION_FAILED",
+
 			Self::DeactivationFailed { .. } => "DEACTIVATION_FAILED",
+
 			Self::WASMRuntimeError { .. } => "WASM_RUNTIME_ERROR",
+
 			Self::WASMCompilationFailed { .. } => "WASM_COMPILATION_FAILED",
+
 			Self::WASMModuleNotFound { .. } => "WASM_MODULE_NOT_FOUND",
+
 			Self::TransportError { .. } => "TRANSPORT_ERROR",
+
 			Self::ConnectionError { .. } => "CONNECTION_ERROR",
+
 			Self::APIError { .. } => "API_ERROR",
+
 			Self::ConfigurationError { .. } => "CONFIGURATION_ERROR",
+
 			Self::IoError { .. } => "IO_ERROR",
+
 			Self::SerializationError { .. } => "SERIALIZATION_ERROR",
+
 			Self::DeserializationError { .. } => "DESERIALIZATION_ERROR",
+
 			Self::Timeout { .. } => "TIMEOUT",
+
 			Self::InvalidArgument { .. } => "INVALID_ARGUMENT",
+
 			Self::NotImplemented { .. } => "NOT_IMPLEMENTED",
+
 			Self::PermissionDenied { .. } => "PERMISSION_DENIED",
+
 			Self::ResourceExhausted { .. } => "RESOURCE_EXHAUSTED",
+
 			Self::InternalError { .. } => "INTERNAL_ERROR",
 		}
 	}
@@ -280,6 +320,7 @@ impl fmt::Display for GroveError {
 					write!(f, "Extension not found: {}", extension_id)
 				}
 			},
+
 			Self::ExtensionLoadFailed { extension_id, reason, path } => {
 				if let Some(path) = path {
 					write!(f, "Failed to load extension #{:?}: {} - {}", path, extension_id, reason)
@@ -287,12 +328,15 @@ impl fmt::Display for GroveError {
 					write!(f, "Failed to load extension {}: {}", extension_id, reason)
 				}
 			},
+
 			Self::ActivationFailed { extension_id, reason } => {
 				write!(f, "Activation failed for extension {}: {}", extension_id, reason)
 			},
+
 			Self::DeactivationFailed { extension_id, reason } => {
 				write!(f, "Deactivation failed for extension {}: {}", extension_id, reason)
 			},
+
 			Self::WASMRuntimeError { reason, module_id } => {
 				if let Some(id) = module_id {
 					write!(f, "WASM runtime error for module {}: {}", id, reason)
@@ -300,6 +344,7 @@ impl fmt::Display for GroveError {
 					write!(f, "WASM runtime error: {}", reason)
 				}
 			},
+
 			Self::WASMCompilationFailed { reason, module_path } => {
 				if let Some(path) = module_path {
 					write!(f, "WASM compilation failed for {:?}: {}", path, reason)
@@ -307,45 +352,59 @@ impl fmt::Display for GroveError {
 					write!(f, "WASM compilation failed: {}", reason)
 				}
 			},
+
 			Self::WASMModuleNotFound { module_id } => {
 				write!(f, "WASM module not found: {}", module_id)
 			},
+
 			Self::TransportError { transport_type, reason } => {
 				write!(f, "Transport error ({:?}): {}", transport_type, reason)
 			},
+
 			Self::ConnectionError { endpoint, reason } => {
 				write!(f, "Connection error to {}: {}", endpoint, reason)
 			},
+
 			Self::APIError { api_method, reason, .. } => {
 				write!(f, "API error for {}: {}", api_method, reason)
 			},
+
 			Self::ConfigurationError { key, reason } => {
 				write!(f, "Configuration error for '{}': {}", key, reason)
 			},
+
 			Self::IoError { operation, reason, .. } => {
 				write!(f, "I/O error for operation '{}': {}", operation, reason)
 			},
+
 			Self::SerializationError { type_name, reason } => {
 				write!(f, "Serialization error for type '{}': {}", type_name, reason)
 			},
+
 			Self::DeserializationError { type_name, reason } => {
 				write!(f, "Deserialization error for type '{}': {}", type_name, reason)
 			},
+
 			Self::Timeout { operation, timeout_ms } => {
 				write!(f, "Timeout after {}ms for operation: {}", timeout_ms, operation)
 			},
+
 			Self::InvalidArgument { argument_name, reason } => {
 				write!(f, "Invalid argument '{}': {}", argument_name, reason)
 			},
+
 			Self::NotImplemented { feature } => {
 				write!(f, "Feature not implemented: {}", feature)
 			},
+
 			Self::PermissionDenied { resource, reason } => {
 				write!(f, "Permission denied for '{}': {}", resource, reason)
 			},
+
 			Self::ResourceExhausted { resource, reason } => {
 				write!(f, "Resource exhausted '{}': {}", resource, reason)
 			},
+
 			Self::InternalError { reason, .. } => {
 				write!(f, "Internal error: {}", reason)
 			},
@@ -395,36 +454,46 @@ where
 
 #[cfg(test)]
 mod tests {
+
 	use super::*;
 
 	#[test]
 	fn test_error_creation() {
 		let err = GroveError::extension_not_found("test.ext");
+
 		assert_eq!(err.error_code(), "EXT_NOT_FOUND");
 	}
 
 	#[test]
 	fn test_error_display() {
 		let err = GroveError::activation_failed("test.ext", "timeout");
+
 		assert!(err.to_string().contains("test.ext"));
+
 		assert!(err.to_string().contains("timeout"));
 	}
 
 	#[test]
 	fn test_error_retryable() {
 		let timeout = GroveError::timeout("test", 5000);
+
 		assert!(timeout.is_transient());
+
 		assert!(timeout.is_recoverable());
 
 		let not_found = GroveError::extension_not_found("test.ext");
+
 		assert!(!not_found.is_transient());
+
 		assert!(!not_found.is_recoverable());
 	}
 
 	#[test]
 	fn test_io_error_conversion() {
 		let io_err = std::io::Error::new(std::io::ErrorKind::NotFound, "file not found");
+
 		let grove_err = GroveError::from(io_err);
+
 		assert_eq!(grove_err.error_code(), "IO_ERROR");
 	}
 }

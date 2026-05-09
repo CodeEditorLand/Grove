@@ -42,6 +42,7 @@
 use std::sync::{Mutex, OnceLock};
 
 static ENABLED_TAGS:OnceLock<Vec<String>> = OnceLock::new();
+
 static SHORT_MODE:OnceLock<bool> = OnceLock::new();
 
 // ── Path alias ──────────────────────────────────────────────────────────
@@ -52,16 +53,20 @@ fn DetectAppDataPrefix() -> Option<String> {
 	// Match the bundle identifier pattern used by Mountain
 	if let Ok(Home) = std::env::var("HOME") {
 		let Base = format!("{}/Library/Application Support", Home);
+
 		if let Ok(Entries) = std::fs::read_dir(&Base) {
 			for Entry in Entries.flatten() {
 				let Name = Entry.file_name();
+
 				let Name = Name.to_string_lossy();
+
 				if Name.starts_with("land.editor.") && Name.contains("mountain") {
 					return Some(format!("{}/{}", Base, Name));
 				}
 			}
 		}
 	}
+
 	None
 }
 
@@ -81,6 +86,7 @@ pub fn AliasPath(Input:&str) -> String {
 
 pub struct DedupState {
 	pub LastKey:String,
+
 	pub Count:u64,
 }
 
@@ -92,7 +98,9 @@ pub fn FlushDedup() {
 		if State.Count > 1 {
 			eprintln!("  (x{})", State.Count);
 		}
+
 		State.LastKey.clear();
+
 		State.Count = 0;
 	}
 }
@@ -114,10 +122,13 @@ pub fn IsShort() -> bool { *SHORT_MODE.get_or_init(|| EnabledTags().iter().any(|
 /// Check if a tag is enabled.
 pub fn IsEnabled(Tag:&str) -> bool {
 	let Tags = EnabledTags();
+
 	if Tags.is_empty() {
 		return false;
 	}
+
 	let Lower = Tag.to_lowercase();
+
 	Tags.iter().any(|T| T == "all" || T == "short" || T == Lower.as_str())
 }
 
@@ -128,36 +139,59 @@ pub fn IsEnabled(Tag:&str) -> bool {
 /// lines.
 #[macro_export]
 macro_rules! dev_log {
+
 	($Tag:expr, $($Arg:tt)*) => {
+
 		if $crate::DevLog::IsEnabled($Tag) {
+
 			let RawMessage = format!($($Arg)*);
+
 			let TagUpper = $Tag.to_uppercase();
+
 			if $crate::DevLog::IsShort() {
+
 				let Aliased = $crate::DevLog::AliasPath(&RawMessage);
+
 				let Key = format!("{}:{}", TagUpper, Aliased);
+
 				let ShouldPrint = {
+
 					if let Ok(mut State) = $crate::DevLog::DEDUP.lock() {
+
 						if State.LastKey == Key {
+
 							State.Count += 1;
+
 							false
 						} else {
+
 							let PrevCount = State.Count;
+
 							let HadPrev = !State.LastKey.is_empty();
+
 							State.LastKey = Key;
+
 							State.Count = 1;
+
 							if HadPrev && PrevCount > 1 {
+
 								eprintln!("  (x{})", PrevCount);
 							}
+
 							true
 						}
 					} else {
+
 						true
 					}
 				};
+
 				if ShouldPrint {
+
 					eprintln!("[DEV:{}] {}", TagUpper, Aliased);
 				}
 			} else {
+
 				eprintln!("[DEV:{}] {}", TagUpper, RawMessage);
 			}
 		}
@@ -174,6 +208,7 @@ use std::{
 };
 
 static OTLP_AVAILABLE:AtomicBool = AtomicBool::new(true);
+
 static OTLP_TRACE_ID:OnceLock<String> = OnceLock::new();
 
 fn GetTraceId() -> &'static str {
@@ -201,12 +236,15 @@ pub fn EmitOTLPSpan(Name:&str, StartNano:u64, EndNano:u64, Attributes:&[(&str, &
 	if !cfg!(debug_assertions) {
 		return;
 	}
+
 	if !OTLP_AVAILABLE.load(Ordering::Relaxed) {
 		return;
 	}
 
 	let SpanId = format!("{:016x}", rand_u64());
+
 	let TraceId = GetTraceId().to_string();
+
 	let SpanName = Name.to_string();
 
 	let AttributesJson:Vec<String> = Attributes
@@ -223,6 +261,7 @@ pub fn EmitOTLPSpan(Name:&str, StartNano:u64, EndNano:u64, Attributes:&[(&str, &
 	let IsError = SpanName.contains("error");
 
 	let StatusCode = if IsError { 2 } else { 1 };
+
 	let Payload = format!(
 		concat!(
 			r#"{{"resourceSpans":[{{"resource":{{"attributes":["#,
@@ -282,9 +321,13 @@ fn rand_u64() -> u64 {
 		collections::hash_map::DefaultHasher,
 		hash::{Hash, Hasher},
 	};
+
 	let mut H = DefaultHasher::new();
+
 	std::thread::current().id().hash(&mut H);
+
 	NowNano().hash(&mut H);
+
 	H.finish()
 }
 
@@ -295,6 +338,7 @@ macro_rules! otel_span {
 	($Name:expr, $Start:expr, $Attrs:expr) => {
 		$crate::DevLog::EmitOTLPSpan($Name, $Start, $crate::DevLog::NowNano(), $Attrs)
 	};
+
 	($Name:expr, $Start:expr) => {
 		$crate::DevLog::EmitOTLPSpan($Name, $Start, $crate::DevLog::NowNano(), &[])
 	};

@@ -5,6 +5,7 @@
 
 #[path = "Types.rs"]
 pub mod Types;
+
 #[path = "VSCode.rs"]
 pub mod VSCode;
 
@@ -22,15 +23,19 @@ pub fn is_api_version_supported(version:&str) -> bool {
 	match version.parse::<semver::Version>() {
 		Ok(v) => {
 			let min = MIN_VS_CODE_API_VERSION.parse::<semver::Version>().unwrap();
+
 			let max = MAX_VS_CODE_API_VERSION.parse::<semver::Version>().unwrap();
+
 			v >= min && v <= max
 		},
+
 		Err(_) => false,
 	}
 }
 
 /// Common VS Code API utilities
 pub mod utils {
+
 	/// Convert a JSON Value to a specific type
 	pub fn from_json_value<T:serde::de::DeserializeOwned>(value:&serde_json::Value) -> Result<T, String> {
 		serde_json::from_value(value.clone()).map_err(|e| format!("Failed to deserialize JSON value: {}", e))
@@ -47,22 +52,30 @@ pub mod utils {
 
 #[cfg(test)]
 mod tests {
+
 	use super::*;
 
 	#[test]
 	fn test_api_version_constants() {
 		assert!(!VS_CODE_API_VERSION.is_empty());
+
 		assert!(!MIN_VS_CODE_API_VERSION.is_empty());
+
 		assert!(!MAX_VS_CODE_API_VERSION.is_empty());
 	}
 
 	#[test]
 	fn test_is_api_version_supported() {
 		assert!(is_api_version_supported("1.85.0"));
+
 		assert!(is_api_version_supported("1.80.0"));
+
 		assert!(is_api_version_supported("1.90.0"));
+
 		assert!(!is_api_version_supported("1.79.0"));
+
 		assert!(!is_api_version_supported("1.91.0"));
+
 		assert!(!is_api_version_supported("invalid"));
 	}
 
@@ -76,16 +89,20 @@ mod tests {
 		}
 
 		let value = TestValue { value:42 };
+
 		let json = utils::to_json_value(&value).unwrap();
+
 		assert_eq!(json["value"], 42);
 
 		let recovered:TestValue = utils::from_json_value(&json).unwrap();
+
 		assert_eq!(recovered, value);
 	}
 
 	#[test]
 	fn test_is_null() {
 		assert!(utils::is_null(&serde_json::Value::Null));
+
 		assert!(!utils::is_null(&serde_json::json!(42)));
 	}
 }

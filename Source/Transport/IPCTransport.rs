@@ -25,14 +25,18 @@ use crate::{
 pub struct IPCTransport {
 	/// Unix domain socket path (macOS/Linux).
 	SocketPath:Option<PathBuf>,
+
 	/// Named pipe identifier (Windows).
 	#[allow(dead_code)]
 	PipeName:Option<String>,
+
 	/// Transport configuration.
 	#[allow(dead_code)]
 	Configuration:TransportConfig,
+
 	/// Whether the transport is currently connected.
 	Connected:Arc<RwLock<bool>>,
+
 	/// Transport statistics.
 	Statistics:Arc<RwLock<TransportStats>>,
 }
@@ -43,6 +47,7 @@ impl IPCTransport {
 		#[cfg(unix)]
 		{
 			let SocketPath = Self::DefaultSocketPath();
+
 			Ok(Self {
 				SocketPath:Some(SocketPath),
 				PipeName:None,
@@ -92,7 +97,9 @@ impl IPCTransport {
 	#[cfg(unix)]
 	fn DefaultSocketPath() -> PathBuf {
 		let mut Path = std::env::temp_dir();
+
 		Path.push("grove-ipc.sock");
+
 		Path
 	}
 
@@ -111,9 +118,11 @@ impl IPCTransport {
 				tokio::fs::remove_file(SocketPath)
 					.await
 					.map_err(|E| anyhow::anyhow!("Failed to remove socket: {}", E))?;
+
 				dev_log!("transport", "Removed existing socket: {:?}", SocketPath);
 			}
 		}
+
 		Ok(())
 	}
 }
@@ -130,6 +139,7 @@ impl TransportStrategy for IPCTransport {
 			self.CleanupSocket()
 				.await
 				.map_err(|E| IPCTransportError::ConnectionFailed(E.to_string()))?;
+
 			*self.Connected.write().await = true;
 			dev_log!("transport", "IPC connection established: {:?}", self.SocketPath);
 		}
@@ -158,7 +168,9 @@ impl TransportStrategy for IPCTransport {
 		let Response:Vec<u8> = vec![];
 
 		let mut Stats = self.Statistics.write().await;
+
 		Stats.record_sent(request.len() as u64, 0);
+
 		Stats.record_received(Response.len() as u64);
 
 		Ok(Response)
@@ -172,12 +184,15 @@ impl TransportStrategy for IPCTransport {
 		dev_log!("transport", "Sending IPC notification ({} bytes)", data.len());
 
 		let mut Stats = self.Statistics.write().await;
+
 		Stats.record_sent(data.len() as u64, 0);
+
 		Ok(())
 	}
 
 	async fn close(&self) -> Result<(), Self::Error> {
 		dev_log!("transport", "Closing IPC connection");
+
 		*self.Connected.write().await = false;
 
 		#[cfg(unix)]
@@ -193,6 +208,7 @@ impl TransportStrategy for IPCTransport {
 		}
 
 		dev_log!("transport", "IPC connection closed");
+
 		Ok(())
 	}
 
@@ -207,24 +223,31 @@ pub enum IPCTransportError {
 	/// Failed to establish IPC connection
 	#[error("Connection failed: {0}")]
 	ConnectionFailed(String),
+
 	/// Failed to send message via IPC
 	#[error("Send failed: {0}")]
 	SendFailed(String),
+
 	/// Failed to receive message via IPC
 	#[error("Receive failed: {0}")]
 	ReceiveFailed(String),
+
 	/// Transport is not connected
 	#[error("Not connected")]
 	NotConnected,
+
 	/// IPC not supported on this platform
 	#[error("IPC not supported on this platform")]
 	NotSupported,
+
 	/// Failed to clean up IPC resources
 	#[error("Cleanup failed: {0}")]
 	CleanupFailed(String),
+
 	/// Socket communication error
 	#[error("Socket error: {0}")]
 	SocketError(String),
+
 	/// Operation timed out
 	#[error("Timeout")]
 	Timeout,
@@ -232,6 +255,7 @@ pub enum IPCTransportError {
 
 #[cfg(test)]
 mod tests {
+
 	use super::*;
 
 	#[test]
@@ -239,6 +263,7 @@ mod tests {
 		#[cfg(any(unix, windows))]
 		{
 			let Result = IPCTransport::New();
+
 			assert!(Result.is_ok());
 		}
 	}
@@ -247,8 +272,11 @@ mod tests {
 	#[test]
 	fn TestIPCTransportWithSocketPath() {
 		let Result = IPCTransport::WithSocketPath(Path::new("/tmp/test.sock"));
+
 		assert!(Result.is_ok());
+
 		let Transport = Result.unwrap();
+
 		assert_eq!(Transport.GetSocketPath(), Some(Path::new("/tmp/test.sock")));
 	}
 
@@ -257,6 +285,7 @@ mod tests {
 		#[cfg(any(unix, windows))]
 		{
 			let Transport = IPCTransport::New().unwrap();
+
 			assert!(!Transport.is_connected());
 		}
 	}

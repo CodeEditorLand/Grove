@@ -12,14 +12,17 @@ use tokio;
 async fn test_extension_loading() {
 	// Create a minimal extension host
 	let transport = Transport::default();
+
 	let host = ExtensionHost::with_config(transport, HostConfig::default()).await.unwrap();
 
 	// Test listing extensions (should be empty initially)
 	let extensions = host.extension_manager().list_extensions().await;
+
 	assert_eq!(extensions.len(), 0);
 
 	// Test that host is ready
 	let state = host.state().await;
+
 	// Initially should be Created, then Ready after load
 }
 
@@ -28,10 +31,12 @@ async fn test_extension_loading() {
 async fn test_extension_activation() {
 	// Create host
 	let transport = Transport::default();
+
 	let host = ExtensionHost::with_config(transport, HostConfig::default()).await.unwrap();
 
 	// Test activation of non-existent extension should fail
 	let result = host.activate("nonexistent.ext").await;
+
 	assert!(result.is_err());
 }
 
@@ -46,14 +51,17 @@ async fn test_extension_manager_operations() {
 			))
 			.unwrap(),
 	);
+
 	let manager = grove::ExtensionManager::new(wasm_runtime, HostConfig::default());
 
 	// Test listing extensions
 	let extensions = manager.list_extensions().await;
+
 	assert_eq!(extensions.len(), 0);
 
 	// Test getting non-existent extension
 	let ext = manager.get_extension("nonexistent").await;
+
 	assert!(ext.is_none());
 }
 
@@ -75,6 +83,7 @@ async fn test_transport_creation() {
 
 	// Test transport type
 	let transport_type = transport.transport_type();
+
 	// Should be one of the valid types
 	assert!(
 		transport_type == grove::Transport::TransportType::gRPC
@@ -89,14 +98,19 @@ fn test_api_types() {
 	use grove::API::Types::*;
 
 	let position = Position::new(0, 0);
+
 	assert_eq!(position.line, 0);
+
 	assert_eq!(position.character, 0);
 
 	let range = Range::new(position, position);
+
 	assert_eq!(range.start, position);
+
 	assert_eq!(range.end, position);
 
 	let text_edit = TextEdit::new(range, "test".to_string());
+
 	assert_eq!(text_edit.new_text, "test");
 }
 
@@ -106,7 +120,9 @@ fn test_vscode_api_facade() {
 	let api = grove::vscode!();
 
 	assert!(api.commands.is_some());
+
 	assert!(api.window.is_some());
+
 	assert!(api.workspace.is_some());
 }
 
@@ -116,9 +132,11 @@ fn test_error_handling() {
 	use grove::GroveError;
 
 	let error = GroveError::extension_not_found("test.ext");
+
 	assert_eq!(error.error_code(), "EXT_NOT_FOUND");
 
 	let error = GroveError::timeout("test_operation", 5000);
+
 	assert!(error.is_transient());
 }
 
@@ -126,6 +144,7 @@ fn test_error_handling() {
 #[tokio::test]
 async fn test_configuration_service() {
 	let service = grove::Services::ConfigurationService::new(None);
+
 	service.start().await.unwrap();
 
 	// Test setting and getting configuration
@@ -139,6 +158,7 @@ async fn test_configuration_service() {
 		.unwrap();
 
 	let value = service.get("test.key").await;
+
 	assert_eq!(value, Some(serde_json::json!("test-value")));
 
 	service.stop().await.unwrap();
@@ -148,14 +168,17 @@ async fn test_configuration_service() {
 #[tokio::test]
 async fn test_spine_connection() {
 	let config = grove::Protocol::SpineConfig::new("test-host".to_string());
+
 	let connection = grove::Protocol::SpineConnection::new(config);
 
 	// Test state (starts as Disconnected)
 	let state = connection.get_state().await;
+
 	assert_eq!(state, grove::Protocol::ConnectionState::Disconnected);
 
 	// Test is_connected flag
 	let connected = connection.is_connected().await;
+
 	assert!(!connected);
 }
 

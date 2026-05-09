@@ -20,14 +20,19 @@ use crate::dev_log;
 pub struct MemoryLimits {
 	/// Maximum memory per instance in MB
 	pub max_memory_mb:u64,
+
 	/// Initial memory allocation per instance in MB
 	pub initial_memory_mb:u64,
+
 	/// Maximum table size (number of elements)
 	pub max_table_size:u32,
+
 	/// Maximum number of memory instances
 	pub max_memories:usize,
+
 	/// Maximum number of table instances
 	pub max_tables:usize,
+
 	/// Maximum number of instances that can be created
 	pub max_instances:usize,
 }
@@ -36,10 +41,15 @@ impl Default for MemoryLimits {
 	fn default() -> Self {
 		Self {
 			max_memory_mb:512,
+
 			initial_memory_mb:64,
+
 			max_table_size:1024,
+
 			max_memories:10,
+
 			max_tables:10,
+
 			max_instances:100,
 		}
 	}
@@ -67,6 +77,7 @@ impl MemoryLimits {
 				self.max_memory_bytes()
 			));
 		}
+
 		Ok(())
 	}
 }
@@ -76,16 +87,22 @@ impl MemoryLimits {
 pub struct MemoryAllocation {
 	/// Unique allocation identifier
 	pub id:String,
+
 	/// Instance ID that owns this memory
 	pub instance_id:String,
+
 	/// Memory type/identifier
 	pub memory_type:String,
+
 	/// Amount of memory allocated in bytes
 	pub size_bytes:u64,
+
 	/// Maximum size this allocation can grow to
 	pub max_size_bytes:u64,
+
 	/// Allocation timestamp
 	pub allocated_at:u64,
+
 	/// Whether this memory is shared
 	pub is_shared:bool,
 }
@@ -95,14 +112,19 @@ pub struct MemoryAllocation {
 pub struct MemoryStats {
 	/// Total memory allocated in bytes
 	pub total_allocated:u64,
+
 	/// Total memory allocated in MB
 	pub total_allocated_mb:f64,
+
 	/// Number of memory allocations
 	pub allocation_count:usize,
+
 	/// Number of memory deallocations
 	pub deallocation_count:usize,
+
 	/// Peak memory usage in bytes
 	pub peak_memory_bytes:u64,
+
 	/// Peak memory usage in MB
 	pub peak_memory_mb:f64,
 }
@@ -111,10 +133,15 @@ impl Default for MemoryStats {
 	fn default() -> Self {
 		Self {
 			total_allocated:0,
+
 			total_allocated_mb:0.0,
+
 			allocation_count:0,
+
 			deallocation_count:0,
+
 			peak_memory_bytes:0,
+
 			peak_memory_mb:0.0,
 		}
 	}
@@ -124,18 +151,24 @@ impl MemoryStats {
 	/// Update stats with new allocation
 	pub fn record_allocation(&mut self, size_bytes:u64) {
 		self.total_allocated += size_bytes;
+
 		self.allocation_count += 1;
+
 		if self.total_allocated > self.peak_memory_bytes {
 			self.peak_memory_bytes = self.total_allocated;
 		}
+
 		self.total_allocated_mb = self.total_allocated as f64 / (1024.0 * 1024.0);
+
 		self.peak_memory_mb = self.peak_memory_bytes as f64 / (1024.0 * 1024.0);
 	}
 
 	/// Update stats with deallocation
 	pub fn record_deallocation(&mut self, size_bytes:u64) {
 		self.total_allocated = self.total_allocated.saturating_sub(size_bytes);
+
 		self.deallocation_count += 1;
+
 		self.total_allocated_mb = self.total_allocated as f64 / (1024.0 * 1024.0);
 	}
 }
@@ -144,8 +177,11 @@ impl MemoryStats {
 #[derive(Debug)]
 pub struct MemoryManagerImpl {
 	limits:MemoryLimits,
+
 	allocations:Vec<MemoryAllocation>,
+
 	stats:Arc<MemoryStats>,
+
 	peak_usage:Arc<AtomicU64>,
 }
 
@@ -154,8 +190,11 @@ impl MemoryManagerImpl {
 	pub fn new(limits:MemoryLimits) -> Self {
 		Self {
 			limits,
+
 			allocations:Vec::new(),
+
 			stats:Arc::new(MemoryStats::default()),
+
 			peak_usage:Arc::new(AtomicU64::new(0)),
 		}
 	}
@@ -181,6 +220,7 @@ impl MemoryManagerImpl {
 	/// Check if memory can be allocated
 	pub fn can_allocate(&self, requested_bytes:u64) -> bool {
 		let current = self.current_usage_bytes();
+
 		current + requested_bytes <= self.limits.max_memory_bytes()
 	}
 
@@ -212,11 +252,17 @@ impl MemoryManagerImpl {
 		// Create allocation record
 		let allocation = MemoryAllocation {
 			id:format!("alloc-{}", uuid::Uuid::new_v4()),
+
 			instance_id:instance_id.to_string(),
+
 			memory_type:memory_type.to_string(),
+
 			size_bytes:requested_bytes,
+
 			max_size_bytes:self.limits.max_memory_bytes() - current_usage,
+
 			allocated_at:std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH)?.as_secs(),
+
 			is_shared:false,
 		};
 
@@ -227,7 +273,9 @@ impl MemoryManagerImpl {
 
 		// Update peak usage
 		let new_peak = self.current_usage_bytes();
+
 		let current_peak = self.peak_usage.load(Ordering::Relaxed);
+
 		if new_peak > current_peak {
 			self.peak_usage.store(new_peak, Ordering::Relaxed);
 		}
@@ -270,6 +318,7 @@ impl MemoryManagerImpl {
 				memory_id,
 				instance_id
 			);
+
 			Ok(false)
 		}
 	}
@@ -343,28 +392,37 @@ impl MemoryManagerImpl {
 	/// Reset all allocations and stats (use with caution)
 	pub fn reset(&mut self) {
 		self.allocations.clear();
+
 		self.stats = Arc::new(MemoryStats::default());
+
 		self.peak_usage.store(0, Ordering::Relaxed);
+
 		dev_log!("wasm", "Memory manager reset");
 	}
 }
 
 #[cfg(test)]
 mod tests {
+
 	use super::*;
 
 	#[test]
 	fn test_memory_limits_default() {
 		let limits = MemoryLimits::default();
+
 		assert_eq!(limits.max_memory_mb, 512);
+
 		assert_eq!(limits.initial_memory_mb, 64);
 	}
 
 	#[test]
 	fn test_memory_limits_custom() {
 		let limits = MemoryLimits::new(1024, 128, 50);
+
 		assert_eq!(limits.max_memory_mb, 1024);
+
 		assert_eq!(limits.initial_memory_mb, 128);
+
 		assert_eq!(limits.max_instances, 50);
 	}
 
@@ -377,61 +435,82 @@ mod tests {
 
 		// Exceeds limit
 		assert!(limits.validate_request(150, 0).is_err());
+
 		assert!(limits.validate_request(50, 60).is_err());
 	}
 
 	#[test]
 	fn test_memory_manager_creation() {
 		let limits = MemoryLimits::default();
+
 		let manager = MemoryManagerImpl::new(limits);
+
 		assert_eq!(manager.current_usage_bytes(), 0);
+
 		assert_eq!(manager.allocations.len(), 0);
 	}
 
 	#[test]
 	fn test_memory_allocation() {
 		let limits = MemoryLimits::default();
+
 		let mut manager = MemoryManagerImpl::new(limits);
 
 		let result = manager.allocate_memory("test-instance", "heap", 1024);
+
 		assert!(result.is_ok());
+
 		assert_eq!(manager.current_usage_bytes(), 1024);
+
 		assert_eq!(manager.allocations.len(), 1);
 	}
 
 	#[test]
 	fn test_memory_deallocation() {
 		let limits = MemoryLimits::default();
+
 		let mut manager = MemoryManagerImpl::new(limits);
 
 		manager.allocate_memory("test-instance", "heap", 1024).unwrap();
+
 		let allocation = &manager.allocations[0];
+
 		let memory_id = allocation.id.clone();
 
 		let result = manager.deallocate_memory("test-instance", &memory_id);
+
 		assert!(result.is_ok());
+
 		assert_eq!(manager.current_usage_bytes(), 0);
+
 		assert_eq!(manager.allocations.len(), 0);
 	}
 
 	#[test]
 	fn test_memory_stats() {
 		let mut stats = MemoryStats::default();
+
 		stats.record_allocation(1024);
+
 		assert_eq!(stats.allocation_count, 1);
+
 		assert_eq!(stats.total_allocated, 1024);
 
 		stats.record_deallocation(512);
+
 		assert_eq!(stats.deallocation_count, 1);
+
 		assert_eq!(stats.total_allocated, 512);
 	}
 
 	#[test]
 	fn test_memory_usage_percentage() {
 		let limits = MemoryLimits::new(1000, 0, 0);
+
 		let mut manager = MemoryManagerImpl::new(limits);
 
 		manager.allocate_memory("test", "heap", 500).unwrap();
+
 		assert_eq!(manager.usage_percentage(), 50.0);
 	}
 }

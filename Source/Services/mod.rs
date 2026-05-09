@@ -14,6 +14,7 @@ pub mod ConfigurationService;
 pub struct ServiceConfig {
 	/// Enable service
 	pub enabled:bool,
+
 	/// Service name
 	pub name:String,
 }
@@ -36,12 +37,15 @@ pub trait Service: Send + Sync {
 
 #[cfg(test)]
 mod tests {
+
 	use super::*;
 
 	#[test]
 	fn test_service_config() {
 		let config = ServiceConfig { enabled:true, name:"test-service".to_string() };
+
 		assert_eq!(config.name, "test-service");
+
 		assert!(config.enabled);
 	}
 }

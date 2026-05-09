@@ -21,12 +21,16 @@ impl Entry {
 	/// Main entry point for the Grove binary
 	pub async fn run(args:CliArgs) -> Result<()> {
 		dev_log!("lifecycle", "Starting Grove v{}", env!("CARGO_PKG_VERSION"));
+
 		dev_log!("lifecycle", "Mode: {}", args.mode);
 
 		match args.mode.as_str() {
 			"standalone" => Self::run_standalone(args).await,
+
 			"service" => Self::run_service(args).await,
+
 			"validate" => Self::run_validation(args).await,
+
 			_ => Err(anyhow::anyhow!("Unknown mode: {}", args.mode)),
 		}
 	}
@@ -49,7 +53,9 @@ impl Entry {
 		// Load and activate extension if specified
 		if let Some(extension_path) = args.extension {
 			let path = PathBuf::from(extension_path);
+
 			host.load_extension(&path).await?;
+
 			host.activate_all().await?;
 		} else {
 			dev_log!("grove", "No extension specified, running in daemon mode");
@@ -82,6 +88,7 @@ impl Entry {
 			.await
 			{
 				Ok(_) => dev_log!("grove", "Registered with Mountain"),
+
 				Err(e) => dev_log!("grove", "warn: failed to register with Mountain: {}", e),
 			}
 		}
@@ -106,13 +113,16 @@ impl Entry {
 			.ok_or_else(|| anyhow::anyhow!("Extension path required for validation"))?;
 
 		let path = PathBuf::from(extension_path);
+
 		let result = Self::validate_extension(&path, false).await?;
 
 		if result.is_valid {
 			dev_log!("extensions", "Extension validation passed");
+
 			Ok(())
 		} else {
 			dev_log!("extensions", "error: extension validation failed");
+
 			Err(anyhow::anyhow!("Validation failed"))
 		}
 	}
@@ -130,6 +140,7 @@ impl Entry {
 
 		// Parse package.json
 		let package_json_path = path.join("package.json");
+
 		if package_json_path.exists() {
 			match tokio::fs::read_to_string(&package_json_path).await {
 				Ok(content) => {
@@ -137,11 +148,13 @@ impl Entry {
 						Ok(_) => {
 							dev_log!("extensions", "Valid package.json found");
 						},
+
 						Err(e) => {
 							errors.push(format!("Invalid package.json: {}", e));
 						},
 					}
 				},
+
 				Err(e) => {
 					errors.push(format!("Failed to read package.json: {}", e));
 				},
@@ -164,11 +177,15 @@ impl Entry {
 	/// Build a WASM module
 	pub async fn build_wasm_module(
 		source:PathBuf,
+
 		output:PathBuf,
+
 		_opt_level:String,
+
 		_target:Option<String>,
 	) -> Result<BuildResult> {
 		dev_log!("wasm", "Building WASM module from: {:?}", source);
+
 		dev_log!("wasm", "Output: {:?}", output);
 
 		// For now, return a placeholder result
@@ -190,21 +207,27 @@ impl Entry {
 		match args.transport.as_str() {
 			"grpc" => {
 				use crate::Transport::gRPCTransport::gRPCTransport;
+
 				Ok(Transport::gRPC(
 					gRPCTransport::New(&args.grpc_address).context("Failed to create gRPC transport")?,
 				))
 			},
+
 			"ipc" => {
 				use crate::Transport::IPCTransport::IPCTransport;
+
 				Ok(Transport::IPC(IPCTransport::New().context("Failed to create IPC transport")?))
 			},
+
 			"wasm" => {
 				use crate::Transport::WASMTransport::WASMTransportImpl;
+
 				Ok(Transport::WASM(
 					WASMTransportImpl::new(args.wasi, args.memory_limit_mb, args.max_execution_time_ms)
 						.context("Failed to create WASM transport")?,
 				))
 			},
+
 			_ => Ok(Transport::default()),
 		}
 	}
@@ -228,6 +251,7 @@ impl Default for Entry {
 pub struct ValidationResult {
 	/// Whether validation passed
 	pub is_valid:bool,
+
 	/// Validation errors
 	pub errors:Vec<String>,
 }
@@ -237,8 +261,10 @@ pub struct ValidationResult {
 pub struct BuildResult {
 	/// Whether build succeeded
 	pub success:bool,
+
 	/// Output path
 	pub output_path:PathBuf,
+
 	/// Compile time in ms
 	pub compile_time_ms:u64,
 }
@@ -253,21 +279,26 @@ impl BuildResult {
 pub struct ExtensionInfo {
 	/// Extension ID
 	pub name:String,
+
 	/// Extension version
 	pub version:String,
+
 	/// Extension path
 	pub path:PathBuf,
+
 	/// Is active
 	pub is_active:bool,
 }
 
 #[cfg(test)]
 mod tests {
+
 	use super::*;
 
 	#[tokio::test]
 	async fn test_entry_default() {
 		let entry = Entry::default();
+
 		// Just test that it can be created
 		let _ = entry;
 	}
@@ -279,13 +310,16 @@ mod tests {
 			.unwrap();
 
 		assert!(!result.is_valid);
+
 		assert!(!result.errors.is_empty());
 	}
 
 	#[test]
 	fn test_cli_args_default() {
 		let args = CliArgs::default();
+
 		assert_eq!(args.mode, "standalone");
+
 		assert!(args.wasi);
 	}
 
@@ -293,11 +327,14 @@ mod tests {
 	fn test_build_result() {
 		let result = BuildResult {
 			success:true,
+
 			output_path:PathBuf::from("/test/output.wasm"),
+
 			compile_time_ms:1000,
 		};
 
 		assert!(result.success());
+
 		assert_eq!(result.compile_time_ms, 1000);
 	}
 }

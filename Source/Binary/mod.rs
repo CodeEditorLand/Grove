@@ -4,6 +4,7 @@
 //! Used by the standalone Grove executable.
 
 pub mod Build;
+
 pub mod Main;
 
 /// Binary configuration
@@ -11,10 +12,13 @@ pub mod Main;
 pub struct BinaryConfig {
 	/// Binary name
 	pub name:String,
+
 	/// Binary version
 	pub version:String,
+
 	/// Enable verbose output
 	pub verbose:bool,
+
 	/// Enable debug mode
 	pub debug:bool,
 }
@@ -24,8 +28,11 @@ impl BinaryConfig {
 	pub fn new() -> Self {
 		Self {
 			name:"grove".to_string(),
+
 			version:env!("CARGO_PKG_VERSION").to_string(),
+
 			verbose:false,
+
 			debug:cfg!(debug_assertions),
 		}
 	}
@@ -33,12 +40,14 @@ impl BinaryConfig {
 	/// Set verbose mode
 	pub fn with_verbose(mut self, verbose:bool) -> Self {
 		self.verbose = verbose;
+
 		self
 	}
 
 	/// Set debug mode
 	pub fn with_debug(mut self, debug:bool) -> Self {
 		self.debug = debug;
+
 		self
 	}
 }
@@ -49,12 +58,15 @@ impl Default for BinaryConfig {
 
 #[cfg(test)]
 mod tests {
+
 	use super::*;
 
 	#[test]
 	fn test_binary_config_default() {
 		let config = BinaryConfig::default();
+
 		assert_eq!(config.name, "grove");
+
 		assert!(!config.verbose);
 	}
 
@@ -63,6 +75,7 @@ mod tests {
 		let config = BinaryConfig::default().with_verbose(true).with_debug(true);
 
 		assert!(config.verbose);
+
 		assert!(config.debug);
 	}
 }

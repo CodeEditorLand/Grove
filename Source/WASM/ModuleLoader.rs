@@ -24,24 +24,34 @@ use crate::{
 pub struct WASMModule {
 	/// Unique module identifier
 	pub id:String,
+
 	/// Module name (if available from name section)
 	pub name:Option<String>,
+
 	/// Path to the module file (if loaded from disk)
 	pub path:Option<PathBuf>,
+
 	/// Module source type
 	pub source_type:ModuleSourceType,
+
 	/// Module size in bytes
 	pub size:usize,
+
 	/// Exported functions
 	pub exported_functions:Vec<String>,
+
 	/// Exported memories
 	pub exported_memories:Vec<String>,
+
 	/// Exported tables
 	pub exported_tables:Vec<String>,
+
 	/// Import declarations
 	pub imports:Vec<ImportDeclaration>,
+
 	/// Compilation timestamp
 	pub compiled_at:u64,
+
 	/// Module hash (for caching)
 	pub hash:Option<String>,
 }
@@ -51,10 +61,13 @@ pub struct WASMModule {
 pub enum ModuleSourceType {
 	/// Module loaded from a file
 	File,
+
 	/// Module loaded from in-memory bytes
 	Memory,
+
 	/// Module loaded from a network URL
 	Url,
+
 	/// Module generated dynamically
 	Generated,
 }
@@ -64,8 +77,10 @@ pub enum ModuleSourceType {
 pub struct ImportDeclaration {
 	/// Module name being imported from
 	pub module:String,
+
 	/// Name of the imported item
 	pub name:String,
+
 	/// Kind of import
 	pub kind:ImportKind,
 }
@@ -75,12 +90,16 @@ pub struct ImportDeclaration {
 pub enum ImportKind {
 	/// Function import
 	Function,
+
 	/// Table import
 	Table,
+
 	/// Memory import
 	Memory,
+
 	/// Global import
 	Global,
+
 	/// Tag import
 	Tag,
 }
@@ -90,14 +109,19 @@ pub enum ImportKind {
 pub struct ModuleLoadOptions {
 	/// Enable lazy compilation
 	pub lazy_compilation:bool,
+
 	/// Enable module caching
 	pub enable_cache:bool,
+
 	/// Cache directory path
 	pub cache_dir:Option<PathBuf>,
+
 	/// Custom linker configuration
 	pub custom_linker:bool,
+
 	/// Validate module before loading
 	pub validate:bool,
+
 	/// Optimized compilation
 	pub optimized:bool,
 }
@@ -106,10 +130,15 @@ impl Default for ModuleLoadOptions {
 	fn default() -> Self {
 		Self {
 			lazy_compilation:false,
+
 			enable_cache:true,
+
 			cache_dir:None,
+
 			custom_linker:false,
+
 			validate:true,
+
 			optimized:true,
 		}
 	}
@@ -119,10 +148,13 @@ impl Default for ModuleLoadOptions {
 pub struct WASMInstance {
 	/// The WASM instance
 	pub instance:Instance,
+
 	/// The associated store
 	pub store:Store<StoreLimits>,
+
 	/// Instance ID
 	pub id:String,
+
 	/// Module reference
 	pub module:Arc<Module>,
 }
@@ -130,10 +162,13 @@ pub struct WASMInstance {
 /// WASM Module Loader
 pub struct ModuleLoaderImpl {
 	runtime:Arc<WASMRuntime>,
+
 	#[allow(dead_code)]
 	config:WASMConfig,
+
 	#[allow(dead_code)]
 	linkers:Arc<RwLock<Vec<Linker<()>>>>,
+
 	loaded_modules:Arc<RwLock<Vec<WASMModule>>>,
 }
 
@@ -142,8 +177,11 @@ impl ModuleLoaderImpl {
 	pub fn new(runtime:Arc<WASMRuntime>, config:WASMConfig) -> Self {
 		Self {
 			runtime,
+
 			config,
+
 			linkers:Arc::new(RwLock::new(Vec::new())),
+
 			loaded_modules:Arc::new(RwLock::new(Vec::new())),
 		}
 	}
@@ -182,20 +220,31 @@ impl ModuleLoaderImpl {
 		// Create module wrapper
 		let wasm_module = WASMModule {
 			id:generate_module_id(&module_info.name),
+
 			name:module_info.name,
+
 			path:None,
+
 			source_type,
+
 			size:wasm_bytes.len(),
+
 			exported_functions:module_info.exports.functions,
+
 			exported_memories:module_info.exports.memories,
+
 			exported_tables:module_info.exports.tables,
+
 			imports:module_info.imports,
+
 			compiled_at:std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH)?.as_secs(),
+
 			hash:self.compute_hash(wasm_bytes),
 		};
 
 		// Store the module
 		let mut loaded = self.loaded_modules.write().await;
+
 		loaded.push(wasm_module.clone());
 
 		dev_log!("wasm", "WASM module loaded successfully: {}", wasm_module.id);
@@ -246,17 +295,21 @@ impl ModuleLoaderImpl {
 	/// Get a loaded module by ID
 	pub async fn get_module_by_id(&self, id:&str) -> Option<WASMModule> {
 		let loaded = self.loaded_modules.read().await;
+
 		loaded.iter().find(|m| m.id == id).cloned()
 	}
 
 	/// Unload a module
 	pub async fn unload_module(&self, id:&str) -> Result<bool> {
 		let mut loaded = self.loaded_modules.write().await;
+
 		let pos = loaded.iter().position(|m| m.id == id);
 
 		if let Some(pos) = pos {
 			loaded.remove(pos);
+
 			dev_log!("wasm", "WASM module unloaded: {}", id);
+
 			Ok(true)
 		} else {
 			Ok(false)
@@ -272,9 +325,13 @@ impl ModuleLoaderImpl {
 		for export in module.exports() {
 			match export.ty() {
 				wasmtime::ExternType::Func(_) => exports.functions.push(export.name().to_string()),
+
 				wasmtime::ExternType::Memory(_) => exports.memories.push(export.name().to_string()),
+
 				wasmtime::ExternType::Table(_) => exports.tables.push(export.name().to_string()),
+
 				wasmtime::ExternType::Global(_) => exports.globals.push(export.name().to_string()),
+
 				_ => {},
 			}
 		}
@@ -282,11 +339,16 @@ impl ModuleLoaderImpl {
 		for import in module.imports() {
 			let kind = match import.ty() {
 				wasmtime::ExternType::Func(_) => ImportKind::Function,
+
 				wasmtime::ExternType::Memory(_) => ImportKind::Memory,
+
 				wasmtime::ExternType::Table(_) => ImportKind::Table,
+
 				wasmtime::ExternType::Global(_) => ImportKind::Global,
+
 				_ => ImportKind::Tag,
 			};
+
 			imports.push(ImportDeclaration {
 				module:import.module().to_string(),
 				name:import.name().to_string(),
@@ -297,6 +359,7 @@ impl ModuleLoaderImpl {
 		ModuleInfo {
 			name:None, // Would need to parse name section
 			exports,
+
 			imports,
 		}
 	}
@@ -309,7 +372,9 @@ impl ModuleLoaderImpl {
 		};
 
 		let mut hasher = DefaultHasher::new();
+
 		wasm_bytes.hash(&mut hasher);
+
 		Some(format!("{:x}", hasher.finish()))
 	}
 }
@@ -318,20 +383,26 @@ impl ModuleLoaderImpl {
 
 struct ModuleInfo {
 	name:Option<String>,
+
 	exports:Exports,
+
 	imports:Vec<ImportDeclaration>,
 }
 
 struct Exports {
 	functions:Vec<String>,
+
 	memories:Vec<String>,
+
 	tables:Vec<String>,
+
 	globals:Vec<String>,
 }
 
 fn generate_module_id(name:&Option<String>) -> String {
 	match name {
 		Some(n) => format!("module-{}", n.to_lowercase().replace(' ', "-")),
+
 		None => format!("module-{}", uuid::Uuid::new_v4()),
 	}
 }
@@ -340,12 +411,15 @@ fn generate_instance_id() -> String { format!("instance-{}", uuid::Uuid::new_v4(
 
 #[cfg(test)]
 mod tests {
+
 	use super::*;
 
 	#[tokio::test]
 	async fn test_module_loader_creation() {
 		let runtime = Arc::new(WASMRuntime::new(WASMConfig::default()).await.unwrap());
+
 		let config = WASMConfig::default();
+
 		let loader = ModuleLoaderImpl::new(runtime, config);
 
 		// Just test creation
@@ -355,17 +429,22 @@ mod tests {
 	#[test]
 	fn test_module_load_options_default() {
 		let options = ModuleLoadOptions::default();
+
 		assert_eq!(options.validate, true);
+
 		assert_eq!(options.enable_cache, true);
 	}
 
 	#[test]
 	fn test_generate_module_id() {
 		let id1 = generate_module_id(&Some("Test Module".to_string()));
+
 		let id2 = generate_module_id(&None);
 
 		assert!(id1.starts_with("module-"));
+
 		assert!(id2.starts_with("module-"));
+
 		assert_ne!(id1, id2);
 	}
 }

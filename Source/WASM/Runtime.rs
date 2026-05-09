@@ -24,16 +24,22 @@ use crate::{
 pub struct WASMConfig {
 	/// Memory limit in MB for WASM modules
 	pub memory_limit_mb:u64,
+
 	/// Maximum execution time in milliseconds
 	pub max_execution_time_ms:u64,
+
 	/// Enable WASI (WebAssembly System Interface)
 	pub enable_wasi:bool,
+
 	/// Enable debugging support
 	pub enable_debug:bool,
+
 	/// Allow WASM modules to spawn threads
 	pub allow_threads:bool,
+
 	/// Allow WASM modules to access host memory
 	pub allow_host_memory:bool,
+
 	/// Enable fuel metering for execution limits
 	pub enable_fuel_metering:bool,
 }
@@ -42,11 +48,17 @@ impl Default for WASMConfig {
 	fn default() -> Self {
 		Self {
 			memory_limit_mb:DEFAULT_MEMORY_LIMIT_MB,
+
 			max_execution_time_ms:DEFAULT_MAX_EXECUTION_TIME_MS,
+
 			enable_wasi:true,
+
 			enable_debug:cfg!(debug_assertions),
+
 			allow_threads:false,
+
 			allow_host_memory:false,
+
 			enable_fuel_metering:true,
 		}
 	}
@@ -96,6 +108,7 @@ impl WASMConfig {
 		// Enable debugging in debug builds
 		if self.enable_debug {
 			builder.debug_info(true);
+
 			builder.wasm_backtrace_details(WasmBacktraceDetails::Enable);
 		}
 
@@ -107,8 +120,11 @@ impl WASMConfig {
 #[derive(Clone)]
 pub struct WASMRuntime {
 	engine:Engine,
+
 	config:WASMConfig,
+
 	memory_manager:Arc<RwLock<MemoryManagerImpl>>,
+
 	instances:Arc<RwLock<Vec<String>>>,
 }
 
@@ -119,21 +135,29 @@ impl WASMRuntime {
 
 		// Build the WASMtime engine
 		let engine_config = wasmtime::Config::new();
+
 		let engine_config = config.apply_to_engine_builder(engine_config)?;
+
 		let engine =
 			Engine::new(&engine_config).map_err(|e| anyhow::anyhow!("Failed to create WASMtime engine: {}", e))?;
 
 		// Initialize memory manager
 		let memory_limits = MemoryLimits {
 			max_memory_mb:config.memory_limit_mb,
+
 			// Set 75% of max for initial allocation
 			initial_memory_mb:(config.memory_limit_mb as f64 * 0.75) as u64,
+
 			max_table_size:1024,
+
 			// Set maximum of 100 instances
 			max_instances:100,
+
 			max_memories:10,
+
 			max_tables:10,
 		};
+
 		let memory_manager = Arc::new(RwLock::new(MemoryManagerImpl::new(memory_limits)));
 
 		dev_log!("wasm", "WASM runtime created successfully");
@@ -225,10 +249,13 @@ impl WASMRuntime {
 		match result {
 			Ok(()) => {
 				dev_log!("wasm", "WASM module validation passed");
+
 				Ok(true)
 			},
+
 			Err(e) => {
 				dev_log!("wasm", "WASM module validation failed: {}", e);
+
 				Ok(false)
 			},
 		}
@@ -244,16 +271,19 @@ impl WASMRuntime {
 		}
 
 		instances.push(instance_id);
+
 		Ok(())
 	}
 
 	/// Unregister an instance
 	pub async fn unregister_instance(&self, instance_id:&str) -> Result<bool> {
 		let mut instances = self.instances.write().await;
+
 		let pos = instances.iter().position(|id| id == instance_id);
 
 		if let Some(pos) = pos {
 			instances.remove(pos);
+
 			Ok(true)
 		} else {
 			Ok(false)
@@ -268,6 +298,7 @@ impl WASMRuntime {
 		dev_log!("wasm", "Shutting down WASM runtime");
 
 		let instance_count = self.instance_count().await;
+
 		if instance_count > 0 {
 			dev_log!("wasm", "warn: shutting down with {} active instances", instance_count);
 		}
@@ -283,25 +314,31 @@ impl WASMRuntime {
 
 #[cfg(test)]
 mod tests {
+
 	use super::*;
 
 	#[tokio::test]
 	async fn test_wasm_runtime_creation() {
 		let runtime = WASMRuntime::new(WASMConfig::default()).await;
+
 		assert!(runtime.is_ok());
 	}
 
 	#[tokio::test]
 	async fn test_wasm_config_default() {
 		let config = WASMConfig::default();
+
 		assert!(config.enable_wasi);
+
 		assert_eq!(config.memory_limit_mb, 512);
 	}
 
 	#[tokio::test]
 	async fn test_create_store() {
 		let runtime = WASMRuntime::new(WASMConfig::default()).await.unwrap();
+
 		let store = runtime.create_store();
+
 		assert!(store.is_ok());
 	}
 
@@ -310,9 +347,11 @@ mod tests {
 		let runtime = WASMRuntime::new(WASMConfig::default()).await.unwrap();
 
 		runtime.register_instance("test-instance".to_string()).await.unwrap();
+
 		assert_eq!(runtime.instance_count().await, 1);
 
 		runtime.unregister_instance("test-instance").await.unwrap();
+
 		assert_eq!(runtime.instance_count().await, 0);
 	}
 
@@ -328,6 +367,7 @@ mod tests {
 
 		// This will fail validation because it's incomplete, but tests the method
 		let result = runtime.validate_module(&empty_wasm);
+
 		// We don't assert on the result since it depends on WASMtime
 		// implementation
 	}

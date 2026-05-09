@@ -60,11 +60,14 @@ use crate::Transport::{
 pub struct TransportAdapter {
 	/// The underlying Grove transport (wrapped in Arc for thread sharing)
 	transport:Arc<GroveTransport>,
+
 	/// Grove-side transport configuration
 	config:GroveTransportConfig,
+
 	/// Common-library TransportConfig view (built from grove config at
 	/// construction)
 	common_config:TransportConfig,
+
 	/// Correlation ID generator (use default UUID generator)
 	correlation_generator:fn() -> String,
 }
@@ -81,11 +84,16 @@ impl TransportAdapter {
 	/// A new `TransportAdapter` ready for use as a Common `TransportStrategy`.
 	pub fn new(transport:GroveTransport) -> Self {
 		let Config = GroveTransportConfig::default();
+
 		let CommonConfig = Self::BuildCommonConfig(&Config);
+
 		Self {
 			transport:Arc::new(transport),
+
 			config:Config,
+
 			common_config:CommonConfig,
+
 			correlation_generator:|| uuid::Uuid::new_v4().to_string(),
 		}
 	}
@@ -93,10 +101,14 @@ impl TransportAdapter {
 	/// Creates a new `TransportAdapter` with custom configuration.
 	pub fn with_config(transport:GroveTransport, config:GroveTransportConfig) -> Self {
 		let CommonConfig = Self::BuildCommonConfig(&config);
+
 		Self {
 			transport:Arc::new(transport),
+
 			config,
+
 			common_config:CommonConfig,
+
 			correlation_generator:|| uuid::Uuid::new_v4().to_string(),
 		}
 	}
@@ -106,15 +118,25 @@ impl TransportAdapter {
 	fn BuildCommonConfig(Grove:&GroveTransportConfig) -> TransportConfig {
 		TransportConfig {
 			DefaultTimeout:Grove.RequestTimeout,
+
 			MaximumRetries:Grove.MaximumRetries,
+
 			RetryBaseDelay:Grove.RetryDelay,
+
 			RetryMaximumDelay:Grove.RetryDelay * 10,
+
 			RetryJitterEnabled:true,
+
 			CircuitBreakerFailureThreshold:5,
+
 			CircuitBreakerResetTimeout:Duration::from_secs(30),
+
 			HealthChecksEnabled:true,
+
 			HealthCheckInterval:Grove.KeepaliveInterval,
+
 			MetricsEnabled:true,
+
 			TransportConfigurations:HashMap::new(),
 			..TransportConfig::default()
 		}
@@ -130,8 +152,11 @@ impl TransportAdapter {
 	fn translate_transport_type(grove_type:GroveTransportType) -> CommonTransportType {
 		match grove_type {
 			GroveTransportType::gRPC => CommonTransportType::Grpc,
+
 			GroveTransportType::IPC => CommonTransportType::Ipc,
+
 			GroveTransportType::WASM => CommonTransportType::Wasm,
+
 			GroveTransportType::Unknown => CommonTransportType::Unknown,
 		}
 	}
@@ -140,18 +165,25 @@ impl TransportAdapter {
 	fn translate_metrics(stats:GroveTransportStats) -> TransportMetrics {
 		TransportMetrics {
 			requests_total:stats.messages_sent + stats.messages_received,
+
 			requests_successful:stats.messages_received, // Assume received = successful for now
 			requests_failed:stats.errors,
+
 			notifications_sent:0,      // TODO: track separately
 			connections_established:1, // Assume 1 connection
 			connection_failures:if stats.errors > 0 { 1 } else { 0 },
+
 			bytes_sent:stats.bytes_sent,
+
 			bytes_received:stats.bytes_received,
+
 			circuit_breaker_state:1, // Assume closed (1)
 			latency_ms_histogram:stats
 				.avg_latency_us
 				.map(|us| (1, us as f64 / 1000.0, (us as f64 / 1000.0).powi(2))),
+
 			active_connections:1,
+
 			pending_requests:0,
 		}
 	}
@@ -187,6 +219,7 @@ impl TransportStrategy for TransportAdapter {
 		// For now, we'll use a simpler approach: the payload is already serialized,
 		// we just need to wrap it with method info and send.
 		let mut request_data = Vec::new();
+
 		// TODO: Proper serialization using TransportMessage
 		// For now, just send payload
 		request_data.extend_from_slice(&request.payload);
@@ -204,6 +237,7 @@ impl TransportStrategy for TransportAdapter {
 
 				Ok(UnifiedResponse::success(correlation_id, response_bytes))
 			},
+
 			Err(e) => {
 				let correlation_id = request.correlation_id.unwrap_or_else(|| (self.correlation_generator)());
 
@@ -219,6 +253,7 @@ impl TransportStrategy for TransportAdapter {
 
 		// Serialize notification
 		let mut data = Vec::new();
+
 		data.extend_from_slice(&notification.payload);
 
 		self.transport
@@ -273,6 +308,7 @@ impl TransportStrategy for TransportAdapter {
 
 	fn transport_type(&self) -> CommonTransportType {
 		let grove_type = self.transport.transport_type();
+
 		Self::translate_transport_type(grove_type)
 	}
 
@@ -291,13 +327,21 @@ impl TransportStrategy for TransportAdapter {
 		TransportCapabilities {
 			max_message_size:1024 * 1024, // 1MB
 			supports_request_response:true,
+
 			supports_server_streaming:false,
+
 			supports_client_streaming:false,
+
 			supports_bidirectional_streaming:false,
+
 			supports_notifications:true,
+
 			max_concurrent:100,
+
 			requires_network:self.transport.transport_type() != GroveTransportType::IPC,
+
 			supports_encryption:false,
+
 			supports_compression:false,
 		}
 	}
@@ -318,14 +362,18 @@ impl From<crate::Transport::GrpcTransportError> for TransportError {
 	fn from(err:crate::Transport::GrpcTransportError) -> Self {
 		match err {
 			crate::Transport::GrpcTransportError::ConnectionFailed(msg) => TransportError::connection(msg),
+
 			crate::Transport::GrpcTransportError::NotConnected => TransportError::connection("Not connected"),
+
 			crate::Transport::GrpcTransportError::SendFailed(msg) => {
 				TransportError::new(
 					super::TransportErrorCode::MessageTooLarge, // Actually send failed
 					msg,
 				)
 			},
+
 			crate::Transport::GrpcTransportError::Timeout => TransportError::timeout("Operation timed out"),
+
 			_ => TransportError::internal(format!("gRPC transport error: {}", err)),
 		}
 	}
@@ -337,12 +385,15 @@ impl From<crate::Transport::GrpcTransportError> for TransportError {
 
 #[cfg(test)]
 mod tests {
+
 	use super::*;
 
 	#[tokio::test]
 	async fn test_adapter_creation() {
 		let grove_transport = GroveTransport::gRPC(GrpcTransport::new("127.0.0.1:50050").unwrap());
+
 		let adapter = TransportAdapter::new(grove_transport);
+
 		assert_eq!(adapter.transport_type(), CommonTransportType::Grpc);
 	}
 }

@@ -23,12 +23,16 @@ use crate::{
 pub struct gRPCTransport {
 	/// Connection endpoint address.
 	Endpoint:String,
+
 	/// gRPC channel (lazily connected).
 	Channel:Arc<RwLock<Option<Channel>>>,
+
 	/// Transport configuration.
 	Configuration:TransportConfig,
+
 	/// Whether the transport is currently connected.
 	Connected:Arc<RwLock<bool>>,
+
 	/// Transport statistics.
 	Statistics:Arc<RwLock<TransportStats>>,
 }
@@ -78,6 +82,7 @@ impl gRPCTransport {
 			.timeout(self.Configuration.ConnectionTimeout)
 			.connect_timeout(self.Configuration.ConnectionTimeout)
 			.tcp_keepalive(Some(self.Configuration.KeepaliveInterval));
+
 		Ok(EndpointValue)
 	}
 }
@@ -102,6 +107,7 @@ impl TransportStrategy for gRPCTransport {
 		*self.Connected.write().await = true;
 
 		dev_log!("grpc", "gRPC connection established: {}", self.Endpoint);
+
 		Ok(())
 	}
 
@@ -115,13 +121,17 @@ impl TransportStrategy for gRPCTransport {
 		dev_log!("grpc", "Sending gRPC request ({} bytes)", request.len());
 
 		let Response:Vec<u8> = vec![];
+
 		let LatencyMicroseconds = Start.elapsed().as_micros() as u64;
 
 		let mut Stats = self.Statistics.write().await;
+
 		Stats.record_sent(request.len() as u64, LatencyMicroseconds);
+
 		Stats.record_received(Response.len() as u64);
 
 		dev_log!("grpc", "gRPC request completed in {}µs", LatencyMicroseconds);
+
 		Ok(Response)
 	}
 
@@ -133,15 +143,19 @@ impl TransportStrategy for gRPCTransport {
 		dev_log!("grpc", "Sending gRPC notification ({} bytes)", data.len());
 
 		let mut Stats = self.Statistics.write().await;
+
 		Stats.record_sent(data.len() as u64, 0);
+
 		Ok(())
 	}
 
 	async fn close(&self) -> Result<(), Self::Error> {
 		dev_log!("grpc", "Closing gRPC connection: {}", self.Endpoint);
+
 		*self.Channel.write().await = None;
 		*self.Connected.write().await = false;
 		dev_log!("grpc", "gRPC connection closed: {}", self.Endpoint);
+
 		Ok(())
 	}
 
@@ -156,18 +170,23 @@ pub enum gRPCTransportError {
 	/// Failed to establish connection to gRPC server
 	#[error("Connection failed: {0}")]
 	ConnectionFailed(String),
+
 	/// Failed to send message to gRPC server
 	#[error("Send failed: {0}")]
 	SendFailed(String),
+
 	/// Failed to receive message from gRPC server
 	#[error("Receive failed: {0}")]
 	ReceiveFailed(String),
+
 	/// Transport is not connected
 	#[error("Not connected")]
 	NotConnected,
+
 	/// Operation timed out
 	#[error("Timeout")]
 	Timeout,
+
 	/// Generic gRPC error
 	#[error("gRPC error: {0}")]
 	Error(String),
@@ -183,19 +202,24 @@ impl From<tonic::Status> for gRPCTransportError {
 
 #[cfg(test)]
 mod tests {
+
 	use super::*;
 
 	#[test]
 	fn TestgRPCTransportCreation() {
 		let Result = gRPCTransport::New("127.0.0.1:50050");
+
 		assert!(Result.is_ok());
+
 		let Transport = Result.unwrap();
+
 		assert_eq!(Transport.Address(), "127.0.0.1:50050");
 	}
 
 	#[tokio::test]
 	async fn TestgRPCTransportNotConnected() {
 		let Transport = gRPCTransport::New("127.0.0.1:50050").unwrap();
+
 		assert!(!Transport.is_connected());
 	}
 }

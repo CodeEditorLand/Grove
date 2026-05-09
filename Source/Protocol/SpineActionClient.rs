@@ -45,10 +45,10 @@ use chrono::{DateTime, Utc};
 use futures::stream::StreamExt;
 use tokio::sync::RwLock;
 use tonic::transport::Channel;
-use crate::dev_log;
 
 use crate::{
 	api::vscode::APIBridge,
+	dev_log,
 	vine::generated::vine::{
 		EchoAction,
 		EchoActionResponse,
@@ -79,6 +79,7 @@ pub struct SpineActionClient {
 
 	/// Timestamps
 	connection_start_time:Arc<RwLock<Option<DateTime<Utc>>>>,
+
 	last_heartbeat:Arc<RwLock<DateTime<Utc>>>,
 
 	/// WASM runtime
@@ -137,14 +138,22 @@ impl Default for SpineConfig {
 	fn default() -> Self {
 		Self {
 			mountain_url:"http://127.0.0.1:50051".to_string(),
+
 			heartbeat_interval_sec:30,
+
 			reconnect_strategy:ReconnectStrategy::default(),
+
 			capabilities:GroveCapabilities {
 				wasm_enabled:cfg!(feature = "wasm"),
+
 				rhai_enabled:cfg!(feature = "rhai"),
+
 				native_bridge_enabled:cfg!(feature = "bridge"),
+
 				wasm_memory_limit_mb:512,
+
 				max_rhai_scripts:100,
+
 				supported_extensions:vec!["wsix".to_string(), "rix".to_string()],
 			},
 		}
@@ -179,7 +188,9 @@ impl Default for ReconnectStrategy {
 #[derive(Clone, Debug)]
 pub struct HostInfo {
 	pub host_id:String,
+
 	pub host_registry_id:String,
+
 	pub heartbeat_interval_sec:u32,
 }
 
@@ -187,7 +198,7 @@ impl SpineActionClient {
 	/// Create new Spine action client
 	///
 	///  ☀️ 🟡 MOUNTAIN_GROVE_WASM
-	
+
 	pub async fn new(config:SpineConfig) -> Result<Self> {
 		let host_id = format!("grove-{}", uuid::Uuid::new_v4());
 
@@ -210,7 +221,7 @@ impl SpineActionClient {
 	/// Connect to Mountain
 	///
 	///  ☀️ 🟡 MOUNTAIN_GROVE_WASM
-	
+
 	pub async fn connect(&mut self) -> Result<()> {
 		dev_log!("grpc", "Connecting to Mountain at: {}", self.config.mountain_url);
 
@@ -225,6 +236,7 @@ impl SpineActionClient {
 
 		// Store connection
 		self.channel = Some(channel);
+
 		self.echo_client = echo_client;
 
 		// Update state
@@ -239,12 +251,14 @@ impl SpineActionClient {
 	/// Disconnection from Mountain
 	///
 	///  ☀️ 🟡 MOUNTAIN_GROVE_WASM
-	
+
 	pub async fn disconnect(&mut self) -> Result<()> {
 		dev_log!("grpc", "Disconnecting from Mountain");
 
 		self.echo_client = None;
+
 		self.channel = None;
+
 		*self.connected.write().await = false;
 		*self.connection_start_time.write().await = None;
 
@@ -256,7 +270,7 @@ impl SpineActionClient {
 	/// Register Grove as an extension host
 	///
 	///  ☀️ 🟡 MOUNTAIN_GROVE_WASM - Host registration with Mountain
-	
+
 	pub async fn register(&self) -> Result<HostInfo> {
 		let client = self
 			.echo_client
@@ -267,31 +281,45 @@ impl SpineActionClient {
 
 		// Build registration request
 		let mut capabilities = HashMap::new();
+
 		capabilities.insert("wasm_enabled".to_string(), self.config.capabilities.wasm_enabled.to_string());
+
 		capabilities.insert("rhai_enabled".to_string(), self.config.capabilities.rhai_enabled.to_string());
+
 		capabilities.insert(
 			"native_bridge_enabled".to_string(),
 			self.config.capabilities.native_bridge_enabled.to_string(),
 		);
+
 		capabilities.insert(
 			"wasm_memory_limit_mb".to_string(),
 			self.config.capabilities.wasm_memory_limit_mb.to_string(),
 		);
+
 		capabilities.insert(
 			"max_rhai_scripts".to_string(),
 			self.config.capabilities.max_rhai_scripts.to_string(),
 		);
+
 		capabilities.insert("supports_terminals".to_string(), "false".to_string());
+
 		capabilities.insert("supports_processes".to_string(), "false".to_string());
+
 		capabilities.insert("supports_debug".to_string(), "false".to_string());
+
 		capabilities.insert("supports_scm".to_string(), "false".to_string());
+
 		capabilities.insert("supports_webviews".to_string(), "true".to_string());
 
 		let metadata = crate::vine::generated::vine::HostMetadata {
 			version:env!("CARGO_PKG_VERSION").to_string(),
+
 			build_hash:option_env!("BUILD_HASH").unwrap_or("unknown").to_string(),
+
 			supported_extensions:self.config.capabilities.supported_extensions.clone(),
+
 			max_memory_mb:self.config.capabilities.wasm_memory_limit_mb,
+
 			enabled_features:vec![
 				if cfg!(feature = "wasm") { "wasm".to_string() } else { String::new() },
 				if cfg!(feature = "rhai") { "rhai".to_string() } else { String::new() },
@@ -304,8 +332,10 @@ impl SpineActionClient {
 
 		let request = RegisterExtensionHostRequest {
 			host_id:self.host_id.clone(),
+
 			host_type:2, // Grove
 			capabilities,
+
 			metadata:Some(metadata),
 		};
 
@@ -320,7 +350,9 @@ impl SpineActionClient {
 
 		let host_info = HostInfo {
 			host_id:self.host_id.clone(),
+
 			host_registry_id:response.host_registry_id,
+
 			heartbeat_interval_sec:response.heartbeat_interval_sec,
 		};
 
@@ -340,14 +372,19 @@ impl SpineActionClient {
 	/// Send EchoAction to Mountain
 	///
 	///  ☀️ 🟡 MOUNTAIN_GROVE_WASM
-	
+
 	pub async fn send_echo_action(&self, action:EchoAction) -> Result<EchoActionResponse> {
 		let client = self
 			.echo_client
 			.as_ref()
 			.ok_or_else(|| anyhow::anyhow!("Not connected to Mountain"))?;
 
-		dev_log!("grpc", "Sending EchoAction: type={}, target={}", action.action_type, action.target);
+		dev_log!(
+			"grpc",
+			"Sending EchoAction: type={}, target={}",
+			action.action_type,
+			action.target
+		);
 
 		let response = client
 			.send_echo_action(action)
@@ -358,7 +395,8 @@ impl SpineActionClient {
 		dev_log!(
 			"grpc",
 			"EchoAction response: success={}, processing_time_ms={}",
-			response.success, response.processing_time_ms
+			response.success,
+			response.processing_time_ms
 		);
 
 		if !response.success {
@@ -371,11 +409,14 @@ impl SpineActionClient {
 	/// Send RPC via EchoAction
 	///
 	///  ☀️ 🟡 MOUNTAIN_GROVE_WASM
-	
+
 	pub async fn send_rpc_via_action(
 		&self,
+
 		rpc_method:&str,
+
 		payload:Vec<u8>,
+
 		target_host:Option<&str>,
 	) -> Result<Vec<u8>> {
 		let mut headers = vec![
@@ -389,16 +430,24 @@ impl SpineActionClient {
 
 		let action = EchoAction {
 			action_id:uuid::Uuid::new_v4().to_string(),
+
 			source:self.host_id.clone(),
+
 			target:target_host.unwrap_or("mountain").to_string(),
+
 			action_type:"rpc".to_string(),
+
 			payload,
+
 			headers:headers.into_iter().collect(),
+
 			timestamp:Utc::now().timestamp(),
+
 			nested_actions:vec![],
 		};
 
 		let response = self.send_echo_action(action).await?;
+
 		Ok(response.result)
 	}
 
@@ -417,16 +466,24 @@ impl SpineActionClient {
 
 		let action = EchoAction {
 			action_id:uuid::Uuid::new_v4().to_string(),
+
 			source:self.host_id.clone(),
+
 			target:"mountain".to_string(),
+
 			action_type:"event".to_string(),
+
 			payload,
+
 			headers:headers.into_iter().collect(),
+
 			timestamp:Utc::now().timestamp(),
+
 			nested_actions:vec![],
 		};
 
 		self.send_echo_action(action).await?;
+
 		Ok(())
 	}
 
@@ -436,7 +493,9 @@ impl SpineActionClient {
 	/// Sends periodic heartbeat EchoActions to maintain connection
 	async fn start_heartbeat_loop(&self) -> Result<()> {
 		let connected = Arc::clone(&self.connected);
+
 		let last_heartbeat = Arc::clone(&self.last_heartbeat);
+
 		let interval_sec = self.config.heartbeat_interval_sec;
 
 		tokio::spawn(async move {
@@ -457,7 +516,12 @@ impl SpineActionClient {
 			}
 		});
 
-		dev_log!("grove", "[SpineConnection] Heartbeat loop started (interval: {}s)", interval_sec);
+		dev_log!(
+			"grove",
+			"[SpineConnection] Heartbeat loop started (interval: {}s)",
+			interval_sec
+		);
+
 		Ok(())
 	}
 
@@ -481,7 +545,9 @@ impl SpineActionClient {
 		//
 		// For now, we log that the listener is ready for future implementation
 		dev_log!("grove", "[SpineConnection] EchoAction listener initialized");
+
 		dev_log!("grove", "[SpineConnection] Waiting for EchoAction protocol implementation");
+
 		Ok(())
 	}
 
@@ -490,13 +556,18 @@ impl SpineActionClient {
 	///  ☀️ 🟡 MOUNTAIN_GROVE_WASM
 	pub async fn get_status(&self) -> ConnectionStatus {
 		let connected = *self.connected.read().await;
+
 		let start = *self.connection_start_time.read().await;
+
 		let host_info = self.host_info.read().await.clone();
 
 		ConnectionStatus {
 			connected,
+
 			host_id:self.host_id.clone(),
+
 			uptime:start.map(|s| (Utc::now() - s).num_seconds()),
+
 			host_info,
 		}
 	}
@@ -514,12 +585,14 @@ impl SpineActionClient {
 	/// Attempt to reconnect
 	///
 	///  ☀️ 🟡 MOUNTAIN_GROVE_WASM
-	
+
 	pub async fn reconnect(&mut self) -> Result<()> {
 		dev_log!("grpc", "warn: attempting to reconnect to Mountain");
 
 		self.disconnect().await?;
+
 		self.connect().await?;
+
 		self.register().await?;
 
 		dev_log!("grpc", "Successfully reconnected to Mountain");
@@ -534,8 +607,11 @@ impl SpineActionClient {
 #[derive(Clone, Debug)]
 pub struct ConnectionStatus {
 	pub connected:bool,
+
 	pub host_id:String,
+
 	pub uptime:Option<i64>,
+
 	pub host_info:Option<HostInfo>,
 }
 
@@ -549,13 +625,18 @@ pub struct ConnectionStatus {
 fn calculate_backoff(attempt:u32, strategy:&ReconnectStrategy) -> std::time::Duration {
 	match strategy {
 		ReconnectStrategy::Never => return std::time::Duration::from_secs(0),
+
 		ReconnectStrategy::Immediate => return std::time::Duration::from_secs(0),
+
 		ReconnectStrategy::ExponentialBackoff { initial_delay_ms, max_delay_ms } => {
 			let delay_ms = std::cmp::min(initial_delay_ms * 2u64.pow(attempt.saturating_sub(1)), *max_delay_ms);
+
 			std::time::Duration::from_millis(delay_ms)
 		},
+
 		ReconnectStrategy::LinearBackoff { increment_ms, max_delay_ms } => {
 			let delay_ms = std::cmp::min(increment_ms * attempt as u64, *max_delay_ms);
+
 			std::time::Duration::from_millis(delay_ms)
 		},
 	}
@@ -563,6 +644,7 @@ fn calculate_backoff(attempt:u32, strategy:&ReconnectStrategy) -> std::time::Dur
 
 #[cfg(test)]
 mod tests {
+
 	use super::*;
 
 	#[test]
@@ -570,8 +652,11 @@ mod tests {
 		let strategy = ReconnectStrategy::ExponentialBackoff { initial_delay_ms:1000, max_delay_ms:10000 };
 
 		assert_eq!(calculate_backoff(1, &strategy).as_millis(), 1000);
+
 		assert_eq!(calculate_backoff(2, &strategy).as_millis(), 2000);
+
 		assert_eq!(calculate_backoff(3, &strategy).as_millis(), 4000);
+
 		assert_eq!(calculate_backoff(10, &strategy).as_millis(), 10000); // Capped
 	}
 
@@ -580,8 +665,11 @@ mod tests {
 		let strategy = ReconnectStrategy::LinearBackoff { increment_ms:500, max_delay_ms:2000 };
 
 		assert_eq!(calculate_backoff(1, &strategy).as_millis(), 500);
+
 		assert_eq!(calculate_backoff(2, &strategy).as_millis(), 1000);
+
 		assert_eq!(calculate_backoff(3, &strategy).as_millis(), 1500);
+
 		assert_eq!(calculate_backoff(10, &strategy).as_millis(), 2000); // Capped
 	}
 }

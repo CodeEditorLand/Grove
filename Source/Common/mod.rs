@@ -5,6 +5,7 @@
 
 #[path = "Error.rs"]
 pub mod Error;
+
 #[path = "Traits.rs"]
 pub mod Traits;
 
@@ -16,6 +17,7 @@ pub const VERSION:&str = env!("CARGO_PKG_VERSION");
 
 /// Default configuration values
 pub mod config {
+
 	/// Default timeout for operations in milliseconds
 	pub const DEFAULT_TIMEOUT_MS:u64 = 30000;
 
@@ -37,6 +39,7 @@ pub mod config {
 
 /// Utility functions for common operations
 pub mod utils {
+
 	use std::time::{SystemTime, UNIX_EPOCH};
 
 	/// Get current Unix timestamp in seconds
@@ -64,25 +67,31 @@ pub mod utils {
 
 #[cfg(test)]
 mod tests {
+
 	use super::*;
 
 	#[test]
 	fn test_version() {
 		assert!(!VERSION.is_empty());
+
 		assert!(VERSION.contains('.'));
 	}
 
 	#[test]
 	fn test_now_unix_timestamp() {
 		let ts = utils::now_unix_timestamp();
+
 		assert!(ts > 0);
 	}
 
 	#[test]
 	fn test_generate_id() {
 		let id1 = utils::generate_id();
+
 		let id2 = utils::generate_id();
+
 		assert_ne!(id1, id2);
+
 		assert!(id1.contains('-'));
 	}
 }

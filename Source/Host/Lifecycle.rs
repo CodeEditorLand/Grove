@@ -16,18 +16,25 @@ use crate::dev_log;
 pub enum LifecycleEvent {
 	/// Extension is being initialized
 	Initialize,
+
 	/// Extension is being started
 	Start,
+
 	/// Extension is being stopped
 	Stop,
+
 	/// Extension is being disposed
 	Dispose,
+
 	/// Extension is reloading (hot reload)
 	Reload,
+
 	/// Extension is being suspended
 	Suspend,
+
 	/// Extension is being resumed
 	Resume,
+
 	/// Custom lifecycle event
 	Custom(String),
 }
@@ -37,22 +44,31 @@ pub enum LifecycleEvent {
 pub enum LifecycleState {
 	/// Extension has been created but not initialized
 	Created,
+
 	/// Extension is being initialized
 	Initializing,
+
 	/// Extension is active and running
 	Running,
+
 	/// Extension is being suspended
 	Suspending,
+
 	/// Extension is suspended
 	Suspended,
+
 	/// Extension is being stopped
 	Stopping,
+
 	/// Extension has been stopped
 	Stopped,
+
 	/// Extension is being disposed
 	Disposing,
+
 	/// Extension has been disposed
 	Disposed,
+
 	/// Extension is in an error state
 	Error,
 }
@@ -65,8 +81,10 @@ type LifecycleEventHandler = fn(&str, LifecycleEvent) -> Result<()>;
 pub struct LifecycleManager {
 	/// Event handlers
 	handlers:Arc<RwLock<HashMap<String, LifecycleHandlerInfo>>>,
+
 	/// Extension states
 	states:Arc<RwLock<HashMap<String, LifecycleState>>>,
+
 	/// Event history
 	event_history:Arc<RwLock<Vec<LifecycleEventRecord>>>,
 }
@@ -77,11 +95,14 @@ struct LifecycleHandlerInfo {
 	/// Extension ID
 	#[allow(dead_code)]
 	extension_id:String,
+
 	/// Current state
 	state:LifecycleState,
+
 	/// Supported events
 	#[allow(dead_code)]
 	supported_events:Vec<LifecycleEvent>,
+
 	/// Last state change timestamp
 	last_state_change:Option<u64>,
 }
@@ -91,18 +112,25 @@ struct LifecycleHandlerInfo {
 pub struct LifecycleEventRecord {
 	/// Extension ID
 	pub extension_id:String,
+
 	/// Event that occurred
 	pub event:LifecycleEvent,
+
 	/// Previous state
 	pub previous_state:LifecycleState,
+
 	/// New state
 	pub new_state:LifecycleState,
+
 	/// Timestamp
 	pub timestamp:u64,
+
 	/// Duration in milliseconds
 	pub duration_ms:u64,
+
 	/// Success flag
 	pub success:bool,
+
 	/// Error message (if failed)
 	pub error:Option<String>,
 }
@@ -112,7 +140,9 @@ impl LifecycleManager {
 	pub fn new() -> Self {
 		Self {
 			handlers:Arc::new(RwLock::new(HashMap::new())),
+
 			states:Arc::new(RwLock::new(HashMap::new())),
+
 			event_history:Arc::new(RwLock::new(Vec::new())),
 		}
 	}
@@ -123,6 +153,7 @@ impl LifecycleManager {
 		dev_log!("extensions", "Registering extension for lifecycle management: {}", extension_id);
 
 		let mut handlers = self.handlers.write().await;
+
 		handlers.insert(
 			extension_id.to_string(),
 			LifecycleHandlerInfo {
@@ -144,6 +175,7 @@ impl LifecycleManager {
 		);
 
 		let mut states = self.states.write().await;
+
 		states.insert(extension_id.to_string(), initial_state);
 
 		dev_log!("extensions", "Extension registered: {}", extension_id);
@@ -161,9 +193,11 @@ impl LifecycleManager {
 		);
 
 		let mut handlers = self.handlers.write().await;
+
 		handlers.remove(extension_id);
 
 		let mut states = self.states.write().await;
+
 		states.remove(extension_id);
 
 		dev_log!("extensions", "Extension unregistered: {}", extension_id);
@@ -204,15 +238,22 @@ impl LifecycleManager {
 		// Record event
 		let record = LifecycleEventRecord {
 			extension_id:extension_id.to_string(),
+
 			event:event_clone,
+
 			previous_state:current_state,
+
 			new_state,
+
 			timestamp:std::time::SystemTime::now()
 				.duration_since(std::time::UNIX_EPOCH)
 				.map(|d| d.as_secs())
 				.unwrap_or(0),
+
 			duration_ms:elapsed_ms,
+
 			success:true,
+
 			error:None,
 		};
 
@@ -234,17 +275,27 @@ impl LifecycleManager {
 	fn determine_next_state(&self, current_state:LifecycleState, event:LifecycleEvent) -> Result<LifecycleState> {
 		match (current_state, event.clone()) {
 			(LifecycleState::Created, LifecycleEvent::Initialize) => Ok(LifecycleState::Initializing),
+
 			(LifecycleState::Initializing, LifecycleEvent::Start) => Ok(LifecycleState::Running),
+
 			(LifecycleState::Running, LifecycleEvent::Suspend) => Ok(LifecycleState::Suspending),
+
 			(LifecycleState::Suspending, _) => Ok(LifecycleState::Suspended),
+
 			(LifecycleState::Suspended, LifecycleEvent::Resume) => Ok(LifecycleState::Running),
+
 			(LifecycleState::Running, LifecycleEvent::Stop) => Ok(LifecycleState::Stopping),
+
 			(LifecycleState::Stopping, _) => Ok(LifecycleState::Stopped),
+
 			(LifecycleState::Stopped | LifecycleState::Suspended, LifecycleEvent::Dispose) => {
 				Ok(LifecycleState::Disposing)
 			},
+
 			(LifecycleState::Disposing, _) => Ok(LifecycleState::Disposed),
+
 			(LifecycleState::Running, LifecycleEvent::Reload) => Ok(LifecycleState::Running),
+
 			_ => {
 				Err(anyhow::anyhow!(
 					"Invalid transition from {:?} with event {:?}",
@@ -258,8 +309,11 @@ impl LifecycleManager {
 	/// Perform actual state transition
 	async fn perform_state_transition(
 		&self,
+
 		extension_id:&str,
+
 		event:LifecycleEvent,
+
 		new_state:LifecycleState,
 	) -> Result<()> {
 		// In real implementation, this would:
@@ -277,8 +331,10 @@ impl LifecycleManager {
 
 		// Update state
 		let mut handlers = self.handlers.write().await;
+
 		if let Some(handler) = handlers.get_mut(extension_id) {
 			handler.state = new_state;
+
 			handler.last_state_change = Some(
 				std::time::SystemTime::now()
 					.duration_since(std::time::UNIX_EPOCH)
@@ -288,6 +344,7 @@ impl LifecycleManager {
 		}
 
 		let mut states = self.states.write().await;
+
 		states.insert(extension_id.to_string(), new_state);
 
 		Ok(())
@@ -340,18 +397,22 @@ impl Default for LifecycleManager {
 
 #[cfg(test)]
 mod tests {
+
 	use super::*;
 
 	#[test]
 	fn test_lifecycle_state() {
 		assert_eq!(LifecycleState::Created, LifecycleState::Created);
+
 		assert_eq!(LifecycleState::Running, LifecycleState::Running);
+
 		assert_ne!(LifecycleState::Created, LifecycleState::Running);
 	}
 
 	#[test]
 	fn test_lifecycle_event() {
 		assert_eq!(LifecycleEvent::Initialize, LifecycleEvent::Initialize);
+
 		assert_eq!(
 			LifecycleEvent::Custom("test".to_string()),
 			LifecycleEvent::Custom("test".to_string())
@@ -361,27 +422,33 @@ mod tests {
 	#[tokio::test]
 	async fn test_lifecycle_manager_registration() {
 		let manager = LifecycleManager::new();
+
 		let result = manager.register_extension("test.ext", LifecycleState::Created).await;
 
 		assert!(result.is_ok());
+
 		assert_eq!(manager.get_state("test.ext").await, Some(LifecycleState::Created));
 	}
 
 	#[tokio::test]
 	async fn test_state_transitions() {
 		let manager = LifecycleManager::new();
+
 		manager.register_extension("test.ext", LifecycleState::Created).await.unwrap();
 
 		// Initialize
 		let state = manager.transition("test.ext", LifecycleEvent::Initialize).await.unwrap();
+
 		assert_eq!(state, LifecycleState::Initializing);
 
 		// Start
 		let state = manager.transition("test.ext", LifecycleEvent::Start).await.unwrap();
+
 		assert_eq!(state, LifecycleState::Running);
 
 		// Stop
 		let state = manager.transition("test.ext", LifecycleEvent::Stop).await.unwrap();
+
 		assert_eq!(state, LifecycleState::Stopping);
 	}
 }

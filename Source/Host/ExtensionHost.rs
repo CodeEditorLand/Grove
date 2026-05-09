@@ -21,16 +21,22 @@ pub struct ExtensionHostImpl {
 	/// Host configuration
 	#[allow(dead_code)]
 	config:HostConfig,
+
 	/// Transport for communication
 	transport:Transport,
+
 	/// Extension manager
 	extension_manager:Arc<ExtensionManagerImpl>,
+
 	/// Activation engine
 	activation_engine:Arc<Activation::ActivationEngine>,
+
 	/// WASM runtime
 	wasm_runtime:Arc<WASMRuntime>,
+
 	/// Active extensions
 	active_extensions:Arc<RwLock<Vec<String>>>,
+
 	/// Host state
 	state:Arc<RwLock<HostState>>,
 }
@@ -40,12 +46,16 @@ pub struct ExtensionHostImpl {
 pub enum HostState {
 	/// Host has been created but not initialized
 	Created,
+
 	/// Host is ready to accept extensions
 	Ready,
+
 	/// Host is running with active extensions
 	Running,
+
 	/// Host is shutting down
 	ShuttingDown,
+
 	/// Host has been terminated
 	Terminated,
 }
@@ -55,16 +65,22 @@ pub enum HostState {
 pub struct HostStats {
 	/// Number of loaded extensions
 	pub loaded_extensions:usize,
+
 	/// Number of active extensions
 	pub active_extensions:usize,
+
 	/// Total number of activations
 	pub total_activations:u64,
+
 	/// Total activation time in milliseconds
 	pub total_activation_time_ms:u64,
+
 	/// Number of API calls made
 	pub api_calls:u64,
+
 	/// Number of errors encountered
 	pub errors:u64,
+
 	/// Host uptime in seconds
 	pub uptime_seconds:u64,
 }
@@ -98,6 +114,7 @@ impl ExtensionHostImpl {
 
 		// Create WASM runtime
 		let wasm_config = WASMConfig::new(512, 30000, true);
+
 		let wasm_runtime = Arc::new(WASMRuntime::new(wasm_config).await?);
 
 		// Create extension manager
@@ -172,6 +189,7 @@ impl ExtensionHostImpl {
 
 			// Track active extension
 			let mut active = self.active_extensions.write().await;
+
 			if !active.contains(&extension_id.to_string()) {
 				active.push(extension_id.to_string());
 			}
@@ -195,6 +213,7 @@ impl ExtensionHostImpl {
 
 		// Remove from active extensions
 		let mut active = self.active_extensions.write().await;
+
 		active.retain(|id| id != extension_id);
 
 		dev_log!("extensions", "Extension deactivated: {}", extension_id);
@@ -207,14 +226,18 @@ impl ExtensionHostImpl {
 		dev_log!("extensions", "Activating all extensions");
 
 		let extensions = self.extension_manager.list_extensions().await;
+
 		let mut activated = Vec::new();
+
 		let mut failed = Vec::new();
 
 		for extension_id in extensions {
 			match self.activate(&extension_id).await {
 				Ok(_) => activated.push(extension_id),
+
 				Err(e) => {
 					dev_log!("extensions", "error: failed to activate {}: {}", extension_id, e);
+
 					failed.push(extension_id);
 				},
 			}
@@ -250,16 +273,23 @@ impl ExtensionHostImpl {
 	/// Get host statistics
 	pub async fn stats(&self) -> HostStats {
 		let active_extensions = self.active_extensions.read().await.len();
+
 		let loaded_extensions = self.extension_manager.list_extensions().await.len();
+
 		let extension_stats = self.extension_manager.stats().await;
 
 		HostStats {
 			loaded_extensions,
+
 			active_extensions,
+
 			total_activations:extension_stats.total_activated as u64,
+
 			total_activation_time_ms:extension_stats.total_activation_time_ms,
+
 			api_calls:0, // Track through API bridge
 			errors:extension_stats.errors,
+
 			uptime_seconds:0, // Track from host start time
 		}
 	}
@@ -316,26 +346,33 @@ impl Drop for ExtensionHostImpl {
 
 #[cfg(test)]
 mod tests {
+
 	use super::*;
 
 	#[tokio::test]
 	async fn test_host_state() {
 		assert_eq!(HostState::Created, HostState::Created);
+
 		assert_eq!(HostState::Ready, HostState::Ready);
+
 		assert_eq!(HostState::Running, HostState::Running);
 	}
 
 	#[test]
 	fn test_host_stats_default() {
 		let stats = HostStats::default();
+
 		assert_eq!(stats.loaded_extensions, 0);
+
 		assert_eq!(stats.active_extensions, 0);
 	}
 
 	#[test]
 	fn test_host_config_default() {
 		let config = HostConfig::default();
+
 		assert_eq!(config.max_extensions, 100);
+
 		assert_eq!(config.lazy_activation, true);
 	}
 }

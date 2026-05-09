@@ -65,13 +65,21 @@
 
 // Public module declarations
 pub mod API;
+
 pub mod Binary;
+
 pub mod Common;
+
 pub mod DevLog;
+
 pub mod Host;
+
 pub mod Protocol;
+
 pub mod Services;
+
 pub mod Transport;
+
 pub mod WASM;
 
 // Library version
@@ -82,6 +90,7 @@ const VERSION:&str = env!("CARGO_PKG_VERSION");
 pub struct GroveInfo {
 	/// Version string
 	pub version:&'static str,
+
 	/// Build timestamp
 	#[allow(dead_code)]
 	build_timestamp:String,
@@ -105,6 +114,7 @@ impl Default for GroveInfo {
 /// Call once at application startup.
 pub fn init() -> anyhow::Result<()> {
 	use crate::dev_log;
+
 	dev_log!("grove", "Grove v{} initialized", VERSION);
 
 	Ok(())
@@ -112,17 +122,20 @@ pub fn init() -> anyhow::Result<()> {
 
 #[cfg(test)]
 mod tests {
+
 	use super::*;
 
 	#[test]
 	fn test_version() {
 		assert!(!VERSION.is_empty());
+
 		assert!(VERSION.contains('.'));
 	}
 
 	#[test]
 	fn test_grove_info() {
 		let info = GroveInfo::new();
+
 		assert_eq!(info.version(), VERSION);
 	}
 }

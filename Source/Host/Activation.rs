@@ -23,20 +23,28 @@ use crate::{
 pub enum ActivationEvent {
 	/// Activate when the extension host starts up
 	Startup,
+
 	/// Activate when a specific command is executed
 	Command(String),
+
 	/// Activate when a specific language is detected
 	Language(String),
+
 	/// Activate when a workspace of a specific type is opened
 	WorkspaceContains(String),
+
 	/// Activate when specific content type is viewed
 	OnView(String),
+
 	/// Activate when a URI scheme is used
 	OnUri(String),
+
 	/// Activate when specific file patterns match
 	OnFiles(String),
+
 	/// Custom activation event
 	Custom(String),
+
 	/// Activate on any event (always active)
 	Star,
 }
@@ -46,14 +54,21 @@ impl ActivationEvent {
 	pub fn from_str(event_str:&str) -> Result<Self> {
 		match event_str {
 			"*" => Ok(Self::Star),
+
 			e if e.starts_with("onCommand:") => Ok(Self::Command(e.trim_start_matches("onCommand:").to_string())),
+
 			e if e.starts_with("onLanguage:") => Ok(Self::Language(e.trim_start_matches("onLanguage:").to_string())),
+
 			e if e.starts_with("workspaceContains:") => {
 				Ok(Self::WorkspaceContains(e.trim_start_matches("workspaceContains:").to_string()))
 			},
+
 			e if e.starts_with("onView:") => Ok(Self::OnView(e.trim_start_matches("onView:").to_string())),
+
 			e if e.starts_with("onUri:") => Ok(Self::OnUri(e.trim_start_matches("onUri:").to_string())),
+
 			e if e.starts_with("onFiles:") => Ok(Self::OnFiles(e.trim_start_matches("onFiles:").to_string())),
+
 			_ => Ok(Self::Custom(event_str.to_string())),
 		}
 	}
@@ -62,13 +77,21 @@ impl ActivationEvent {
 	pub fn to_string(&self) -> String {
 		match self {
 			Self::Startup => "onStartup".to_string(),
+
 			Self::Star => "*".to_string(),
+
 			Self::Command(cmd) => format!("onCommand:{}", cmd),
+
 			Self::Language(lang) => format!("onLanguage:{}", lang),
+
 			Self::WorkspaceContains(pattern) => format!("workspaceContains:{}", pattern),
+
 			Self::OnView(view) => format!("onView:{}", view),
+
 			Self::OnUri(uri) => format!("onUri:{}", uri),
+
 			Self::OnFiles(pattern) => format!("onFiles:{}", pattern),
+
 			Self::Custom(s) => s.clone(),
 		}
 	}
@@ -84,11 +107,14 @@ impl std::str::FromStr for ActivationEvent {
 pub struct ActivationEngine {
 	/// Extension manager
 	extension_manager:Arc<ExtensionManagerImpl>,
+
 	/// Host configuration
 	#[allow(dead_code)]
 	config:HostConfig,
+
 	/// Event handlers mapping
 	event_handlers:Arc<RwLock<HashMap<String, ActivationHandler>>>,
+
 	/// Activation history
 	activation_history:Arc<RwLock<Vec<ActivationRecord>>>,
 }
@@ -99,13 +125,17 @@ struct ActivationHandler {
 	/// Extension ID
 	#[allow(dead_code)]
 	extension_id:String,
+
 	/// Activation events
 	events:Vec<ActivationEvent>,
+
 	/// Activation function path
 	#[allow(dead_code)]
 	activation_function:String,
+
 	/// Whether extension is currently active
 	is_active:bool,
+
 	/// Last activation time
 	#[allow(dead_code)]
 	last_activation:Option<u64>,
@@ -116,14 +146,19 @@ struct ActivationHandler {
 pub struct ActivationRecord {
 	/// Extension ID
 	pub extension_id:String,
+
 	/// Activation events
 	pub events:Vec<String>,
+
 	/// Activation time (Unix timestamp)
 	pub timestamp:u64,
+
 	/// Duration in milliseconds
 	pub duration_ms:u64,
+
 	/// Success flag
 	pub success:bool,
+
 	/// Error message (if failed)
 	pub error:Option<String>,
 }
@@ -133,14 +168,19 @@ pub struct ActivationRecord {
 pub struct ActivationContext {
 	/// Workspace root path
 	pub workspace_path:Option<PathBuf>,
+
 	/// Current file path
 	pub current_file:Option<PathBuf>,
+
 	/// Current language ID
 	pub language_id:Option<String>,
+
 	/// Active editor
 	pub active_editor:bool,
+
 	/// Environment variables
 	pub environment:HashMap<String, String>,
+
 	/// Additional context data
 	pub additional_data:serde_json::Value,
 }
@@ -149,10 +189,15 @@ impl Default for ActivationContext {
 	fn default() -> Self {
 		Self {
 			workspace_path:None,
+
 			current_file:None,
+
 			language_id:None,
+
 			active_editor:false,
+
 			environment:HashMap::new(),
+
 			additional_data:serde_json::Value::Null,
 		}
 	}
@@ -163,8 +208,11 @@ impl ActivationEngine {
 	pub fn new(extension_manager:Arc<ExtensionManagerImpl>, config:HostConfig) -> Self {
 		Self {
 			extension_manager,
+
 			config,
+
 			event_handlers:Arc::new(RwLock::new(HashMap::new())),
+
 			activation_history:Arc::new(RwLock::new(Vec::new())),
 		}
 	}
@@ -184,9 +232,11 @@ impl ActivationEngine {
 
 		// Check if already active
 		let handlers = self.event_handlers.read().await;
+
 		if let Some(handler) = handlers.get(extension_id) {
 			if handler.is_active {
 				dev_log!("extensions", "warn: extension already active: {}", extension_id);
+
 				return Ok(ActivationResult {
 					extension_id:extension_id.to_string(),
 					success:true,
@@ -196,6 +246,7 @@ impl ActivationEngine {
 				});
 			}
 		}
+
 		drop(handlers);
 
 		// Parse activation events
@@ -204,6 +255,7 @@ impl ActivationEngine {
 			.iter()
 			.map(|e| ActivationEvent::from_str(e))
 			.collect();
+
 		let activation_events = activation_events.with_context(|| "Failed to parse activation events")?;
 
 		// Create activation context
@@ -221,13 +273,18 @@ impl ActivationEngine {
 		// Record activation
 		let record = ActivationRecord {
 			extension_id:extension_id.to_string(),
+
 			events:extension_info.activation_events.clone(),
+
 			timestamp:std::time::SystemTime::now()
 				.duration_since(std::time::UNIX_EPOCH)
 				.map(|d| d.as_secs())
 				.unwrap_or(0),
+
 			duration_ms:elapsed_ms,
+
 			success:activation_result.success,
+
 			error:None,
 		};
 
@@ -243,6 +300,7 @@ impl ActivationEngine {
 
 		// Register handler
 		let mut handlers = self.event_handlers.write().await;
+
 		handlers.insert(
 			extension_id.to_string(),
 			ActivationHandler {
@@ -271,6 +329,7 @@ impl ActivationEngine {
 
 		// Remove handler
 		let mut handlers = self.event_handlers.write().await;
+
 		if let Some(mut handler) = handlers.remove(extension_id) {
 			handler.is_active = false;
 		}
@@ -290,6 +349,7 @@ impl ActivationEngine {
 		dev_log!("extensions", "Triggering activation for event: {}", event);
 
 		let activation_event = ActivationEvent::from_str(event)?;
+
 		let handlers = self.event_handlers.read().await;
 
 		let mut results = Vec::new();
@@ -302,8 +362,10 @@ impl ActivationEngine {
 
 			if self.should_activate(&activation_event, &handler.events) {
 				dev_log!("extensions", "Activating extension {} for event: {}", extension_id, event);
+
 				match self.activate(extension_id).await {
 					Ok(result) => results.push(result),
+
 					Err(e) => {
 						dev_log!(
 							"extensions",
@@ -388,12 +450,14 @@ impl WildMatch {
 		// Handle patterns starting with *
 		if self.pattern.starts_with('*') {
 			let suffix = &self.pattern[1..];
+
 			return text.ends_with(suffix);
 		}
 
 		// Handle patterns ending with *
 		if self.pattern.ends_with('*') {
 			let prefix = &self.pattern[..self.pattern.len() - 1];
+
 			return text.starts_with(prefix);
 		}
 
@@ -404,46 +468,60 @@ impl WildMatch {
 
 #[cfg(test)]
 mod tests {
+
 	use super::*;
 
 	#[test]
 	fn test_activation_event_parsing() {
 		let event = ActivationEvent::from_str("*").unwrap();
+
 		assert_eq!(event, ActivationEvent::Star);
 
 		let event = ActivationEvent::from_str("onCommand:test.command").unwrap();
+
 		assert_eq!(event, ActivationEvent::Command("test.command".to_string()));
 
 		let event = ActivationEvent::from_str("onLanguage:rust").unwrap();
+
 		assert_eq!(event, ActivationEvent::Language("rust".to_string()));
 	}
 
 	#[test]
 	fn test_activation_event_to_string() {
 		assert_eq!(ActivationEvent::Star.to_string(), "*");
+
 		assert_eq!(ActivationEvent::Command("test".to_string()).to_string(), "onCommand:test");
+
 		assert_eq!(ActivationEvent::Language("rust".to_string()).to_string(), "onLanguage:rust");
 	}
 
 	#[test]
 	fn test_activation_context_default() {
 		let context = ActivationContext::default();
+
 		assert!(context.workspace_path.is_none());
+
 		assert!(context.current_file.is_none());
+
 		assert!(!context.active_editor);
 	}
 
 	#[test]
 	fn test_wildcard_matching() {
 		let matcher = WildMatch::new("*");
+
 		assert!(matcher.matches("anything"));
 
 		let matcher = WildMatch::new("prefix*");
+
 		assert!(matcher.matches("prefix_suffix"));
+
 		assert!(!matcher.matches("noprefix_suffix"));
 
 		let matcher = WildMatch::new("*suffix");
+
 		assert!(matcher.matches("prefix_suffix"));
+
 		assert!(!matcher.matches("prefix_suffix_not"));
 	}
 }

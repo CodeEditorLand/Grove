@@ -20,10 +20,13 @@ pub struct ExtensionManagerImpl {
 	/// WASM runtime for executing extensions
 	#[allow(dead_code)]
 	wasm_runtime:Arc<WASMRuntime>,
+
 	/// Host configuration
 	config:HostConfig,
+
 	/// Loaded extensions
 	extensions:Arc<RwLock<HashMap<String, ExtensionInfo>>>,
+
 	/// Extension statistics
 	stats:Arc<RwLock<ExtensionStats>>,
 }
@@ -33,32 +36,46 @@ pub struct ExtensionManagerImpl {
 pub struct ExtensionInfo {
 	/// Extension ID (e.g., "publisher.extension-name")
 	pub id:String,
+
 	/// Extension display name
 	pub display_name:String,
+
 	/// Extension description
 	pub description:String,
+
 	/// Extension version
 	pub version:String,
+
 	/// Publisher name
 	pub publisher:String,
+
 	/// Path to extension directory
 	pub path:PathBuf,
+
 	/// Entry point file
 	pub entry_point:PathBuf,
+
 	/// Activation events
 	pub activation_events:Vec<String>,
+
 	/// Type of extension (wasm, native, etc.)
 	pub extension_type:ExtensionType,
+
 	/// Extension state
 	pub state:ExtensionState,
+
 	/// Extension capabilities
 	pub capabilities:Vec<String>,
+
 	/// Dependencies
 	pub dependencies:Vec<String>,
+
 	/// Extension manifest (JSON)
 	pub manifest:serde_json::Value,
+
 	/// Load timestamp
 	pub loaded_at:u64,
+
 	/// Activation timestamp
 	pub activated_at:Option<u64>,
 }
@@ -68,10 +85,13 @@ pub struct ExtensionInfo {
 pub enum ExtensionType {
 	/// WebAssembly extension
 	WASM,
+
 	/// Native Rust extension
 	Native,
+
 	/// JavaScript/TypeScript extension (via Cocoon compatibility)
 	JavaScript,
+
 	/// Unknown type
 	Unknown,
 }
@@ -81,10 +101,13 @@ pub enum ExtensionType {
 pub enum ExtensionState {
 	/// Extension is loaded but not activated
 	Loaded,
+
 	/// Extension is activated and running
 	Activated,
+
 	/// Extension is deactivated
 	Deactivated,
+
 	/// Extension encountered an error
 	Error,
 }
@@ -94,12 +117,16 @@ pub enum ExtensionState {
 pub struct ExtensionStats {
 	/// Total number of extensions loaded
 	pub total_loaded:usize,
+
 	/// Total number of extensions activated
 	pub total_activated:usize,
+
 	/// Total number of extensions deactivated
 	pub total_deactivated:usize,
+
 	/// Total activation time in milliseconds
 	pub total_activation_time_ms:u64,
+
 	/// Number of errors encountered
 	pub errors:u64,
 }
@@ -109,8 +136,11 @@ impl ExtensionManagerImpl {
 	pub fn new(wasm_runtime:Arc<WASMRuntime>, config:HostConfig) -> Self {
 		Self {
 			wasm_runtime,
+
 			config,
+
 			extensions:Arc::new(RwLock::new(HashMap::new())),
+
 			stats:Arc::new(RwLock::new(ExtensionStats::default())),
 		}
 	}
@@ -126,14 +156,18 @@ impl ExtensionManagerImpl {
 
 		// Parse manifest
 		let manifest = self.parse_manifest(path)?;
+
 		let extension_id = self.extract_extension_id(&manifest)?;
 
 		// Check if extension is already loaded
 		let extensions = self.extensions.read().await;
+
 		if extensions.contains_key(&extension_id) {
 			dev_log!("extensions", "warn: extension already loaded: {}", extension_id);
+
 			return Ok(extension_id);
 		}
+
 		drop(extensions);
 
 		// Determine extension type
@@ -142,31 +176,47 @@ impl ExtensionManagerImpl {
 		// Create extension info
 		let extension_info = ExtensionInfo {
 			id:extension_id.clone(),
+
 			display_name:manifest.get("displayName").and_then(|v| v.as_str()).unwrap_or("").to_string(),
+
 			description:manifest.get("description").and_then(|v| v.as_str()).unwrap_or("").to_string(),
+
 			version:manifest.get("version").and_then(|v| v.as_str()).unwrap_or("0.0.0").to_string(),
+
 			publisher:manifest.get("publisher").and_then(|v| v.as_str()).unwrap_or("").to_string(),
+
 			path:path.clone(),
+
 			entry_point:path.join(manifest.get("main").and_then(|v| v.as_str()).unwrap_or("dist/extension.js")),
+
 			activation_events:self.extract_activation_events(&manifest),
+
 			extension_type,
+
 			state:ExtensionState::Loaded,
+
 			capabilities:self.extract_capabilities(&manifest),
+
 			dependencies:self.extract_dependencies(&manifest),
+
 			manifest,
+
 			loaded_at:std::time::SystemTime::now()
 				.duration_since(std::time::UNIX_EPOCH)
 				.map(|d| d.as_secs())
 				.unwrap_or(0),
+
 			activated_at:None,
 		};
 
 		// Register extension
 		let mut extensions = self.extensions.write().await;
+
 		extensions.insert(extension_id.clone(), extension_info);
 
 		// Update statistics
 		let mut stats = self.stats.write().await;
+
 		stats.total_loaded += 1;
 
 		dev_log!("extensions", "Extension loaded successfully: {}", extension_id);
@@ -179,6 +229,7 @@ impl ExtensionManagerImpl {
 		dev_log!("extensions", "Unloading extension: {}", extension_id);
 
 		let mut extensions = self.extensions.write().await;
+
 		extensions.remove(extension_id);
 
 		dev_log!("extensions", "Extension unloaded: {}", extension_id);
@@ -208,8 +259,10 @@ impl ExtensionManagerImpl {
 	/// Update extension state
 	pub async fn update_state(&self, extension_id:&str, state:ExtensionState) -> Result<()> {
 		let mut extensions = self.extensions.write().await;
+
 		if let Some(info) = extensions.get_mut(extension_id) {
 			info.state = state;
+
 			if state == ExtensionState::Activated {
 				info.activated_at = Some(
 					std::time::SystemTime::now()
@@ -219,11 +272,14 @@ impl ExtensionManagerImpl {
 				);
 
 				let mut stats = self.stats.write().await;
+
 				stats.total_activated += 1;
 			} else if state == ExtensionState::Deactivated {
 				let mut stats = self.stats.write().await;
+
 				stats.total_deactivated += 1;
 			}
+
 			Ok(())
 		} else {
 			Err(anyhow::anyhow!("Extension not found: {}", extension_id))
@@ -242,6 +298,7 @@ impl ExtensionManagerImpl {
 		for discovery_path in &self.config.discovery_paths {
 			match self.discover_in_path(discovery_path).await {
 				Ok(mut found) => extensions.append(&mut found),
+
 				Err(e) => {
 					dev_log!("extensions", "warn: failed to discover extensions in {}: {}", discovery_path, e);
 				},
@@ -278,10 +335,12 @@ impl ExtensionManagerImpl {
 
 			// Check for package.json or manifest.json
 			let manifest_path = entry_path.join("package.json");
+
 			let alt_manifest_path = entry_path.join("manifest.json");
 
 			if manifest_path.exists() || alt_manifest_path.exists() {
 				extensions.push(entry_path.clone());
+
 				dev_log!("extensions", "Discovered extension: {:?}", entry_path);
 			}
 		}
@@ -292,6 +351,7 @@ impl ExtensionManagerImpl {
 	/// Parse extension manifest
 	fn parse_manifest(&self, path:&Path) -> Result<serde_json::Value> {
 		let manifest_path = path.join("package.json");
+
 		let alt_manifest_path = path.join("manifest.json");
 
 		let manifest_content = if manifest_path.exists() {
@@ -332,20 +392,24 @@ impl ExtensionManagerImpl {
 	fn determine_extension_type(&self, path:&Path, manifest:&serde_json::Value) -> Result<ExtensionType> {
 		// Check for WASM file
 		let wasm_path = path.join("extension.wasm");
+
 		if wasm_path.exists() {
 			return Ok(ExtensionType::WASM);
 		}
 
 		// Check for Rust project
 		let cargo_path = path.join("Cargo.toml");
+
 		if cargo_path.exists() {
 			return Ok(ExtensionType::Native);
 		}
 
 		// Check for JavaScript/TypeScript
 		let main = manifest.get("main").and_then(|v| v.as_str());
+
 		if let Some(main) = main {
 			let main_path = path.join(main);
+
 			if main_path.exists() && (main.ends_with(".js") || main.ends_with(".ts")) {
 				return Ok(ExtensionType::JavaScript);
 			}
@@ -384,20 +448,26 @@ impl ExtensionManagerImpl {
 
 #[cfg(test)]
 mod tests {
+
 	use super::*;
 
 	#[test]
 	fn test_extension_type() {
 		assert_eq!(ExtensionType::WASM, ExtensionType::WASM);
+
 		assert_eq!(ExtensionType::Native, ExtensionType::Native);
+
 		assert_eq!(ExtensionType::JavaScript, ExtensionType::JavaScript);
 	}
 
 	#[test]
 	fn test_extension_state() {
 		assert_eq!(ExtensionState::Loaded, ExtensionState::Loaded);
+
 		assert_eq!(ExtensionState::Activated, ExtensionState::Activated);
+
 		assert_eq!(ExtensionState::Deactivated, ExtensionState::Deactivated);
+
 		assert_eq!(ExtensionState::Error, ExtensionState::Error);
 	}
 
@@ -411,7 +481,9 @@ mod tests {
 				))
 				.unwrap(),
 		);
+
 		let config = HostConfig::default();
+
 		let manager = ExtensionManagerImpl::new(wasm_runtime, config);
 
 		assert_eq!(manager.list_extensions().await.len(), 0);
@@ -420,7 +492,9 @@ mod tests {
 	#[test]
 	fn test_extension_stats_default() {
 		let stats = ExtensionStats::default();
+
 		assert_eq!(stats.total_loaded, 0);
+
 		assert_eq!(stats.total_activated, 0);
 	}
 }

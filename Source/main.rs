@@ -166,18 +166,26 @@ fn init_logging(_verbose:u8, _format:&str) -> Result<()> { Ok(()) }
 /// Run Grove in standalone mode
 async fn run_standalone(
 	extension:Option<PathBuf>,
+
 	transport_type:String,
+
 	grpc_address:String,
+
 	wasi:bool,
+
 	memory_limit_mb:u64,
+
 	max_execution_time_ms:u64,
 ) -> Result<()> {
 	dev_log!("grove", "Starting Grove in standalone mode...");
 
 	let transport = match transport_type.as_str() {
 		"grpc" => TransportEnum::gRPC(gRPCTransport::New(&grpc_address)?),
+
 		"ipc" => TransportEnum::IPC(IPCTransport::New()?),
+
 		"wasm" => TransportEnum::WASM(WASMTransportImpl::new(wasi, memory_limit_mb, max_execution_time_ms)?),
+
 		_ => TransportEnum::default(),
 	};
 
@@ -189,16 +197,20 @@ async fn run_standalone(
 
 	if let Some(path) = extension {
 		dev_log!("extensions", "Loading extension from: {:?}", path);
+
 		let ext_id = host.load_extension(&path).await.map_err(|e| {
 			dev_log!("extensions", "error: failed to load extension: {}", e);
 			e
 		})?;
 
 		dev_log!("extensions", "Extension loaded successfully with ID: {}", ext_id);
+
 		host.activate(&ext_id).await?;
+
 		dev_log!("extensions", "Extension activated");
 	} else {
 		dev_log!("grove", "No extension specified, running in daemon mode");
+
 		keep_running().await;
 	}
 
@@ -210,7 +222,9 @@ async fn run_service(mountain_address:String, service_name:Option<String>, auto_
 	dev_log!("grove", "Starting Grove as service...");
 
 	let name = service_name.unwrap_or_else(|| "grove-host".to_string());
+
 	dev_log!("grove", "Service name: {}", name);
+
 	dev_log!("grove", "Mountain address: {}", mountain_address);
 
 	// Register with Mountain
@@ -229,11 +243,13 @@ async fn run_validation(manifest_path:PathBuf, detailed:bool) -> Result<()> {
 
 	if result.is_valid {
 		dev_log!("extensions", "Extension manifest is valid");
+
 		if detailed {
 			println!("{:#?}", result);
 		}
 	} else {
 		dev_log!("extensions", "error: extension manifest validation failed");
+
 		return Err(anyhow::anyhow!("Validation failed"));
 	}
 
@@ -243,7 +259,9 @@ async fn run_validation(manifest_path:PathBuf, detailed:bool) -> Result<()> {
 /// Build a WASM module from Rust source
 async fn run_build(source:PathBuf, output:PathBuf, opt_level:String, target:Option<String>) -> Result<()> {
 	dev_log!("wasm", "Building WASM module from: {:?}", source);
+
 	dev_log!("wasm", "Output path: {:?}", output);
+
 	dev_log!("wasm", "Optimization level: {}", opt_level);
 
 	let result:BuildResult = Entry::build_wasm_module(source, output, opt_level, target).await?;
@@ -252,6 +270,7 @@ async fn run_build(source:PathBuf, output:PathBuf, opt_level:String, target:Opti
 		dev_log!("wasm", "WASM module built successfully");
 	} else {
 		dev_log!("wasm", "error: WASM module build failed");
+
 		return Err(anyhow::anyhow!("Build failed"));
 	}
 
@@ -268,6 +287,7 @@ async fn run_list(detailed:bool) -> Result<()> {
 		dev_log!("extensions", "No extensions loaded");
 	} else {
 		println!("Loaded extensions:");
+
 		for ext in extensions {
 			if detailed {
 				println!("  {:#?}", ext);
@@ -291,11 +311,13 @@ async fn keep_running() {
 
 #[cfg(test)]
 mod tests {
+
 	use super::*;
 
 	#[test]
 	fn test_cli_parsing() {
 		let cli = Cli::try_parse_from(["grove", "standalone", "--extension", "/tmp/ext", "--transport", "wasm"]);
+
 		assert!(cli.is_ok());
 	}
 
@@ -303,8 +325,11 @@ mod tests {
 	fn test_logging_levels() {
 		// Test that logging can be initialized at different levels
 		let _ = init_logging(0, "plain");
+
 		let _ = init_logging(1, "plain");
+
 		let _ = init_logging(2, "plain");
+
 		let _ = init_logging(3, "plain");
 	}
 }
