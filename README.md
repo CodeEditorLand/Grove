@@ -41,11 +41,11 @@ Land
 
 # **Grove**&#x2001;🌳
 
-The Native Rust/WASM Extension Host for Land 🏞️
+The Native `Rust`/`WASM` Extension Host for Land&#x2001;🏞️
 
-> **VS Code extensions run with full Node.js capabilities in a shared process. A
-> malicious or buggy extension can access any file, make any network request,
-> and read another extension's state. The extension sandbox is a policy
+> **`VS Code` extensions run with full `Node.js` capabilities in a shared
+> process. A malicious or buggy extension can access any file, make any network
+> request, and read another extension's state. The extension sandbox is a policy
 > document, not a technical boundary.**
 
 _"An extension can only touch what you explicitly grant. The sandbox is enforced
@@ -58,18 +58,18 @@ by the hardware, not a policy."_
 
 📖 **[Rust API Documentation](https://Rust.Documentation.Editor.Land/Grove/)**
 
-Welcome to **Grove**, the high-performance Rust/WebAssembly extension host for
-the **Land Code Editor**. Grove is designed to complement `Cocoon` (Node.js) by
-providing a native environment for running Rust and WASM-compiled VS Code
-extensions. It offers secure sandboxing through WASMtime, multiple transport
-strategies (gRPC, IPC, WASM), and full compatibility with the VS Code API
-surface.
+Welcome to **Grove**, the high-performance `Rust`/`WebAssembly` extension host
+for the **Land Code Editor**. Grove is designed to complement `Cocoon`
+(`Node.js`) by providing a native environment for running `Rust` and
+`WASM`-compiled `VS Code` extensions. It offers secure sandboxing through
+`WASMtime`, multiple transport strategies (`gRPC`, `IPC`, `WASM`), and full
+compatibility with the `VS Code` `API` surface.
 
 **Grove** is engineered to:
 
-1. **Provide Native Extension Hosting:** Execute Rust extensions with zero
-   overhead through static linking or WASM sandboxing.
-2. **Enable Secure Sandboxing:** Isolate untrusted extensions using WASMtime's
+1. **Provide Native Extension Hosting:** Execute `Rust` extensions with zero
+   overhead through static linking or `WASM` sandboxing.
+2. **Enable Secure Sandboxing:** Isolate untrusted extensions using `WASMtime`'s
    capability-based security model.
 3. **Support Multiple Transports:** Communicate with `Mountain` via gRPC, IPC,
    or direct WASM host functions.
@@ -80,18 +80,18 @@ surface.
 
 ## Key Features&#x2001;🔐
 
-- **WASM Runtime Integration:** Full WebAssembly support through WASMtime,
+- **`WASM` Runtime Integration:** Full `WebAssembly` support through `WASMtime`,
   enabling secure sandboxing of untrusted extensions with capability-based
   security.
-- **Multiple Transport Strategies:** Support for gRPC, IPC, and direct WASM host
-  function communication with the `Mountain` backend.
+- **Multiple Transport Strategies:** Support for `gRPC`, `IPC`, and direct
+  `WASM` host function communication with the `Mountain` backend.
 - **Standalone Operation:** Can run independently as a standalone process or
-  connect to `Mountain` via gRPC for distributed deployment.
-- **Cross-Platform Support:** Native support for macOS, Linux, and Windows with
-  platform-specific optimizations.
-- **VS Code API Compatibility:** Implements vscode.d.ts type definitions for
-  seamless extension porting from the Node.js ecosystem.
-- **Secure Sandboxing:** WASMtime-based isolation with configurable memory
+  connect to `Mountain` via `gRPC` for distributed deployment.
+- **Cross-Platform Support:** Native support for `macOS`, `Linux`, and `Windows`
+  with platform-specific optimizations.
+- **`VS Code` API Compatibility:** Implements `vscode.d.ts` type definitions for
+  seamless extension porting from the `Node.js` ecosystem.
+- **Secure Sandboxing:** `WASMtime`-based isolation with configurable memory
   limits and resource controls for untrusted code.
 
 ---
