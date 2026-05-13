@@ -277,7 +277,8 @@ async fn main() -> anyhow::Result<()> {
 
 Grove provides security through:
 
-1. **WASM Sandboxing**: Isolated execution environment via WASMtime
+- **`WASM` Sandboxing**: Isolated execution environment via `WASMtime`
+
 2. **Memory Limits**: Configurable memory constraints for extensions
 3. **Resource Controls**: CPU and resource throttling
 4. **Type Safety**: Rust's ownership system ensures memory safety
