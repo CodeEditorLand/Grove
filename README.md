@@ -5,7 +5,7 @@
 </td>
 <td align="left" valign="middle">
 <h3 align="left">
-🌳
+&#x2001;🌳
 </h3>
 </td>
 <td align="left" valign="middle">
@@ -31,7 +31,7 @@ Land
 </td>
 <td align="left" valign="middle">
 <h3 align="left">
-🏞️
+&#x2001;🏞️
 </h3>
 </td>
 </tr>
@@ -56,7 +56,7 @@ by the hardware, not a policy."_
 [<img src="https://editor.land/Image/Rust.svg" width="14" alt="Rust" />](https://www.rust-lang.org/)&#x2001;[![Rust Version](https://img.shields.io/badge/Rust-1.75+-orange.svg)](https://www.rust-lang.org/)
 [<img src="https://editor.land/Image/WebAssembly.svg" width="14" alt="WebAssembly" />](https://webassembly.org/)&#x2001;[![WASMtime Version](https://img.shields.io/badge/WASMtime-v20-blue.svg)](https://wasmtime.dev/)
 
-📖 **[Rust API Documentation](https://Rust.Documentation.Editor.Land/Grove/)**
+**[Rust API Documentation](https://Rust.Documentation.Editor.Land/Grove/)**&#x2001;📖
 
 Welcome to **Grove**, the high-performance `Rust`/`WebAssembly` extension host
 for the **Land Code Editor**. Grove is designed to complement `Cocoon`
@@ -108,7 +108,7 @@ compatibility with the `VS Code` `API` surface.
 
 ---
 
-## `Grove` in the Land Ecosystem&#x2001;🌳 + 🏞️
+## `Grove` in the Land Ecosystem&#x2001;🌳 + &#x2001;🏞️
 
 | Component                     | Role & Key Responsibilities                                                   |
 | :---------------------------- | :---------------------------------------------------------------------------- |
@@ -132,7 +132,7 @@ classDef mountain fill:#f9f,stroke:#333,stroke-width:2px;
 classDef wasm fill:#cfc,stroke:#333,stroke-width:1px;
 classDef transport fill:#ff9,stroke:#333,stroke-width:1px,stroke-dasharray: 5 5;
 
-subgraph "Grove 🌳 (Rust/WASM Extension Host)"
+subgraph "Grove (Rust/WASM Extension Host)&#x2001;🌳"
 direction TB
 ExtensionHost["Extension Host Controller"]:::grove
 ActivationMgr["Activation Manager"]:::grove
@@ -146,7 +146,7 @@ APIBridge --> WASMRuntime
 WASMRuntime --> TransportLayer
 end
 
-subgraph "Mountain ⛰️ (Rust/Tauri Backend)"
+subgraph "Mountain (Rust/Tauri Backend)&#x2001;⛰️"
 VineGRPC["Vine gRPC Server"]:::mountain
 end
 
