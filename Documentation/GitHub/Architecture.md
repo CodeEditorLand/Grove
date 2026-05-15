@@ -19,6 +19,24 @@ extensions via WASMtime, sharing the same VS Code API surface as Cocoon.
 
 ---
 
+```mermaid
+graph TB
+    subgraph Grove["Grove WASM Extension Host"]
+        LAYER5["HOST Layer<br/>ExtensionHost / Manager<br/>Activation / Lifecycle"]
+        LAYER4["WASM Layer<br/>Runtime (WASMtime)<br/>ModuleLoader / Memory<br/>HostBridge"]
+        LAYER3["TRANSPORT Layer<br/>gRPC / IPC / WASM<br/>Strategy selection"]
+        LAYER2["API Layer<br/>VSCode.rs / Types<br/>FunctionExports"]
+        LAYER1["PROTOCOL Layer<br/>SpineConnection<br/>SpineActionClient"]
+
+        LAYER5 --> LAYER4
+        LAYER4 --> LAYER3
+        LAYER3 --> LAYER2
+        LAYER2 --> LAYER1
+    end
+
+    LAYER1 <-->|"gRPC"| MOUNTAIN["Mountain<br/>gRPC Server"]
+```
+
 ## Overview
 
 Grove is a Rust binary and library that provides an alternative extension host
