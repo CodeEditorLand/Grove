@@ -1,8 +1,9 @@
-# Grove: WASM Extension Host
+# Grove: WASM Extension Host 🌿
 
-This document describes Grove, the native Rust/WASM extension host for Land.
-Grove provides a sandboxed environment for running WASM-compiled VS Code
-extensions via WASMtime, sharing the same VS Code API surface as Cocoon.
+This document describes `Grove`, the native `Rust`/`WASM` extension host for
+`Land`. `Grove` provides a sandboxed environment for running `WASM`-compiled
+`VS Code` extensions via `WASMtime`, sharing the same `VS Code` API surface as
+`Cocoon`.
 
 ---
 
@@ -37,25 +38,28 @@ graph TB
     LAYER1 <-->|"gRPC"| MOUNTAIN["Mountain<br/>gRPC Server"]
 ```
 
-## Overview
+## Overview 📋
 
-Grove is a Rust binary and library that provides an alternative extension host
-for WASM-compiled VS Code extensions. It uses WASMtime for sandboxed execution
-and supports multiple transport strategies for communication with Mountain.
+`Grove` is a `Rust` binary and library with these characteristics:
 
-| Attribute     | Value                                                      |
-| ------------- | ---------------------------------------------------------- |
-| Language      | Rust (edition 2021)                                        |
-| Crate type    | Library + Binary                                           |
-| WASM runtime  | WASMtime (optional feature)                                |
-| Dependencies  | Common, wasmtime, wasmtime-wasi, tonic, prost, clap, serde |
-| Feature-gated | Not enabled by default (opt-in: `--features grove`)        |
+- Provides an alternative extension host for `WASM`-compiled `VS Code`
+  extensions
+- Uses `WASMtime` for sandboxed execution
+- Supports multiple transport strategies for communication with `Mountain`
+
+| Attribute     | Value                                                                    |
+| ------------- | ------------------------------------------------------------------------ |
+| Language      | `Rust` (edition 2021)                                                    |
+| Crate type    | Library + Binary                                                         |
+| WASM runtime  | `WASMtime` (optional feature)                                            |
+| Dependencies  | `Common`, `wasmtime`, `wasmtime-wasi`, `tonic`, `prost`, `clap`, `serde` |
+| Feature-gated | Not enabled by default (opt-in: `--features grove`)                      |
 
 ---
 
-## Architecture
+## Architecture 🏗️
 
-Grove is organized into five layers:
+`Grove` is organized into five layers:
 
 ```
 +----------------------------------------------------------------+
@@ -86,7 +90,7 @@ Grove is organized into five layers:
 +----------------------------------------------------------------+
 ```
 
-### Module Map
+### Module Map 🗺️
 
 | Path                                    | Purpose                                |
 | --------------------------------------- | -------------------------------------- |
@@ -115,9 +119,9 @@ Grove is organized into five layers:
 
 ---
 
-## Transport Strategies
+## Transport Strategies 🔗
 
-Grove supports three transport strategies for communicating with Mountain:
+`Grove` supports three transport strategies for communicating with `Mountain`:
 
 | Strategy | Tracking          | Latency | Use Case                        |
 | -------- | ----------------- | ------- | ------------------------------- |
@@ -125,7 +129,7 @@ Grove supports three transport strategies for communicating with Mountain:
 | **IPC**  | `--features ipc`  | ~0.1ms  | Same-machine communication      |
 | **WASM** | `--features wasm` | ~0.01ms | In-process WASM host functions  |
 
-### Transport Selection
+### Transport Selection 🎯
 
 ```rust
 pub enum TransportStrategy {
@@ -138,14 +142,14 @@ pub enum TransportStrategy {
 }
 ```
 
-The transport strategy is selected at build time via Cargo features.
-`--features all` enables all three.
+- The transport strategy is selected at build time via `Cargo` features
+- `--features all` enables all three
 
 ---
 
-## WASM Runtime
+## WASM Runtime ⚡
 
-Grove uses WASMtime as its WebAssembly runtime:
+`Grove` uses `WASMtime` as its `WebAssembly` runtime:
 
 | Component      | Detail                                          |
 | -------------- | ----------------------------------------------- |
@@ -155,7 +159,7 @@ Grove uses WASMtime as its WebAssembly runtime:
 | Host functions | Registered via HostBridge for VS Code API calls |
 | Module cache   | Compiled module caching for faster startup      |
 
-### Sandbox Properties
+### Sandbox Properties 🔒
 
 | Property    | Setting                                    |
 | ----------- | ------------------------------------------ |
@@ -165,9 +169,9 @@ Grove uses WASMtime as its WebAssembly runtime:
 | Memory      | Isolated linear memory per module          |
 | CPU         | Bounded by WASMtime execution limits       |
 
-### Host Function Bridge
+### Host Function Bridge 🌉
 
-The HostBridge registers VS Code API functions as WASM imports:
+The `HostBridge` registers `VS Code` API functions as `WASM` imports:
 
 ```rust
 // HostBridge registers host functions that WASM modules can call
@@ -181,9 +185,9 @@ linker.func_wrap("vscode", "readFile", |path_ptr: i32, path_len: i32| {
 
 ---
 
-## VS Code API Surface
+## VS Code API Surface 📦
 
-Grove implements a subset of the VS Code API for WASM extensions:
+`Grove` implements a subset of the `VS Code` API for `WASM` extensions:
 
 | Namespace          | Support Level | Notes                                             |
 | ------------------ | ------------- | ------------------------------------------------- |
@@ -195,7 +199,7 @@ Grove implements a subset of the VS Code API for WASM extensions:
 
 ---
 
-## Extension Lifecycle
+## Extension Lifecycle 🔄
 
 ```
 1. ExtensionManager discovers WASM extension (.wasm file + package.json)
@@ -225,9 +229,9 @@ Grove implements a subset of the VS Code API for WASM extensions:
 
 ---
 
-## Feature Gates
+## Feature Gates 🚩
 
-Grove's Cargo features control build configuration:
+`Grove`'s `Cargo` features control build configuration:
 
 | Feature | Default | Description                                   |
 | ------- | ------- | --------------------------------------------- |
@@ -236,8 +240,8 @@ Grove's Cargo features control build configuration:
 | `ipc`   | No      | Enable IPC transport                          |
 | `all`   | No      | Enable all transport strategies               |
 
-When not enabled, Grove is a compile-time no-op. Mountain links it
-conditionally:
+- When not enabled, `Grove` is a compile-time no-op
+- `Mountain` links it conditionally:
 
 ```toml
 # Mountain/Cargo.toml
@@ -247,18 +251,18 @@ grove = ["dep:grove"]
 
 ---
 
-## Related Documentation
+## Related Documentation 📚
 
-- [Common](../Common/Documentation/GitHub/Architecture.md) - Shared traits and
-  ActionEffect system
-- [Mountain](../Mountain/Documentation/GitHub/Architecture.md) - Main backend
-  (Grove integration)
-- [Cocoon](../Cocoon/Documentation/GitHub/Architecture.md) - Primary extension
-  host (Node.js)
-- [InterComponentProtocol](../../../Documentation/GitHub/InterComponentProtocol.md) -
-  gRPC protocol specification
-- [RustInfrastructure](../../../Documentation/GitHub/RustInfrastructure.md) -
-  Rust backend components
+- [Common](https://github.com/CodeEditorLand/Common/tree/Current/Documentation/GitHub/Architecture.md) -
+  Shared traits and `ActionEffect` system
+- [Mountain](https://github.com/CodeEditorLand/Mountain/tree/Current/Documentation/GitHub/Architecture.md) -
+  Main backend (`Grove` integration)
+- [Cocoon](https://github.com/CodeEditorLand/Cocoon/tree/Current/Documentation/GitHub/Architecture.md) -
+  Primary extension host (`Node.js`)
+- [InterComponentProtocol](https://github.com/CodeEditorLand/Land/tree/Current/Documentation/GitHub/InterComponentProtocol.md) -
+  `gRPC` protocol specification
+- [RustInfrastructure](https://github.com/CodeEditorLand/Land/tree/Current/Documentation/GitHub/RustInfrastructure.md) -
+  `Rust` backend components
 
 ---
 
