@@ -127,30 +127,61 @@ the broader Land ecosystem.
 
 ```mermaid
 graph LR
-classDef grove fill:#ccf,stroke:#333,stroke-width:2px;
-classDef mountain fill:#f9f,stroke:#333,stroke-width:2px;
-classDef wasm fill:#cfc,stroke:#333,stroke-width:1px;
-classDef transport fill:#ff9,stroke:#333,stroke-width:1px,stroke-dasharray: 5 5;
+    classDef grove    fill:#d0d8ff,stroke:#4a6fa5,stroke-width:2px,color:#001050;
+    classDef mountain fill:#f0d0ff,stroke:#9b59b6,stroke-width:2px,color:#2c0050;
+    classDef wasm     fill:#d4f5d4,stroke:#27ae60,stroke-width:2px,color:#0a3a0a;
+    classDef transport fill:#fff3c0,stroke:#f39c12,stroke-width:1px,stroke-dasharray:5 5,color:#5a3e00;
+    classDef cocoon   fill:#cce8ff,stroke:#2980b9,stroke-width:1px,stroke-dasharray:5 5,color:#003050;
 
-subgraph "Grove (Rust/WASM Extension Host)&#x2001;🌳"
-direction TB
-ExtensionHost["Extension Host Controller"]:::grove
-ActivationMgr["Activation Manager"]:::grove
-APIBridge["VS Code API Bridge"]:::grove
-WASMRuntime["WASM Runtime (WASMtime)"]:::wasm
-TransportLayer["Transport Layer"]:::transport
+    subgraph GROVE["Grove 🌳 - Rust/WASM Extension Host"]
+        direction TB
+        subgraph HOST["Host/ - Extension Lifecycle"]
+            ExtHost["ExtensionHost.rs\n(main controller)"]:::grove
+            ExtMgr["ExtensionManager.rs\n(discovery + loading)"]:::grove
+            Activation["Activation.rs\n(activation events)"]:::grove
+            Lifecycle["Lifecycle.rs"]:::grove
+            APIBridge["APIBridge.rs\n(vscode.d.ts facade)"]:::grove
+            ExtHost --> ExtMgr --> Activation --> Lifecycle
+            Activation --> APIBridge
+        end
+        subgraph WASM_RT["WASM/ - WASMtime Runtime"]
+            WASMRuntime["Runtime/ - WASMtime engine\n+ store management"]:::wasm
+            ModLoader["ModuleLoader/ - WASM compile\n+ instantiation"]:::wasm
+            MemMgr["MemoryManager/ - allocation\n+ configurable limits"]:::wasm
+            HostBridge["HostBridge/ - host↔WASM\nfunction calls"]:::wasm
+            WASMRuntime --> ModLoader
+            ModLoader --> MemMgr
+            WASMRuntime --> HostBridge
+        end
+        subgraph TRANSPORT["Transport/ - Strategy Pattern"]
+            Strategy["Strategy.rs - trait"]:::transport
+            gRPC["gRPCTransport.rs"]:::transport
+            IPC["IPCTransport.rs"]:::transport
+            WASMTrans["WASMTransport.rs"]:::transport
+            Strategy --- gRPC
+            Strategy --- IPC
+            Strategy --- WASMTrans
+        end
+        subgraph PROTO["Protocol/"]
+            SpineConn["SpineConnection.rs\n(Spine protocol client)"]:::grove
+        end
 
-ExtensionHost --> ActivationMgr
-ActivationMgr --> APIBridge
-APIBridge --> WASMRuntime
-WASMRuntime --> TransportLayer
-end
+        APIBridge --> WASMRuntime
+        HostBridge --> Strategy
+        SpineConn --> gRPC
+    end
 
-subgraph "Mountain (Rust/Tauri Backend)&#x2001;⛰️"
-VineGRPC["Vine gRPC Server"]:::mountain
-end
+    subgraph MOUNTAIN["Mountain ⛰️"]
+        VineGRPC["Vine gRPC Server 🌿"]:::mountain
+    end
 
-TransportLayer -- gRPC/IPC --> VineGRPC
+    subgraph COCOON["Cocoon 🦋 (complementary host)"]
+        CocoonRef["Node.js extension host\n(same vscode API surface)"]:::cocoon
+    end
+
+    gRPC -- gRPC :50052 --> VineGRPC
+    IPC -- Unix socket --> VineGRPC
+    Grove -.shares API surface.-> CocoonRef
 ```
 
 ---
