@@ -44,7 +44,6 @@ pub struct APICallResponse {
 }
 
 /// VS Code API call representation
-#[allow(dead_code)]
 pub struct APICall {
 	/// Extension ID
 	extension_id:String,
@@ -60,11 +59,9 @@ pub struct APICall {
 }
 
 /// API method handler callback
-#[allow(dead_code)]
 type APIMethodHandler = fn(&str, Vec<serde_json::Value>) -> Result<serde_json::Value>;
 
 /// Async API method handler callback
-#[allow(dead_code)]
 type AsyncAPIMethodHandler =
 	fn(&str, Vec<serde_json::Value>) -> Box<dyn std::future::Future<Output = Result<serde_json::Value>> + Send + Unpin>;
 
@@ -72,23 +69,18 @@ type AsyncAPIMethodHandler =
 #[derive(Clone)]
 pub struct APIMethodInfo {
 	/// Method name
-	#[allow(dead_code)]
 	name:String,
 
 	/// Description
-	#[allow(dead_code)]
 	description:String,
 
 	/// Parameters schema (JSON Schema)
-	#[allow(dead_code)]
 	parameters:Option<serde_json::Value>,
 
 	/// Return type schema (JSON Schema)
-	#[allow(dead_code)]
 	returns:Option<serde_json::Value>,
 
 	/// Whether this method is async
-	#[allow(dead_code)]
 	is_async:bool,
 
 	/// Call count

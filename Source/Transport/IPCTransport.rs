@@ -26,11 +26,9 @@ pub struct IPCTransport {
 	SocketPath:Option<PathBuf>,
 
 	/// Named pipe identifier (Windows).
-	#[allow(dead_code)]
 	PipeName:Option<String>,
 
 	/// Transport configuration.
-	#[allow(dead_code)]
 	Configuration:TransportConfig,
 
 	/// Whether the transport is currently connected.

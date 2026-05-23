@@ -41,7 +41,6 @@ pub struct WASMTransportImpl {
 	modules:Arc<RwLock<HashMap<String, WASMModuleInfo>>>,
 
 	/// Transport configuration
-	#[allow(dead_code)]
 	config:TransportConfig,
 
 	/// Connection state

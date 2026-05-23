@@ -315,7 +315,6 @@ mod tests {
 }
 
 // Helper struct for testing Retryable
-#[allow(dead_code)]
 struct RetryableTrait;
 
 impl Retryable for RetryableTrait {}

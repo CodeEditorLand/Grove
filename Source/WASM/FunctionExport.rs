@@ -28,7 +28,6 @@ pub struct HostFunctionRegistry {
 	functions:Arc<RwLock<HashMap<String, RegisteredHostFunction>>>,
 
 	/// Associated host bridge
-	#[allow(dead_code)]
 	bridge:Arc<HostBridge>,
 }
 
@@ -36,18 +35,15 @@ pub struct HostFunctionRegistry {
 #[derive(Debug, Clone)]
 struct RegisteredHostFunction {
 	/// Function name
-	#[allow(dead_code)]
 	name:String,
 
 	/// Function signature
-	#[allow(dead_code)]
 	signature:FunctionSignature,
 
 	/// Synchronous callback
 	callback:Option<HostFunctionCallback>,
 
 	/// Registration timestamp
-	#[allow(dead_code)]
 	registered_at:u64,
 
 	/// Call statistics
@@ -441,7 +437,6 @@ impl FunctionExportImpl {
 	}
 
 	/// Convert our signature to WASMtime signature type
-	#[allow(dead_code)]
 	fn wasmtime_signature_from_signature(&self, _sig:&FunctionSignature) -> Result<wasmparser::FuncType> {
 		// This is a placeholder - actual implementation depends on the exact types
 		// In production, this would map ParamType and ReturnType to WASMtime types

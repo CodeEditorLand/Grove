@@ -109,7 +109,6 @@ pub struct ActivationEngine {
 	extension_manager:Arc<ExtensionManagerImpl>,
 
 	/// Host configuration
-	#[allow(dead_code)]
 	config:HostConfig,
 
 	/// Event handlers mapping
@@ -123,21 +122,18 @@ pub struct ActivationEngine {
 #[derive(Debug, Clone)]
 struct ActivationHandler {
 	/// Extension ID
-	#[allow(dead_code)]
 	extension_id:String,
 
 	/// Activation events
 	events:Vec<ActivationEvent>,
 
 	/// Activation function path
-	#[allow(dead_code)]
 	activation_function:String,
 
 	/// Whether extension is currently active
 	is_active:bool,
 
 	/// Last activation time
-	#[allow(dead_code)]
 	last_activation:Option<u64>,
 }
 

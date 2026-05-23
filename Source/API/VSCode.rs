@@ -51,7 +51,6 @@ impl ProviderStore {
 	}
 
 	/// Returns the number of active registrations.
-	#[allow(dead_code)]
 	fn len(&self) -> usize { self.entries.lock().map(|G| G.len()).unwrap_or(0) }
 }
 
@@ -267,7 +266,6 @@ pub struct WorkspaceFolder {
 #[derive(Debug, Clone)]
 pub struct WorkspaceConfiguration {
 	/// The configuration section name
-	#[allow(dead_code)]
 	section:Option<String>,
 }
 
@@ -603,7 +601,6 @@ pub enum CompletionTriggerKind {
 #[derive(Debug, Clone)]
 pub struct DiagnosticCollection {
 	/// The name of the diagnostic collection
-	#[allow(dead_code)]
 	name:Option<String>,
 }
 

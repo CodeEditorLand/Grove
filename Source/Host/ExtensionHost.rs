@@ -19,7 +19,6 @@ use crate::{
 /// Main extension host controller
 pub struct ExtensionHostImpl {
 	/// Host configuration
-	#[allow(dead_code)]
 	config:HostConfig,
 
 	/// Transport for communication

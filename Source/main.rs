@@ -3,11 +3,6 @@
 //! This is the entry point for running Grove as a standalone extension host.
 //! It can operate independently or connect to Mountain via gRPC.
 
-#![warn(missing_docs)]
-#![deny(unsafe_code)]
-#![warn(clippy::all)]
-#![allow(non_snake_case, non_camel_case_types, non_upper_case_globals, unexpected_cfgs)]
-
 use std::path::PathBuf;
 
 use anyhow::Result;

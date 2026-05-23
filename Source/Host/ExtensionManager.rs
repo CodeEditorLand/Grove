@@ -18,7 +18,6 @@ use crate::{Host::HostConfig, WASM::Runtime::WASMRuntime, dev_log};
 /// Extension manager for handling extension lifecycle
 pub struct ExtensionManagerImpl {
 	/// WASM runtime for executing extensions
-	#[allow(dead_code)]
 	wasm_runtime:Arc<WASMRuntime>,
 
 	/// Host configuration

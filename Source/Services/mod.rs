@@ -20,7 +20,6 @@ pub struct ServiceConfig {
 }
 
 /// Service trait
-#[allow(async_fn_in_trait)]
 pub trait Service: Send + Sync {
 	/// Get service name
 	fn name(&self) -> &str;

@@ -1,17 +1,19 @@
 [package]
-name = "Grove"
-version = "0.1.0"
-edition = "2021"
-authors = ["Grove Contributors"]
-description = "Rust/WASM Extension Host for VS Code extensions"
+authors = ["Source 🖋️ Open 👐🏻 <Source/Open@Editor.Land>"]
+autobenches = false
+autobins = false
+autoexamples = false
+autotests = false
+description = "Grove 🌿"
+edition = "2024"
 license-file = "LICENSE"
-repository = "https://github.com/CodeEditorLand/Element/Grove"
-keywords = ["vscode", "extension", "wasm", "rust", "host"]
-categories = ["development-tools", "wasm"]
+name = "Grove"
+publish = false
+version = "0.1.0"
 
 [lib]
 name = "Grove"
-path = "Source/lib.rs"
+path = "Source/Library.rs"
 crate-type = ["cdylib", "rlib"]
 
 [[bin]]

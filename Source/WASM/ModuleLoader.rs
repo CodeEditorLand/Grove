@@ -163,10 +163,8 @@ pub struct WASMInstance {
 pub struct ModuleLoaderImpl {
 	runtime:Arc<WASMRuntime>,
 
-	#[allow(dead_code)]
 	config:WASMConfig,
 
-	#[allow(dead_code)]
 	linkers:Arc<RwLock<Vec<Linker<()>>>>,
 
 	loaded_modules:Arc<RwLock<Vec<WASMModule>>>,

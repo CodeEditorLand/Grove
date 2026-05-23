@@ -10,7 +10,6 @@ use anyhow::Result;
 use bytes::Bytes;
 use serde::{Serialize, de::DeserializeOwned};
 use tokio::sync::{RwLock, mpsc, oneshot};
-#[allow(unused_imports)]
 use wasmtime::{Caller, Extern, Func, Linker, Store};
 
 use crate::dev_log;
@@ -197,11 +196,9 @@ pub struct HostFunction {
 	pub signature:FunctionSignature,
 
 	/// Synchronous callback - not serializable (skip serde derive)
-	#[allow(dead_code)]
 	pub callback:Option<HostFunctionCallback>,
 
 	/// Async callback - not serializable (skip serde derive)
-	#[allow(dead_code)]
 	pub async_callback:Option<AsyncHostFunctionCallback>,
 }
 

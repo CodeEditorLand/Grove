@@ -74,7 +74,6 @@ pub enum LifecycleState {
 }
 
 /// Lifecycle event handler callback
-#[allow(dead_code)]
 type LifecycleEventHandler = fn(&str, LifecycleEvent) -> Result<()>;
 
 /// Lifecycle manager for extension lifecycle
@@ -93,14 +92,12 @@ pub struct LifecycleManager {
 #[derive(Debug, Clone)]
 struct LifecycleHandlerInfo {
 	/// Extension ID
-	#[allow(dead_code)]
 	extension_id:String,
 
 	/// Current state
 	state:LifecycleState,
 
 	/// Supported events
-	#[allow(dead_code)]
 	supported_events:Vec<LifecycleEvent>,
 
 	/// Last state change timestamp

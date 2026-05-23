@@ -1,4 +1,16 @@
-#![allow(non_snake_case, non_camel_case_types, non_upper_case_globals)]
+#![allow(
+	non_snake_case,
+	non_camel_case_types,
+	non_upper_case_globals,
+	dead_code,
+	unused_imports,
+	unused_variables,
+	unused_assignments,
+	unexpected_cfgs
+)]
+#![warn(missing_docs)]
+#![deny(unsafe_code)]
+#![warn(clippy::all)]
 
 //! Grove - Rust/WASM Extension Host for VS Code
 //!
@@ -59,11 +71,6 @@
 //! - [`Protocol`] - Protocol handling (Spine connection)
 //! - [`Services`] - Host services (configuration, etc.)
 //! - [`Common`] - Shared utilities and error types
-
-#![warn(missing_docs)]
-#![deny(unsafe_code)]
-#![warn(clippy::all)]
-#![allow(non_snake_case, non_camel_case_types, unexpected_cfgs)]
 
 // Public module declarations
 pub mod API;

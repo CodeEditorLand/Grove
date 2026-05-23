@@ -10,7 +10,6 @@ use std::sync::{
 
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
-#[allow(unused_imports)]
 use wasmtime::{Memory, MemoryType};
 
 use crate::dev_log;
