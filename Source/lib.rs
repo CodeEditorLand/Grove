@@ -1,3 +1,5 @@
+#![allow(non_snake_case, non_camel_case_types, non_upper_case_globals)]
+
 //! Grove - Rust/WASM Extension Host for VS Code
 //!
 //! Grove provides a secure, sandboxed environment for running VS Code

@@ -1,3 +1,5 @@
+#![allow(non_snake_case)]
+
 //! Build script for Grove
 //!
 //! This script handles:

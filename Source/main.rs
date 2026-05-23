@@ -6,7 +6,7 @@
 #![warn(missing_docs)]
 #![deny(unsafe_code)]
 #![warn(clippy::all)]
-#![allow(non_snake_case, non_camel_case_types, unexpected_cfgs)]
+#![allow(non_camel_case_types, unexpected_cfgs)]
 
 use std::path::PathBuf;
 

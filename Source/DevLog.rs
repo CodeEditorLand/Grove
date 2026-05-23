@@ -84,12 +84,16 @@ pub fn AliasPath(Input:&str) -> String {
 
 // ── Dedup buffer ────────────────────────────────────────────────────────
 
+/// Rolling dedup state for consecutive identical log lines.
 pub struct DedupState {
+	/// The key (category + message) of the last emitted log line.
 	pub LastKey:String,
 
+	/// Number of times the current key has been suppressed.
 	pub Count:u64,
 }
 
+/// Process-global dedup buffer guarding against log spam.
 pub static DEDUP:Mutex<DedupState> = Mutex::new(DedupState { LastKey:String::new(), Count:0 });
 
 /// Flush the dedup buffer - prints the pending count if > 1.
@@ -228,6 +232,7 @@ fn GetTraceId() -> &'static str {
 	})
 }
 
+/// Returns the current wall-clock time as nanoseconds since the Unix epoch.
 pub fn NowNano() -> u64 { SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default().as_nanos() as u64 }
 
 /// Emit an OTLP span to the local collector (Jaeger at 127.0.0.1:4318).
