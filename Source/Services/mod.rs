@@ -25,13 +25,13 @@ pub trait Service: Send + Sync {
 	fn name(&self) -> &str;
 
 	/// Start the service
-	async fn start(&self) -> anyhow::Result<()>;
+	fn start(&self) -> impl std::future::Future<Output = anyhow::Result<()>> + Send;
 
 	/// Stop the service
-	async fn stop(&self) -> anyhow::Result<()>;
+	fn stop(&self) -> impl std::future::Future<Output = anyhow::Result<()>> + Send;
 
 	/// Check if service is running
-	async fn is_running(&self) -> bool;
+	fn is_running(&self) -> impl std::future::Future<Output = bool> + Send;
 }
 
 #[cfg(test)]

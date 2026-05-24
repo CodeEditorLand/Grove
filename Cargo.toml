@@ -24,14 +24,14 @@ path = "Source/main.rs"
 Common = { workspace = true }
 tokio = { workspace = true }
 tokio-util = { version = "0.7", features = ["codec"] }
-wasmtime = { version = "44", features = [
+wasmtime = { version = "45", features = [
 	"async",
 	"component-model",
 	"runtime",
 	"cranelift",
 ], optional = true }
-wasmtime-wasi = { version = "44", optional = true }
-wasmparser = { version = "0.248", optional = true }
+wasmtime-wasi = { version = "45", optional = true }
+wasmparser = { version = "0.250", optional = true }
 prost = { version = "0.14", optional = true }
 tonic = { version = "0.14", optional = true }
 tonic-build = "0.14"
@@ -61,7 +61,7 @@ opentelemetry-otlp = { version = "0.32", features = [
 	"grpc-tonic",
 ], optional = true }
 opentelemetry-semantic-conventions = { version = "0.32", optional = true }
-tracing-opentelemetry = { version = "0.32", optional = true }
+tracing-opentelemetry = { version = "0.33", optional = true }
 
 [build-dependencies]
 # tonic 0.14 split proto-compilation into the `tonic-prost-build` crate.
