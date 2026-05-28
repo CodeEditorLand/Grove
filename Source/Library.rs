@@ -73,19 +73,13 @@
 //! - [`Common`] - Shared utilities and error types
 
 // Public module declarations
-pub mod API;
-
 pub mod Binary;
-
-pub mod Common;
 
 pub mod DevLog;
 
 pub mod Host;
 
 pub mod Protocol;
-
-pub mod Services;
 
 pub mod Transport;
 
