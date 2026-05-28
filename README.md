@@ -102,9 +102,8 @@ compatibility with the `VS Code` `API` surface.
 | :------------------------ | :----------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------ |
 | **Security First**        | Isolate extensions using WASMtime's capability-based security model with configurable resource limits. | `WASM/Runtime`, `WASM/MemoryManager`                                      |
 | **Transport Agnosticism** | Support multiple communication strategies (gRPC, IPC, WASM) for flexible deployment scenarios.         | `Transport/Strategy`, `Transport/gRPCTransport`, `Transport/IPCTransport` |
-| **API Compatibility**     | Maintain high fidelity with the VS Code API surface to enable seamless extension porting.              | `API/vscode`, `API/types`, `APIBridge`                                    |
 | **Performance**           | Zero-cost abstractions via Rust with LTO optimization for maximum execution speed.                     | `Host/ExtensionHost`, `WASM/ModuleLoader`                                 |
-| **Composability**         | Modular architecture with clear separation between host, transport, and API layers.                    | `Host/*`, `Transport/*`, `API/*`                                          |
+| **Composability**         | Modular architecture with clear separation between host, transport layers.                             | `Host/*`, `Transport/*`                                                   |
 
 ---
 
@@ -206,9 +205,6 @@ Element/Grove/
 │   │   ├── MemoryManager    # WASM memory allocation and management
 │   │   ├── HostBridge       # Host-WASM function communication
 │   │   └── FunctionExport   # Export host functions to WASM
-│   ├── API/             # VS Code API facade
-│   │   ├── vscode           # VS Code API facade
-│   │   └── types            # Common API type definitions
 │   ├── Transport/       # Communication strategies
 │   │   ├── Strategy         # Transport strategy trait
 │   │   ├── gRPCTransport    # gRPC-based communication with Mountain
@@ -216,10 +212,6 @@ Element/Grove/
 │   │   └── WASMTransport    # Direct WASM communication
 │   ├── Protocol/        # Protocol handling
 │   │   └── SpineConnection  # Spine protocol client connection
-│   ├── Services/        # Host services
-│   └── Common/          # Shared utilities
-├── Proto/
-│   └── Grove.proto      # Grove-specific gRPC protocol
 └── Documentation/Rust/doc/
 ```
 
@@ -235,12 +227,8 @@ source files:
   Core extension host controller and lifecycle management
 - **[`Source/WASM/`](https://github.com/CodeEditorLand/Grove/tree/Current/Source/WASM/)** -
   WebAssembly runtime integration with WASMtime
-- **[`Source/API/`](https://github.com/CodeEditorLand/Grove/tree/Current/Source/API/)** -
-  VS Code API facade and type definitions
 - **[`Source/Transport/`](https://github.com/CodeEditorLand/Grove/tree/Current/Source/Transport/)** -
   Communication strategies (gRPC, IPC, WASM)
-- **[`Proto/Grove.proto`](https://github.com/CodeEditorLand/Grove/tree/Current/Proto/Grove.proto)** -
-  gRPC protocol definitions for Mountain integration
 
 ---
 

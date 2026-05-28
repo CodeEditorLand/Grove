@@ -34,10 +34,7 @@ graph TB
         GRPCTransport["Transport/gRPCTransport.rs\ngRPC via Mountain"]
         IPCTransport["Transport/IPCTransport.rs\nLocal IPC"]
         WASMTransport["Transport/WASMTransport.rs\nDirect WASM calls"]
-        API["API/\nvscode API + types"]
         Protocol["Protocol/\nSpine connection"]
-        Services["Services/\nHost services"]
-        Common["Common/\nShared utilities"]
     end
 
     subgraph "Mountain - Rust Backend"
@@ -51,7 +48,6 @@ graph TB
     ExtHost --> Activation
     ExtHost --> Lifecycle
     ExtHost --> APIBridge
-    APIBridge --> API
     APIBridge --> WASM
     WASM --> Runtime
     WASM --> ModuleLoader
@@ -88,10 +84,7 @@ graph TB
 | `Source/Transport/gRPCTransport.rs`  | gRPC communication with Mountain via `tonic`                                      |
 | `Source/Transport/IPCTransport.rs`   | Unix/Windows IPC transport for same-host communication                            |
 | `Source/Transport/WASMTransport.rs`  | Direct in-process WASM function call transport                                    |
-| `Source/API/vscode.rs`               | VS Code API surface implementation                                                |
-| `Source/API/types.rs`                | Common API type definitions matching VS Code's TypeScript types                   |
 | `Source/Protocol/SpineConnection.rs` | Spine protocol client for extension host coordination                             |
-| `Proto/Grove.proto`                  | Grove-specific gRPC protocol definitions                                          |
 
 ---
 
@@ -104,7 +97,7 @@ sequenceDiagram
     participant WASM as WASM Runtime
     participant Extension as WASM Extension
 
-    Mountain->>Grove: GroveService.ActivateExtension (Grove.proto)
+    Mountain->>Grove: GroveService.ActivateExtension (gRPC via Vine)
     Grove->>Grove: ExtensionManager.load(manifest)
     Grove->>WASM: ModuleLoader.compile(wasm_bytes)
     WASM->>Grove: Compiled module
@@ -124,8 +117,7 @@ sequenceDiagram
 
 | Connecting Element | Direction     | Mechanism            | Description                                                                       |
 | :----------------- | :------------ | :------------------- | :-------------------------------------------------------------------------------- |
-| **Mountain**       | Bidirectional | gRPC via Grove.proto | Mountain activates extensions; Grove forwards API calls back to Mountain          |
-| **Vine**           | Inbound       | Protocol definition  | Grove.proto extends Vine's service definitions for Grove-specific operations      |
+| **Mountain**       | Bidirectional | gRPC via Vine        | Mountain activates extensions; Grove forwards API calls back to Mountain          |
 | **Cocoon**         | Sibling       | Shared API surface   | Grove implements the same VS Code API surface as Cocoon for extension portability |
 
 ---

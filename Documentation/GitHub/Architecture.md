@@ -109,12 +109,8 @@ graph TB
 | `Source/Transport/WASMTransport.rs`     | Direct WASM host function calls        |
 | `Source/Transport/Strategy.rs`          | Transport selection strategy trait     |
 | `Source/Transport/CommonAdapter.rs`     | Shared transport utilities             |
-| `Source/API/VSCode.rs`                  | VS Code API surface implementations    |
-| `Source/API/Types.rs`                   | VS Code type definitions               |
 | `Source/Protocol/SpcineConnection.rs`   | Spine protocol client connection       |
 | `Source/Protocol/SpcineActionClient.rs` | Spine action/response client           |
-| `Source/Common/Traits.rs`               | Shared traits                          |
-| `Source/Common/Error.rs`                | Error types                            |
 | `Source/Binary/Main.rs`                 | Binary entry point                     |
 
 ---
