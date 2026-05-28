@@ -74,10 +74,13 @@ tonic-prost-build = "0.14"
 anyhow = { workspace = true }
 vergen = { version = "9", features = ["build", "cargo", "rustc"] }
 
+Mist = { workspace = true, optional = true }
+
 [features]
 default = ["grpc", "wasm"]
 grpc = ["tonic", "prost"]
 wasm = ["wasmtime", "wasmtime-wasi", "reqwest", "wasmparser"]
+websocket = ["Mist"]
 telemetry = [
 	"opentelemetry",
 	"opentelemetry-otlp",

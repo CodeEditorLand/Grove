@@ -36,6 +36,9 @@ pub mod Strategy;
 
 pub mod WASMTransport;
 
+#[cfg(feature = "websocket")]
+pub mod MistTransport;
+
 use std::time::Duration;
 
 use anyhow::Result;
@@ -139,6 +142,15 @@ pub fn CreategRPCTransport(Address:&str) -> Result<Strategy::Transport> {
 /// Creates an IPC transport using the default socket/pipe path.
 pub fn CreateIPCTransport() -> Result<Strategy::Transport> {
 	Ok(Strategy::Transport::IPC(IPCTransport::IPCTransport::New()?))
+}
+
+/// Creates a WebSocket transport connecting to the Mist server at `address`.
+///
+/// Requires the `websocket` cargo feature. The returned transport must be
+/// connected with `.connect().await` before use.
+#[cfg(feature = "websocket")]
+pub fn CreateWebSocketTransport(Address:&str) -> Result<Strategy::Transport> {
+	Ok(Strategy::Transport::WebSocket(MistTransport::MistTransport::New(Address)))
 }
 
 /// Creates a WASM transport with the given configuration.
