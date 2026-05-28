@@ -129,17 +129,29 @@ impl Transport {
 	pub async fn connect(&self) -> anyhow::Result<()> {
 		match self {
 			Self::gRPC(transport) => {
-				transport.connect().await.map_err(|e| anyhow::anyhow!("gRPC connect error: {}", e))
+				transport
+					.connect()
+					.await
+					.map_err(|e| anyhow::anyhow!("gRPC connect error: {}", e))
 			},
 			Self::IPC(transport) => {
-				transport.connect().await.map_err(|e| anyhow::anyhow!("IPC connect error: {}", e))
+				transport
+					.connect()
+					.await
+					.map_err(|e| anyhow::anyhow!("IPC connect error: {}", e))
 			},
 			Self::WASM(transport) => {
-				transport.connect().await.map_err(|e| anyhow::anyhow!("WASM connect error: {}", e))
+				transport
+					.connect()
+					.await
+					.map_err(|e| anyhow::anyhow!("WASM connect error: {}", e))
 			},
 			#[cfg(feature = "websocket")]
 			Self::WebSocket(transport) => {
-				transport.connect().await.map_err(|e| anyhow::anyhow!("WebSocket connect error: {}", e))
+				transport
+					.connect()
+					.await
+					.map_err(|e| anyhow::anyhow!("WebSocket connect error: {}", e))
 			},
 		}
 	}
@@ -148,17 +160,29 @@ impl Transport {
 	pub async fn send(&self, request:&[u8]) -> anyhow::Result<Vec<u8>> {
 		match self {
 			Self::gRPC(transport) => {
-				transport.send(request).await.map_err(|e| anyhow::anyhow!("gRPC send error: {}", e))
+				transport
+					.send(request)
+					.await
+					.map_err(|e| anyhow::anyhow!("gRPC send error: {}", e))
 			},
 			Self::IPC(transport) => {
-				transport.send(request).await.map_err(|e| anyhow::anyhow!("IPC send error: {}", e))
+				transport
+					.send(request)
+					.await
+					.map_err(|e| anyhow::anyhow!("IPC send error: {}", e))
 			},
 			Self::WASM(transport) => {
-				transport.send(request).await.map_err(|e| anyhow::anyhow!("WASM send error: {}", e))
+				transport
+					.send(request)
+					.await
+					.map_err(|e| anyhow::anyhow!("WASM send error: {}", e))
 			},
 			#[cfg(feature = "websocket")]
 			Self::WebSocket(transport) => {
-				transport.send(request).await.map_err(|e| anyhow::anyhow!("WebSocket send error: {}", e))
+				transport
+					.send(request)
+					.await
+					.map_err(|e| anyhow::anyhow!("WebSocket send error: {}", e))
 			},
 		}
 	}
@@ -199,12 +223,13 @@ impl Transport {
 		match self {
 			Self::gRPC(transport) => transport.close().await.map_err(|e| anyhow::anyhow!("gRPC close error: {}", e)),
 			Self::IPC(transport) => transport.close().await.map_err(|e| anyhow::anyhow!("IPC close error: {}", e)),
-			Self::WASM(transport) => {
-				transport.close().await.map_err(|e| anyhow::anyhow!("WASM close error: {}", e))
-			},
+			Self::WASM(transport) => transport.close().await.map_err(|e| anyhow::anyhow!("WASM close error: {}", e)),
 			#[cfg(feature = "websocket")]
 			Self::WebSocket(transport) => {
-				transport.close().await.map_err(|e| anyhow::anyhow!("WebSocket close error: {}", e))
+				transport
+					.close()
+					.await
+					.map_err(|e| anyhow::anyhow!("WebSocket close error: {}", e))
 			},
 		}
 	}
