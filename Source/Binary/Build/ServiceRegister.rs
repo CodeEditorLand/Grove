@@ -212,6 +212,7 @@ impl ServiceRegister {
 		tokio::spawn(async move {
 			loop {
 				tokio::time::sleep(tokio::time::Duration::from_secs(interval_sec)).await;
+
 				if let Err(e) = Self::send_heartbeat(&service_id_owned).await {
 					dev_log!("grove", "warn: heartbeat failed: {}", e);
 				}

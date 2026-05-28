@@ -265,6 +265,7 @@ impl FunctionExportImpl {
 
 				let args_bytes = args_bytes.map_err(|_| {
 					dev_log!("wasm", "warn: error converting arguments for function '{}'", func_name_inner);
+
 					wasmtime::Trap::StackOverflow
 				})?;
 
@@ -276,6 +277,7 @@ impl FunctionExportImpl {
 						// Deserialize response
 						let result_val:serde_json::Value = serde_json::from_slice(&response_bytes).map_err(|_| {
 							dev_log!("wasm", "warn: error deserializing response for function '{}'", func_name_inner);
+
 							wasmtime::Trap::StackOverflow
 						})?;
 
@@ -337,6 +339,7 @@ impl FunctionExportImpl {
 								func_name_for_logging,
 								e
 							);
+
 							return -1i32;
 						},
 					};
@@ -355,6 +358,7 @@ impl FunctionExportImpl {
 										"warn: error deserializing response for function '{}'",
 										func_name_for_logging
 									);
+
 									return -1i32;
 								},
 							};
@@ -372,6 +376,7 @@ impl FunctionExportImpl {
 											"warn: invalid number format for function '{}'",
 											func_name_for_logging
 										);
+
 										-1i32
 									}
 								},
@@ -388,12 +393,14 @@ impl FunctionExportImpl {
 										"warn: unsupported response type for function '{}', expected number or bool",
 										func_name_for_logging
 									);
+
 									-1i32
 								},
 							};
 
 							// Log successful call
 							let duration = start.elapsed();
+
 							dev_log!(
 								"wasm",
 								"[FunctionExport] Host function '{}' executed successfully in {}µs",
@@ -411,6 +418,7 @@ impl FunctionExportImpl {
 								func_name_for_logging,
 								e
 							);
+
 							// Return -1 to indicate error to WASM caller
 							-1i32
 						},
@@ -424,6 +432,7 @@ impl FunctionExportImpl {
 					func_name_for_debug,
 					e
 				);
+
 				e
 			})?;
 

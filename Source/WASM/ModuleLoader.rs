@@ -194,6 +194,7 @@ impl ModuleLoaderImpl {
 			.await
 			.map(|mut module| {
 				module.path = Some(path.to_path_buf());
+
 				module
 			})
 	}
@@ -356,6 +357,7 @@ impl ModuleLoaderImpl {
 
 		ModuleInfo {
 			name:None, // Would need to parse name section
+
 			exports,
 
 			imports,

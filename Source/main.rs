@@ -195,6 +195,7 @@ async fn run_standalone(
 
 		let ext_id = host.load_extension(&path).await.map_err(|e| {
 			dev_log!("extensions", "error: failed to load extension: {}", e);
+
 			e
 		})?;
 

@@ -300,6 +300,7 @@ mod tests {
 		let result = retryable.execute_with_retry(
 			|| {
 				attempt_count += 1;
+
 				if attempt_count < 3 { Err("Not ready") } else { Ok("Success") }
 			},
 			5,

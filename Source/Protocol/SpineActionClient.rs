@@ -334,6 +334,7 @@ impl SpineActionClient {
 			host_id:self.host_id.clone(),
 
 			host_type:2, // Grove
+
 			capabilities,
 
 			metadata:Some(metadata),
@@ -501,6 +502,7 @@ impl SpineActionClient {
 		tokio::spawn(async move {
 			loop {
 				tokio::time::sleep(tokio::time::Duration::from_secs(interval_sec)).await;
+
 				if *connected.read().await {
 					*last_heartbeat.write().await = Utc::now();
 					// Heartbeat is maintained via last_heartbeat timestamp

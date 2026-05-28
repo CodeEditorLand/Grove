@@ -190,6 +190,7 @@ impl WASMRuntime {
 		if self.config.enable_fuel_metering {
 			// Set fuel based on execution time (rough approximation: 1 unit = 1000 ns)
 			let fuel = self.config.max_execution_time_ms * 1_000; // Convert ms to fuel
+
 			store
 				.set_fuel(fuel)
 				.map_err(|e| anyhow::anyhow!("Failed to set fuel limit: {}", e))?;

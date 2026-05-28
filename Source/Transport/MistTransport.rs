@@ -22,6 +22,7 @@ pub use websocket::MistTransport;
 
 #[cfg(feature = "websocket")]
 mod websocket {
+
 	use std::sync::Arc;
 
 	use async_trait::async_trait;
@@ -34,6 +35,7 @@ mod websocket {
 	/// established at Mountain boot time.
 	pub struct MistTransport {
 		Address:String,
+
 		Client:Arc<Mutex<Option<Arc<Mist::WebSocket::Client>>>>,
 	}
 

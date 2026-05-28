@@ -191,9 +191,11 @@ impl WASMTransportImpl {
 			modules_loaded:managers.len(),
 
 			active_instances:managers.len(), // In real implementation, track instances
+
 			total_memory_mb:memory_manager.current_usage_mb() as u64,
 
 			total_execution_time_ms:0, // Track from actual calls
+
 			function_calls:self.stats.read().await.messages_sent,
 		}
 	}

@@ -287,6 +287,7 @@ impl ExtensionHostImpl {
 			total_activation_time_ms:extension_stats.total_activation_time_ms,
 
 			api_calls:0, // Track through API bridge
+
 			errors:extension_stats.errors,
 
 			uptime_seconds:0, // Track from host start time

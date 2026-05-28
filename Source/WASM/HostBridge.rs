@@ -418,6 +418,7 @@ pub fn marshal_args(args:Vec<Bytes>) -> Result<Vec<wasmtime::Val>> {
 	args.iter()
 		.map(|bytes| {
 			let value:serde_json::Value = serde_json::from_slice(bytes)?;
+
 			match value {
 				serde_json::Value::Number(n) => {
 					if let Some(i) = n.as_i64() {

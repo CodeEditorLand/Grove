@@ -167,10 +167,13 @@ impl TransportAdapter {
 			requests_total:stats.messages_sent + stats.messages_received,
 
 			requests_successful:stats.messages_received, // Assume received = successful for now
+
 			requests_failed:stats.errors,
 
-			notifications_sent:0,      // TODO: track separately
+			notifications_sent:0, // TODO: track separately
+
 			connections_established:1, // Assume 1 connection
+
 			connection_failures:if stats.errors > 0 { 1 } else { 0 },
 
 			bytes_sent:stats.bytes_sent,
@@ -178,6 +181,7 @@ impl TransportAdapter {
 			bytes_received:stats.bytes_received,
 
 			circuit_breaker_state:1, // Assume closed (1)
+
 			latency_ms_histogram:stats
 				.avg_latency_us
 				.map(|us| (1, us as f64 / 1000.0, (us as f64 / 1000.0).powi(2))),
@@ -326,6 +330,7 @@ impl TransportStrategy for TransportAdapter {
 	fn capabilities(&self) -> TransportCapabilities {
 		TransportCapabilities {
 			max_message_size:1024 * 1024, // 1MB
+
 			supports_request_response:true,
 
 			supports_server_streaming:false,

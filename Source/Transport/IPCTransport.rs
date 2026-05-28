@@ -198,6 +198,7 @@ impl TransportStrategy for IPCTransport {
 				if SocketPath.exists() {
 					tokio::fs::remove_file(SocketPath).await.map_err(|E| {
 						dev_log!("transport", "warn: failed to remove socket: {}", E);
+
 						IPCTransportError::CleanupFailed(E.to_string())
 					})?;
 				}
