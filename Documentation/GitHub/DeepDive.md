@@ -115,10 +115,10 @@ sequenceDiagram
 
 ## Integration Points
 
-| Connecting Element | Direction     | Mechanism            | Description                                                                       |
-| :----------------- | :------------ | :------------------- | :-------------------------------------------------------------------------------- |
-| **Mountain**       | Bidirectional | gRPC via Vine        | Mountain activates extensions; Grove forwards API calls back to Mountain          |
-| **Cocoon**         | Sibling       | Shared API surface   | Grove implements the same VS Code API surface as Cocoon for extension portability |
+| Connecting Element | Direction     | Mechanism          | Description                                                                       |
+| :----------------- | :------------ | :----------------- | :-------------------------------------------------------------------------------- |
+| **Mountain**       | Bidirectional | gRPC via Vine      | Mountain activates extensions; Grove forwards API calls back to Mountain          |
+| **Cocoon**         | Sibling       | Shared API surface | Grove implements the same VS Code API surface as Cocoon for extension portability |
 
 ---
 
