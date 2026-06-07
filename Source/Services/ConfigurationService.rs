@@ -10,7 +10,9 @@ use std::{
 };
 
 use anyhow::{Context, Result};
+
 use serde_json::Value;
+
 use tokio::sync::RwLock;
 
 use crate::{Services::Service, dev_log};
@@ -18,6 +20,7 @@ use crate::{Services::Service, dev_log};
 /// Configuration scope
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ConfigurationScope {
+
 	/// Global configuration
 	Global,
 
@@ -31,6 +34,7 @@ pub enum ConfigurationScope {
 /// Configuration value
 #[derive(Debug, Clone)]
 pub struct ConfigurationValue {
+
 	/// Value
 	pub value:Value,
 
@@ -43,6 +47,7 @@ pub struct ConfigurationValue {
 
 /// Configuration service
 pub struct ConfigurationServiceImpl {
+
 	/// Service name
 	name:String,
 
@@ -63,6 +68,7 @@ pub struct ConfigurationServiceImpl {
 type ConfigurationWatcherCallback = Arc<RwLock<dyn Fn(String, Value) -> Result<()> + Send + Sync>>;
 
 impl ConfigurationServiceImpl {
+
 	/// Create a new configuration service
 	pub fn new(config_path:Option<PathBuf>) -> Self {
 		let mut config_paths = HashMap::new();
@@ -202,6 +208,7 @@ impl ConfigurationServiceImpl {
 
 	/// Register a configuration watcher
 	pub async fn register_watcher<F>(&self, key:String, callback:F)
+
 	where
 		F: Fn(String, Value) -> Result<()> + Send + Sync + 'static, {
 		let key_clone = key.clone();
@@ -245,6 +252,7 @@ impl ConfigurationServiceImpl {
 }
 
 impl Service for ConfigurationServiceImpl {
+
 	fn name(&self) -> &str { &self.name }
 
 	async fn start(&self) -> Result<()> {
@@ -285,7 +293,9 @@ mod tests {
 		let _:anyhow::Result<()> = service
 			.set(
 				"test.key".to_string(),
+
 				serde_json::json!("test-value"),
+
 				ConfigurationScope::Global,
 			)
 			.await;

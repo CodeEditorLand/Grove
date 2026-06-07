@@ -20,6 +20,7 @@ pub const MAX_VS_CODE_API_VERSION:&str = "1.90.0";
 
 /// Check if an API version is supported
 pub fn is_api_version_supported(version:&str) -> bool {
+
 	match version.parse::<semver::Version>() {
 		Ok(v) => {
 			let min = MIN_VS_CODE_API_VERSION.parse::<semver::Version>().unwrap();

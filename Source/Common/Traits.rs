@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 
 /// Extension context trait for providing extension-specific information
 pub trait ExtensionContext: Send + Sync {
+
 	/// Get the extension ID
 	fn extension_id(&self) -> &str;
 
@@ -27,6 +28,7 @@ pub trait ExtensionContext: Send + Sync {
 
 /// Extension metadata trait for package.json information
 pub trait ExtensionMetadata: Send + Sync {
+
 	/// Get the extension name
 	fn name(&self) -> &str;
 
@@ -61,6 +63,7 @@ pub type GroveResult<T> = Result<T, GroveError>;
 /// Grove error type
 #[derive(Debug, thiserror::Error)]
 pub enum GroveError {
+
 	/// Extension not found
 	#[error("Extension not found: {0}")]
 	ExtensionNotFound(String),
@@ -120,18 +123,21 @@ pub enum GroveError {
 
 /// Identifiable trait for objects with unique IDs
 pub trait Identifiable {
+
 	/// Get the unique identifier
 	fn id(&self) -> &str;
 }
 
 /// Named trait for objects with names
 pub trait Named {
+
 	/// Get the name
 	fn name(&self) -> &str;
 }
 
 /// Configurable trait for objects with configuration
 pub trait Configurable {
+
 	/// Configuration type
 	type Config;
 
@@ -144,18 +150,21 @@ pub trait Configurable {
 
 /// Resettable trait for objects that can be reset
 pub trait Resettable {
+
 	/// Reset the object to its initial state
 	fn reset(&mut self) -> anyhow::Result<()>;
 }
 
 /// Disposable trait for objects with cleanup
 pub trait Disposable {
+
 	/// Dispose and cleanup resources
 	fn dispose(&mut self) -> anyhow::Result<()>;
 }
 
 /// Cloneable trait for objects that can be cloned with context
 pub trait ContextClone {
+
 	/// Clone the object with additional context
 	fn clone_with_context(&self, context:&serde_json::Value) -> anyhow::Result<Self>
 	where
@@ -164,6 +173,7 @@ pub trait ContextClone {
 
 /// Stateful trait for objects with state
 pub trait Stateful {
+
 	/// State type
 	type State: Clone;
 
@@ -179,6 +189,7 @@ pub trait Stateful {
 
 /// Observable trait for objects that can emit events
 pub trait Observable {
+
 	/// Event type
 	type Event;
 
@@ -191,12 +202,14 @@ pub trait Observable {
 
 /// Validation trait for objects that can be validated
 pub trait Validatable {
+
 	/// Validate the object
 	fn validate(&self) -> anyhow::Result<()>;
 }
 
 /// Serializable trait for objects that can be serialized
 pub trait Serializable: Serialize + for<'de> Deserialize<'de> {
+
 	/// Serialize to JSON string
 	fn to_json(&self) -> anyhow::Result<String> {
 		serde_json::to_string(self).map_err(|e| anyhow::anyhow!("Serialization failed: {}", e))
@@ -220,6 +233,7 @@ impl<T> Serializable for T where T: Serialize + for<'de> Deserialize<'de> {}
 
 /// Versioned trait for objects with version information
 pub trait Versioned {
+
 	/// Get version
 	fn version(&self) -> &str;
 
@@ -229,11 +243,14 @@ pub trait Versioned {
 
 /// Retryable trait for operations that can be retried
 pub trait Retryable {
+
 	/// Execute with retry
 	fn execute_with_retry<F, T, E>(&self, mut operation:F, max_retries:u32, delay_ms:u64) -> anyhow::Result<T>
 	where
 		F: FnMut() -> Result<T, E> + Send,
+
 		E: std::fmt::Display + Send + 'static,
+
 		T: Send, {
 		let mut last_error = None;
 
@@ -253,7 +270,9 @@ pub trait Retryable {
 
 		Err(anyhow::anyhow!(
 			"Operation failed after {} attempts: {}",
+
 			max_retries + 1,
+
 			last_error.unwrap_or_else(|| "Unknown error".to_string())
 		))
 	}
@@ -303,7 +322,9 @@ mod tests {
 
 				if attempt_count < 3 { Err("Not ready") } else { Ok("Success") }
 			},
+
 			5,
+
 			100,
 		);
 

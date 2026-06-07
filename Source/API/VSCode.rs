@@ -24,6 +24,7 @@ use crate::{API::Types::*, Transport::Strategy::Transport, dev_log};
 /// removed when `Disposable::dispose()` is called on the returned handle.
 #[derive(Debug, Default)]
 struct ProviderStore {
+
 	/// Map from handle → (provider_type, selector) for diagnostics.
 	entries:Mutex<std::collections::HashMap<u32, (String, String)>>,
 
@@ -32,6 +33,7 @@ struct ProviderStore {
 }
 
 impl ProviderStore {
+
 	/// Returns the next unique handle and inserts a registration record.
 	fn insert(&self, provider_type:&str, selector:&str) -> u32 {
 		let Handle = self.next_handle.fetch_add(1, Ordering::Relaxed);
@@ -57,6 +59,7 @@ impl ProviderStore {
 /// VS Code API facade - the main entry point for extensions
 #[derive(Debug, Clone)]
 pub struct VSCodeAPI {
+
 	/// Commands namespace
 	pub commands:Arc<CommandNamespace>,
 
@@ -77,6 +80,7 @@ pub struct VSCodeAPI {
 }
 
 impl VSCodeAPI {
+
 	/// Create a new VS Code API facade (no transport - registrations stored
 	/// locally only)
 	pub fn new() -> Self {
@@ -116,6 +120,7 @@ impl VSCodeAPI {
 }
 
 impl Default for VSCodeAPI {
+
 	fn default() -> Self { Self::new() }
 }
 
@@ -124,6 +129,7 @@ impl Default for VSCodeAPI {
 pub struct CommandNamespace;
 
 impl CommandNamespace {
+
 	/// Create a new CommandNamespace instance
 	pub fn new() -> Self { Self }
 
@@ -151,6 +157,7 @@ pub type CommandCallback = Box<dyn Fn(Vec<serde_json::Value>) -> Result<serde_js
 /// Command representation
 #[derive(Debug, Clone)]
 pub struct Command {
+
 	/// The unique identifier of the command
 	pub id:String,
 }
@@ -160,6 +167,7 @@ pub struct Command {
 pub struct Window;
 
 impl Window {
+
 	/// Create a new Window instance
 	pub fn new() -> Self { Self }
 
@@ -188,11 +196,13 @@ impl Window {
 /// Output channel for logging
 #[derive(Debug, Clone)]
 pub struct OutputChannel {
+
 	/// The name of the output channel
 	name:String,
 }
 
 impl OutputChannel {
+
 	/// Create a new output channel
 	///
 	/// # Arguments
@@ -234,6 +244,7 @@ impl OutputChannel {
 pub struct Workspace;
 
 impl Workspace {
+
 	/// Create a new Workspace instance
 	pub fn new() -> Self { Self }
 
@@ -252,6 +263,7 @@ impl Workspace {
 /// Workspace folder
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WorkspaceFolder {
+
 	/// The uri of the workspace folder
 	pub uri:String,
 
@@ -265,11 +277,13 @@ pub struct WorkspaceFolder {
 /// Workspace configuration
 #[derive(Debug, Clone)]
 pub struct WorkspaceConfiguration {
+
 	/// The configuration section name
 	section:Option<String>,
 }
 
 impl WorkspaceConfiguration {
+
 	/// Create a new workspace configuration
 	///
 	/// # Arguments
@@ -304,6 +318,7 @@ impl WorkspaceConfiguration {
 /// 4. Returns a `Disposable` that removes the registration on dispose
 #[derive(Debug)]
 pub struct LanguageNamespace {
+
 	/// Active provider registration store.
 	store:Arc<ProviderStore>,
 
@@ -312,10 +327,12 @@ pub struct LanguageNamespace {
 }
 
 impl Clone for LanguageNamespace {
+
 	fn clone(&self) -> Self { Self { store:Arc::clone(&self.store), transport:self.transport.clone() } }
 }
 
 impl LanguageNamespace {
+
 	/// Create a new LanguageNamespace instance (local storage only).
 	pub fn new() -> Self { Self { store:Arc::new(ProviderStore::default()), transport:None } }
 
@@ -345,9 +362,13 @@ impl LanguageNamespace {
 
 		dev_log!(
 			"extensions",
+
 			"[LanguageNamespace] registered {} handle={} selector={}",
+
 			ProviderTypeOwned,
+
 			Handle,
+
 			SelectorStr
 		);
 
@@ -376,8 +397,11 @@ impl LanguageNamespace {
 
 			dev_log!(
 				"extensions",
+
 				"[LanguageNamespace] disposed {} handle={}",
+
 				ProviderTypeOwned,
+
 				Handle
 			);
 		}))
@@ -522,6 +546,7 @@ impl LanguageNamespace {
 	pub fn set_language_configuration(&self, language:String) -> Disposable {
 		self.register(
 			"languageConfiguration",
+
 			&vec![DocumentFilter { language:Some(language), scheme:None, pattern:None }],
 		)
 	}
@@ -530,6 +555,7 @@ impl LanguageNamespace {
 /// Document selector
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DocumentFilter {
+
 	/// A language id, like `typescript`
 	pub language:Option<String>,
 
@@ -545,6 +571,7 @@ pub type DocumentSelector = Vec<DocumentFilter>;
 
 /// Completion item provider
 pub trait CompletionItemProvider: Send + Sync {
+
 	/// Provide completion items at the given position
 	///
 	/// # Arguments
@@ -573,6 +600,7 @@ pub trait CompletionItemProvider: Send + Sync {
 /// Completion context
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CompletionContext {
+
 	/// How the completion was triggered
 	#[serde(rename = "triggerKind")]
 	pub trigger_kind:CompletionTriggerKind,
@@ -585,6 +613,7 @@ pub struct CompletionContext {
 /// Completion trigger kind
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum CompletionTriggerKind {
+
 	/// Completion was triggered by typing an identifier
 	#[serde(rename = "Invoke")]
 	Invoke = 0,
@@ -601,11 +630,13 @@ pub enum CompletionTriggerKind {
 /// Diagnostic collection
 #[derive(Debug, Clone)]
 pub struct DiagnosticCollection {
+
 	/// The name of the diagnostic collection
 	name:Option<String>,
 }
 
 impl DiagnosticCollection {
+
 	/// Create a new diagnostic collection
 	///
 	/// # Arguments
@@ -643,10 +674,12 @@ impl DiagnosticCollection {
 /// Returned by all `register_*_provider` methods. Calling `dispose()` removes
 /// the provider registration from the `LanguageNamespace` store.
 pub struct Disposable {
+
 	callback:Option<Box<dyn FnOnce() + Send + Sync>>,
 }
 
 impl std::fmt::Debug for Disposable {
+
 	fn fmt(&self, f:&mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		f.debug_struct("Disposable")
 			.field("has_callback", &self.callback.is_some())
@@ -655,12 +688,14 @@ impl std::fmt::Debug for Disposable {
 }
 
 impl Clone for Disposable {
+
 	/// Cloning a Disposable produces a no-op copy.
 	/// The original disposable retains the callback.
 	fn clone(&self) -> Self { Self { callback:None } }
 }
 
 impl Disposable {
+
 	/// Create a no-op disposable.
 	pub fn new() -> Self { Self { callback:None } }
 
@@ -676,6 +711,7 @@ impl Disposable {
 }
 
 impl Default for Disposable {
+
 	fn default() -> Self { Self::new() }
 }
 
@@ -684,6 +720,7 @@ impl Default for Disposable {
 pub struct ExtensionNamespace;
 
 impl ExtensionNamespace {
+
 	/// Create a new ExtensionNamespace instance
 	pub fn new() -> Self { Self }
 
@@ -697,6 +734,7 @@ impl ExtensionNamespace {
 /// Extension representation
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Extension {
+
 	/// The canonical extension identifier in the form of `publisher.name`
 	pub id:String,
 
@@ -717,6 +755,7 @@ pub struct Extension {
 pub struct Env;
 
 impl Env {
+
 	/// Create a new Env instance
 	pub fn new() -> Self { Self }
 

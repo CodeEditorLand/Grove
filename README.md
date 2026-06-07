@@ -103,7 +103,7 @@ compatibility with the `VS Code` `API` surface.
 
 ---
 
-## `Grove` in the Land Ecosystem&#x2001;🌳 + &#x2001;🏞️
+## `Grove` in the Land Ecosystem 🌳 + 🏞️
 
 | Component                     | Role & Key Responsibilities                                                   |
 | :---------------------------- | :---------------------------------------------------------------------------- |

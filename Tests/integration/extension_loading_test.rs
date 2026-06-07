@@ -5,11 +5,13 @@
 use std::path::PathBuf;
 
 use grove::{ExtensionHost, ExtensionManager, HostConfig, Transport};
+
 use tokio;
 
 /// Test extension loading functionality
 #[tokio::test]
 async fn test_extension_loading() {
+
 	// Create a minimal extension host
 	let transport = Transport::default();
 
@@ -29,6 +31,7 @@ async fn test_extension_loading() {
 /// Test extension activation
 #[tokio::test]
 async fn test_extension_activation() {
+
 	// Create host
 	let transport = Transport::default();
 
@@ -43,6 +46,7 @@ async fn test_extension_activation() {
 /// Test extension manager operations
 #[tokio::test]
 async fn test_extension_manager_operations() {
+
 	let wasm_runtime = std::sync::Arc::new(
 		tokio::runtime::Runtime::new()
 			.unwrap()
@@ -68,6 +72,7 @@ async fn test_extension_manager_operations() {
 /// Test WASM runtime creation
 #[tokio::test]
 async fn test_wasm_runtime_creation() {
+
 	let runtime = grove::WASM::Runtime::WASMRuntime::new(grove::WASM::Runtime::WASMConfig::default())
 		.await
 		.unwrap();
@@ -79,6 +84,7 @@ async fn test_wasm_runtime_creation() {
 /// Test transport creation
 #[tokio::test]
 async fn test_transport_creation() {
+
 	let transport = Transport::default();
 
 	// Test transport type
@@ -95,6 +101,7 @@ async fn test_transport_creation() {
 /// Test API types
 #[test]
 fn test_api_types() {
+
 	use grove::API::Types::*;
 
 	let position = Position::new(0, 0);
@@ -117,6 +124,7 @@ fn test_api_types() {
 /// Test VS Code API facade
 #[test]
 fn test_vscode_api_facade() {
+
 	let api = grove::vscode!();
 
 	assert!(api.commands.is_some());
@@ -129,6 +137,7 @@ fn test_vscode_api_facade() {
 /// Test error handling
 #[test]
 fn test_error_handling() {
+
 	use grove::GroveError;
 
 	let error = GroveError::extension_not_found("test.ext");
@@ -143,6 +152,7 @@ fn test_error_handling() {
 /// Test configuration service
 #[tokio::test]
 async fn test_configuration_service() {
+
 	let service = grove::Services::ConfigurationService::new(None);
 
 	service.start().await.unwrap();
@@ -151,7 +161,9 @@ async fn test_configuration_service() {
 	service
 		.set(
 			"test.key".to_string(),
+
 			serde_json::json!("test-value"),
+
 			grove::Services::ConfigurationScope::Global,
 		)
 		.await
@@ -167,6 +179,7 @@ async fn test_configuration_service() {
 /// Test Spine connection
 #[tokio::test]
 async fn test_spine_connection() {
+
 	let config = grove::Protocol::SpineConfig::new("test-host".to_string());
 
 	let connection = grove::Protocol::SpineConnection::new(config);
@@ -184,6 +197,7 @@ async fn test_spine_connection() {
 
 /// Build integration test runner
 fn main() {
+
 	println!("Running Grove integration tests...");
 
 	// Note: These tests are meant to be run with `cargo test --test integration`

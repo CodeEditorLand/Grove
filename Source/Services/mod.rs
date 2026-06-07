@@ -12,6 +12,7 @@ pub mod ConfigurationService;
 /// Service configuration
 #[derive(Debug, Clone)]
 pub struct ServiceConfig {
+
 	/// Enable service
 	pub enabled:bool,
 
@@ -21,6 +22,7 @@ pub struct ServiceConfig {
 
 /// Service trait
 pub trait Service: Send + Sync {
+
 	/// Get service name
 	fn name(&self) -> &str;
 
