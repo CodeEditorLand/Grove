@@ -11,7 +11,6 @@ pub type GroveResult<T> = Result<T, GroveError>;
 /// Grove error type
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub enum GroveError {
-
 	/// Extension not found error
 	ExtensionNotFound {
 		/// The extension identifier
@@ -198,7 +197,6 @@ pub enum GroveError {
 }
 
 impl GroveError {
-
 	/// Create extension not found error
 	pub fn extension_not_found(extension_id:impl Into<String>) -> Self {
 		Self::ExtensionNotFound { extension_id:extension_id.into(), message:None }
@@ -296,7 +294,6 @@ impl GroveError {
 	pub fn is_recoverable(&self) -> bool {
 		matches!(
 			self,
-
 			Self::Timeout { .. }
 				| Self::TransportError { .. }
 				| Self::ConnectionError { .. }
@@ -308,14 +305,12 @@ impl GroveError {
 	pub fn is_transient(&self) -> bool {
 		matches!(
 			self,
-
 			Self::Timeout { .. } | Self::TransportError { .. } | Self::ConnectionError { .. }
 		)
 	}
 }
 
 impl fmt::Display for GroveError {
-
 	fn fmt(&self, f:&mut fmt::Formatter<'_>) -> fmt::Result {
 		match self {
 			Self::ExtensionNotFound { extension_id, message } => {
@@ -421,7 +416,6 @@ impl std::error::Error for GroveError {}
 
 /// Convert from std::io::Error
 impl From<std::io::Error> for GroveError {
-
 	fn from(err:std::io::Error) -> Self {
 		Self::IoError { path:None, operation:"unknown".to_string(), reason:err.to_string() }
 	}
@@ -429,7 +423,6 @@ impl From<std::io::Error> for GroveError {
 
 /// Convert from serde_json::Error
 impl From<serde_json::Error> for GroveError {
-
 	fn from(err:serde_json::Error) -> Self {
 		if err.is_io() {
 			Self::IoError { path:None, operation:"serde_json".to_string(), reason:err.to_string() }
@@ -441,7 +434,6 @@ impl From<serde_json::Error> for GroveError {
 
 /// Result extension trait for error handling
 pub trait ResultExt<T> {
-
 	/// Map error to GroveError
 	fn map_grove_error(self, context:impl Into<String>) -> GroveResult<T>;
 }
@@ -449,9 +441,7 @@ pub trait ResultExt<T> {
 impl<T, E> ResultExt<T> for Result<T, E>
 where
 	E: std::error::Error + Send + Sync + 'static,
-
 {
-
 	fn map_grove_error(self, context:impl Into<String>) -> GroveResult<T> {
 		self.map_err(|e| {
 			GroveError::InternalError {

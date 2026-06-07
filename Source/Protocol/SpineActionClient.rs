@@ -41,13 +41,9 @@
 use std::{collections::HashMap, sync::Arc};
 
 use anyhow::{Context, Result};
-
 use chrono::{DateTime, Utc};
-
 use futures::stream::StreamExt;
-
 use tokio::sync::RwLock;
-
 use tonic::transport::Channel;
 
 use crate::{
@@ -66,7 +62,6 @@ use crate::{
 ///
 ///  ☀️ 🟡 MOUNTAIN_GROVE_WASM - EchoAction client + gRPC connection
 pub struct SpineActionClient {
-
 	/// Mountain connection details
 	config:SpineConfig,
 
@@ -102,7 +97,6 @@ pub struct SpineActionClient {
 ///  ☀️ 🟡 MOUNTAIN_GROVE_WASM
 #[derive(Clone, Debug)]
 pub struct SpineConfig {
-
 	/// Mountain gRPC URL
 	pub mountain_url:String,
 
@@ -121,7 +115,6 @@ pub struct SpineConfig {
 ///  ☀️ 🟡 MOUNTAIN_GROVE_WASM
 #[derive(Clone, Debug)]
 pub struct GroveCapabilities {
-
 	/// Supports WASM
 	pub wasm_enabled:bool,
 
@@ -142,7 +135,6 @@ pub struct GroveCapabilities {
 }
 
 impl Default for SpineConfig {
-
 	fn default() -> Self {
 		Self {
 			mountain_url:"http://127.0.0.1:50051".to_string(),
@@ -173,7 +165,6 @@ impl Default for SpineConfig {
 ///  ☀️ 🟡 MOUNTAIN_GROVE_WASM
 #[derive(Clone, Debug)]
 pub enum ReconnectStrategy {
-
 	/// Never reconnect
 	Never,
 
@@ -188,7 +179,6 @@ pub enum ReconnectStrategy {
 }
 
 impl Default for ReconnectStrategy {
-
 	fn default() -> Self { Self::ExponentialBackoff { initial_delay_ms:1000, max_delay_ms:30000 } }
 }
 
@@ -197,7 +187,6 @@ impl Default for ReconnectStrategy {
 ///  ☀️ 🟡 MOUNTAIN_GROVE_WASM
 #[derive(Clone, Debug)]
 pub struct HostInfo {
-
 	pub host_id:String,
 
 	pub host_registry_id:String,
@@ -206,7 +195,6 @@ pub struct HostInfo {
 }
 
 impl SpineActionClient {
-
 	/// Create new Spine action client
 	///
 	///  ☀️ 🟡 MOUNTAIN_GROVE_WASM
@@ -300,19 +288,16 @@ impl SpineActionClient {
 
 		capabilities.insert(
 			"native_bridge_enabled".to_string(),
-
 			self.config.capabilities.native_bridge_enabled.to_string(),
 		);
 
 		capabilities.insert(
 			"wasm_memory_limit_mb".to_string(),
-
 			self.config.capabilities.wasm_memory_limit_mb.to_string(),
 		);
 
 		capabilities.insert(
 			"max_rhai_scripts".to_string(),
-
 			self.config.capabilities.max_rhai_scripts.to_string(),
 		);
 
@@ -337,9 +322,7 @@ impl SpineActionClient {
 
 			enabled_features:vec![
 				if cfg!(feature = "wasm") { "wasm".to_string() } else { String::new() },
-
 				if cfg!(feature = "rhai") { "rhai".to_string() } else { String::new() },
-
 				if cfg!(feature = "bridge") { "bridge".to_string() } else { String::new() },
 			]
 			.into_iter()
@@ -399,11 +382,8 @@ impl SpineActionClient {
 
 		dev_log!(
 			"grpc",
-
 			"Sending EchoAction: type={}, target={}",
-
 			action.action_type,
-
 			action.target
 		);
 
@@ -415,11 +395,8 @@ impl SpineActionClient {
 
 		dev_log!(
 			"grpc",
-
 			"EchoAction response: success={}, processing_time_ms={}",
-
 			response.success,
-
 			response.processing_time_ms
 		);
 
@@ -445,7 +422,6 @@ impl SpineActionClient {
 	) -> Result<Vec<u8>> {
 		let mut headers = vec![
 			("rpc_method".to_string(), rpc_method.to_string()),
-
 			("host_type".to_string(), "grove".to_string()),
 		];
 
@@ -482,7 +458,6 @@ impl SpineActionClient {
 	pub async fn send_event(&self, event_name:&str, payload:Vec<u8>, metadata:HashMap<String, String>) -> Result<()> {
 		let mut headers = vec![
 			("event_name".to_string(), event_name.to_string()),
-
 			("host_type".to_string(), "grove".to_string()),
 		];
 
@@ -536,9 +511,7 @@ impl SpineActionClient {
 					// is fully implemented
 					dev_log!(
 						"grove",
-
 						"[SpineConnection] Heartbeat maintained (last: {})",
-
 						*last_heartbeat.read().await
 					);
 				}
@@ -547,9 +520,7 @@ impl SpineActionClient {
 
 		dev_log!(
 			"grove",
-
 			"[SpineConnection] Heartbeat loop started (interval: {}s)",
-
 			interval_sec
 		);
 
@@ -637,7 +608,6 @@ impl SpineActionClient {
 ///  ☀️ 🟡 MOUNTAIN_GROVE_WASM
 #[derive(Clone, Debug)]
 pub struct ConnectionStatus {
-
 	pub connected:bool,
 
 	pub host_id:String,
@@ -655,7 +625,6 @@ pub struct ConnectionStatus {
 ///
 ///  ☀️ 🟡 MOUNTAIN_GROVE_WASM
 fn calculate_backoff(attempt:u32, strategy:&ReconnectStrategy) -> std::time::Duration {
-
 	match strategy {
 		ReconnectStrategy::Never => return std::time::Duration::from_secs(0),
 

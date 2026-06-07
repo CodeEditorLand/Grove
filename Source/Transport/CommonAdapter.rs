@@ -10,7 +10,6 @@
 use std::{collections::HashMap, sync::Arc, time::Duration};
 
 use async_trait::async_trait;
-
 use CommonLibrary::{
 	Environment::Environment,
 	Transport::{
@@ -59,7 +58,6 @@ use crate::Transport::{
 /// ```
 #[derive(Clone, Debug)]
 pub struct TransportAdapter {
-
 	/// The underlying Grove transport (wrapped in Arc for thread sharing)
 	transport:Arc<GroveTransport>,
 
@@ -75,7 +73,6 @@ pub struct TransportAdapter {
 }
 
 impl TransportAdapter {
-
 	/// Creates a new `TransportAdapter` from a Grove `Transport`.
 	///
 	/// # Parameters
@@ -198,7 +195,6 @@ impl TransportAdapter {
 
 #[async_trait]
 impl TransportStrategy for TransportAdapter {
-
 	async fn connect(&mut self) -> Result<(), TransportError> {
 		self.transport.connect().await.map_err(|e| {
 			TransportError::connection(format!("Failed to connect transport: {}", e)).with_transport_type("grove")
@@ -368,7 +364,6 @@ impl TransportStrategy for TransportAdapter {
 
 // Implement conversion from Grove's TransportError to Common's TransportError
 impl From<crate::Transport::GrpcTransportError> for TransportError {
-
 	fn from(err:crate::Transport::GrpcTransportError) -> Self {
 		match err {
 			crate::Transport::GrpcTransportError::ConnectionFailed(msg) => TransportError::connection(msg),
@@ -378,7 +373,6 @@ impl From<crate::Transport::GrpcTransportError> for TransportError {
 			crate::Transport::GrpcTransportError::SendFailed(msg) => {
 				TransportError::new(
 					super::TransportErrorCode::MessageTooLarge, // Actually send failed
-
 					msg,
 				)
 			},

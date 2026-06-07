@@ -7,7 +7,6 @@ use serde::{Deserialize, Serialize};
 /// Position in a text document
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct Position {
-
 	/// Line position in a document (0-based)
 	pub line:u32,
 
@@ -16,7 +15,6 @@ pub struct Position {
 }
 
 impl Position {
-
 	/// Create a new position
 	pub fn new(line:u32, character:u32) -> Self { Self { line, character } }
 
@@ -30,14 +28,12 @@ impl Position {
 }
 
 impl Default for Position {
-
 	fn default() -> Self { Self::zero() }
 }
 
 /// A range in a text document
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct Range {
-
 	/// The range's start position
 	pub start:Position,
 
@@ -46,7 +42,6 @@ pub struct Range {
 }
 
 impl Range {
-
 	/// Create a new range
 	pub fn new(start:Position, end:Position) -> Self { Self { start, end } }
 
@@ -58,14 +53,12 @@ impl Range {
 }
 
 impl Default for Range {
-
 	fn default() -> Self { Self::empty(Position::zero()) }
 }
 
 /// Represents a location inside a resource
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct Location {
-
 	/// The resource identifier of this location
 	pub uri:String,
 
@@ -74,7 +67,6 @@ pub struct Location {
 }
 
 impl Location {
-
 	/// Create a new location
 	pub fn new(uri:String, range:Range) -> Self { Self { uri, range } }
 }
@@ -82,7 +74,6 @@ impl Location {
 /// Represents a diagnostic message
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Diagnostic {
-
 	/// The range at which the message applies
 	pub range:Range,
 
@@ -106,7 +97,6 @@ pub struct Diagnostic {
 }
 
 impl Diagnostic {
-
 	/// Create a new diagnostic
 	pub fn new(range:Range, message:String) -> Self {
 		Self {
@@ -130,7 +120,6 @@ impl Diagnostic {
 /// The severity of a diagnostic
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum DiagnosticSeverity {
-
 	/// Not an error, but something to be aware of
 	Hint = 3,
 
@@ -148,7 +137,6 @@ pub enum DiagnosticSeverity {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum DiagnosticCode {
-
 	/// Numeric code
 	Number(i64),
 
@@ -159,7 +147,6 @@ pub enum DiagnosticCode {
 /// Diagnostic tags
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum DiagnosticTag {
-
 	/// Unused or unnecessary code
 	Unnecessary = 1,
 
@@ -170,7 +157,6 @@ pub enum DiagnosticTag {
 /// Related diagnostic information
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DiagnosticRelatedInformation {
-
 	/// The location of this related diagnostic information
 	pub location:Location,
 
@@ -181,7 +167,6 @@ pub struct DiagnosticRelatedInformation {
 /// Represents a text change
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TextEdit {
-
 	/// The range of the text document to be manipulated
 	pub range:Range,
 
@@ -190,7 +175,6 @@ pub struct TextEdit {
 }
 
 impl TextEdit {
-
 	/// Create a new text edit
 	pub fn new(range:Range, new_text:String) -> Self { Self { range, new_text } }
 
@@ -207,26 +191,22 @@ impl TextEdit {
 /// Workspace edit
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WorkspaceEdit {
-
 	/// Holds changes to existing resources
 	pub changes:Option<std::collections::HashMap<String, Vec<TextEdit>>>,
 }
 
 impl WorkspaceEdit {
-
 	/// Create a new workspace edit
 	pub fn new() -> Self { Self { changes:Some(std::collections::HashMap::new()) } }
 }
 
 impl Default for WorkspaceEdit {
-
 	fn default() -> Self { Self::new() }
 }
 
 /// Completion item
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CompletionItem {
-
 	/// The label of this completion item
 	pub label:String,
 
@@ -251,7 +231,6 @@ pub struct CompletionItem {
 }
 
 impl CompletionItem {
-
 	/// Create a new completion item
 	pub fn new(label:String) -> Self {
 		Self {
@@ -275,7 +254,6 @@ impl CompletionItem {
 /// Completion item kind
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum CompletionItemKind {
-
 	/// Text completion
 	Text = 1,
 
@@ -356,7 +334,6 @@ pub enum CompletionItemKind {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum CompletionItemDocumentation {
-
 	/// Markdown string
 	String(String),
 
@@ -367,7 +344,6 @@ pub enum CompletionItemDocumentation {
 /// Completion item documentation value object
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CompletionItemDocumentationValue {
-
 	/// The kind of documentation
 	pub kind:String,
 
@@ -378,7 +354,6 @@ pub struct CompletionItemDocumentationValue {
 /// Partial result token
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PartialResultParams {
-
 	/// An optional token that a server can use to report partial results
 	#[serde(rename = "partialResultToken")]
 	pub partial_result_token:Option<String>,
@@ -387,7 +362,6 @@ pub struct PartialResultParams {
 /// Work done progress params
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WorkDoneProgressParams {
-
 	/// An optional token that a server can use to report work done progress
 	#[serde(rename = "workDoneToken")]
 	pub work_done_token:Option<String>,
@@ -396,13 +370,11 @@ pub struct WorkDoneProgressParams {
 /// Text document identifier
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct TextDocumentIdentifier {
-
 	/// The text document's uri
 	pub uri:String,
 }
 
 impl TextDocumentIdentifier {
-
 	/// Create a new text document identifier
 	pub fn new(uri:String) -> Self { Self { uri } }
 }
@@ -410,7 +382,6 @@ impl TextDocumentIdentifier {
 /// Versioned text document identifier
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct VersionedTextDocumentIdentifier {
-
 	/// The text document's uri
 	pub uri:String,
 
@@ -419,7 +390,6 @@ pub struct VersionedTextDocumentIdentifier {
 }
 
 impl VersionedTextDocumentIdentifier {
-
 	/// Create a new versioned text document identifier
 	pub fn new(uri:String, version:i32) -> Self { Self { uri, version } }
 }
@@ -427,7 +397,6 @@ impl VersionedTextDocumentIdentifier {
 /// Text document item
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct TextDocumentItem {
-
 	/// The text document's uri
 	pub uri:String,
 
@@ -443,7 +412,6 @@ pub struct TextDocumentItem {
 }
 
 impl TextDocumentItem {
-
 	/// Create a new text document item
 	pub fn new(uri:String, language_id:String, version:i32, text:String) -> Self {
 		Self { uri, language_id, version, text }
@@ -454,7 +422,6 @@ impl TextDocumentItem {
 /// files
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateFileParams {
-
 	/// An array of all files/folders created in this operation
 	pub files:Vec<FileCreate>,
 }
@@ -462,7 +429,6 @@ pub struct CreateFileParams {
 /// Represents information to create a file
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FileCreate {
-
 	/// A file or folder uri
 	pub uri:String,
 
@@ -474,7 +440,6 @@ pub struct FileCreate {
 /// Options when creating a file
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateFileOptions {
-
 	/// Overwrite existing file
 	#[serde(rename = "overwrite")]
 	pub overwrite:Option<bool>,
