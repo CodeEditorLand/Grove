@@ -273,7 +273,8 @@ impl TransportStrategy for TransportAdapter {
 
 		data.extend_from_slice(&notification.payload);
 
-		let result = self.transport
+		let result = self
+			.transport
 			.send_no_response(&data)
 			.await
 			.map_err(|e| TransportError::from(e).with_transport_type("grove"));
@@ -374,7 +375,9 @@ impl TransportStrategy for TransportAdapter {
 		// Grove transport stats are async; the sync notifications_sent counter
 		// is the only metric we can read without blocking.
 		let mut m = TransportMetrics::new();
+
 		m.notifications_sent = self.notifications_sent.load(std::sync::atomic::Ordering::Relaxed);
+
 		m
 	}
 }
