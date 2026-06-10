@@ -127,12 +127,17 @@ pub struct CommandNamespace {
 }
 
 impl CommandNamespace {
+<<<<<<< HEAD
 	/// Create a new CommandNamespace (no transport - execute_command returns
 	/// error).
 	pub fn new() -> Self { Self { transport:None } }
 
 	/// Create a CommandNamespace wired to a Mountain transport.
 	pub fn new_with_transport(transport:Arc<Transport>) -> Self { Self { transport:Some(transport) } }
+=======
+	/// Create a new CommandNamespace instance
+	pub fn new() -> Self { Self }
+>>>>>>> a30c17d612d84029606aa1ccde759b5dba63503a
 
 	/// Register a command
 	pub fn register_command(&self, command_id:String, _callback:CommandCallback) -> Result<Command, String> {
@@ -418,7 +423,11 @@ pub struct WorkspaceConfiguration {
 }
 
 impl WorkspaceConfiguration {
+<<<<<<< HEAD
 	/// Create a new workspace configuration (no transport).
+=======
+	/// Create a new workspace configuration
+>>>>>>> a30c17d612d84029606aa1ccde759b5dba63503a
 	///
 	/// # Arguments
 	///
@@ -806,7 +815,11 @@ pub struct DiagnosticCollection {
 }
 
 impl DiagnosticCollection {
+<<<<<<< HEAD
 	/// Create a new diagnostic collection (local only, no transport).
+=======
+	/// Create a new diagnostic collection
+>>>>>>> a30c17d612d84029606aa1ccde759b5dba63503a
 	///
 	/// # Arguments
 	///

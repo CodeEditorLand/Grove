@@ -13,18 +13,18 @@
 		</td>
 		<td align="left" valign="middle">
 			<h3 align="left">
-				<a href="https://Land.PlayForm.Cloud" target="_blank">
+				<a href="https://editor.land" target="_blank">
 					<picture>
-						<source media="(prefers-color-scheme: dark)" srcset="https://PlayForm.Cloud/Dark/Image/GitHub/Land.svg" />
-						<source media="(prefers-color-scheme: light)" srcset="https://PlayForm.Cloud/Image/GitHub/Land.svg" />
-						<img width="28" alt="Land Logo" src="https://PlayForm.Cloud/Image/GitHub/Land.svg" />
+						<source media="(prefers-color-scheme: dark)" srcset="https://editor.land/Dark/Image/GitHub/Land.svg" />
+						<source media="(prefers-color-scheme: light)" srcset="https://editor.land/Image/GitHub/Land.svg" />
+						<img width="28" alt="Land Logo" src="https://editor.land/Image/GitHub/Land.svg" />
 					</picture>
 				</a>
 			</h3>
 		</td>
 		<td align="left" valign="middle">
 			<h3 align="left">
-				<a href="https://Land.PlayForm.Cloud" target="_blank">
+				<a href="https://editor.land" target="_blank">
 					Land
 					🏞️
 				</a>
@@ -48,11 +48,11 @@ _"An extension can only touch what you explicitly grant. The sandbox is enforced
 by the hardware, not a policy."_
 
 [![License: CC0-1.0](https://img.shields.io/badge/License-CC0_1.0-lightgrey.svg)](https://github.com/CodeEditorLand/Grove/tree/Current/LICENSE)
-[<img src="https://land.playform.cloud/Image/Rust.svg" width="14" alt="Rust" />](https://www.rust-lang.org/)&#x2001;[![Crates.io](https://img.shields.io/crates/v/Grove.svg)](https://crates.io/crates/Grove)
-[<img src="https://land.playform.cloud/Image/Rust.svg" width="14" alt="Rust" />](https://www.rust-lang.org/)&#x2001;[![Rust Version](https://img.shields.io/badge/Rust-1.75+-orange.svg)](https://www.rust-lang.org/)
-[<img src="https://land.playform.cloud/Image/WebAssembly.svg" width="14" alt="WebAssembly" />](https://webassembly.org/)&#x2001;[![WASMtime Version](https://img.shields.io/badge/WASMtime-v20-blue.svg)](https://wasmtime.dev/)
+[<img src="https://editor.land/Image/Rust.svg" width="14" alt="Rust" />](https://www.rust-lang.org/)&#x2001;[![Crates.io](https://img.shields.io/crates/v/Grove.svg)](https://crates.io/crates/Grove)
+[<img src="https://editor.land/Image/Rust.svg" width="14" alt="Rust" />](https://www.rust-lang.org/)&#x2001;[![Rust Version](https://img.shields.io/badge/Rust-1.75+-orange.svg)](https://www.rust-lang.org/)
+[<img src="https://editor.land/Image/WebAssembly.svg" width="14" alt="WebAssembly" />](https://webassembly.org/)&#x2001;[![WASMtime Version](https://img.shields.io/badge/WASMtime-v20-blue.svg)](https://wasmtime.dev/)
 
-**[Rust API Documentation](https://Rust.Documentation.Land.PlayForm.Cloud/Grove/)**&#x2001;📖
+**[Rust API Documentation](https://Rust.Documentation.editor.land/Grove/)**&#x2001;📖
 
 Welcome to **Grove**, the high-performance `Rust`/`WebAssembly` extension host
 for the **Land Code Editor**. Grove is designed to complement `Cocoon`
@@ -315,9 +315,9 @@ Grove is designed to be compatible with:
 
 ## See Also
 
-- [Grove Documentation](https://land.playform.cloud/Doc/grove)
-- [Architecture Overview](https://land.playform.cloud/Doc/architecture)
-- [Why WebAssembly](https://land.playform.cloud/Doc/why-webassembly)
+- [Grove Documentation](https://editor.land/Doc/grove)
+- [Architecture Overview](https://editor.land/Doc/architecture)
+- [Why WebAssembly](https://editor.land/Doc/why-webassembly)
 - [Mountain](https://github.com/CodeEditorLand/Mountain)
 - [Cocoon](https://github.com/CodeEditorLand/Cocoon)
 
@@ -382,12 +382,12 @@ Commons Fund grant.
 	<tbody>
 		<tr>
 			<td align="left" valign="middle">
-				<a href="https://Land.PlayForm.Cloud">
+				<a href="https://editor.land">
 					<img width="60" src="https://raw.githubusercontent.com/CodeEditorLand/Asset/refs/heads/Current/Logo/Land.svg" alt="Land" />
 				</a>
 			</td>
 			<td align="left" valign="middle">
-				<a href="https://PlayForm.Cloud">
+				<a href="https://editor.land">
 					<img width="76" src="https://raw.githubusercontent.com/PlayForm/Asset/refs/heads/Current/Logo/PlayForm.svg" alt="PlayForm" />
 				</a>
 			</td>
@@ -408,7 +408,7 @@ Commons Fund grant.
 ---
 
 **Project Maintainers**: Source Open
-([Source/Open@Land.PlayForm.Cloud](mailto:Source/Open@Land.PlayForm.Cloud)) |
+([Source/Open@editor.land](mailto:Source/Open@editor.land)) |
 [GitHub Repository](https://github.com/CodeEditorLand/Grove) |
 [Report an Issue](https://github.com/CodeEditorLand/Grove/issues) |
 [Security Policy](https://github.com/CodeEditorLand/Grove/security/policy)
