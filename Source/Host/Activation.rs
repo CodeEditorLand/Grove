@@ -12,9 +12,10 @@ use tokio::sync::RwLock;
 use crate::{
 	Host::{
 		ActivationResult,
-		ExtensionManager::{ExtensionManagerImpl, ExtensionState},
+		ExtensionManager::{ExtensionManagerImpl, ExtensionState, ExtensionType},
 		HostConfig,
 	},
+	WASM::ModuleLoader::ModuleLoaderImpl,
 	dev_log,
 };
 
@@ -107,6 +108,9 @@ impl std::str::FromStr for ActivationEvent {
 pub struct ActivationEngine {
 	/// Extension manager
 	extension_manager:Arc<ExtensionManagerImpl>,
+
+	/// Module loader - used for the WASM activation path
+	module_loader:Arc<ModuleLoaderImpl>,
 
 	/// Host configuration
 	config:HostConfig,
@@ -202,8 +206,17 @@ impl Default for ActivationContext {
 impl ActivationEngine {
 	/// Create a new activation engine
 	pub fn new(extension_manager:Arc<ExtensionManagerImpl>, config:HostConfig) -> Self {
+		use crate::WASM::{ModuleLoader::ModuleLoaderImpl, Runtime::WASMConfig};
+
+		let module_loader = Arc::new(ModuleLoaderImpl::new(
+			Arc::clone(extension_manager.wasm_runtime()),
+			WASMConfig::default(),
+		));
+
 		Self {
 			extension_manager,
+
+			module_loader,
 
 			config,
 
@@ -391,25 +404,70 @@ impl ActivationEngine {
 		})
 	}
 
-	/// Perform actual activation (placeholder - would call extension's activate
-	/// function)
+	/// Perform actual activation - dispatches by extension type.
+	/// WASM extensions are loaded via ModuleLoaderImpl and their exported
+	/// `activate` function is called through a wasmtime typed func.
+	/// Non-WASM extensions are deferred to the host (Cocoon/Node).
 	async fn perform_activation(&self, extension_id:&str, _context:&ActivationContext) -> Result<ActivationResult> {
-		// In real implementation, this would:
-		// 1. Call the extension's activate function
-		// 2. Pass the activation context
-		// 3. Wait for activation to complete
-		// 4. Handle any errors
+		let extension_info = match self.extension_manager.get_extension(extension_id).await {
+			Some(info) => info,
 
-		dev_log!("extensions", "Performing activation for extension: {}", extension_id);
+			None => return Err(anyhow::anyhow!("Extension not found: {}", extension_id)),
+		};
 
-		// Placeholder implementation
-		Ok(ActivationResult {
-			extension_id:extension_id.to_string(),
-			success:true,
-			time_ms:0,
-			error:None,
-			contributes:Vec::new(),
-		})
+		match extension_info.extension_type {
+			ExtensionType::WASM => {
+				let wasm_module = self
+					.module_loader
+					.load_from_file(&extension_info.entry_point)
+					.await
+					.with_context(|| format!("Failed to load WASM for {}", extension_id))?;
+
+				// Re-read bytes to compile a wasmtime::Module for instantiation
+				let wasm_bytes = tokio::fs::read(&extension_info.entry_point).await?;
+
+				let module = self.module_loader.runtime().compile_module(&wasm_bytes)?;
+
+				let store = self.module_loader.runtime().create_store()?;
+
+				let mut instance = self.module_loader.instantiate(&module, store).await?;
+
+				if wasm_module.exported_functions.iter().any(|f| f == "activate") {
+					let activate = instance
+						.instance
+						.get_typed_func::<(), ()>(&mut instance.store, "activate")
+						.map_err(|e| anyhow::anyhow!("activate func error: {}", e))?;
+
+					activate
+						.call(&mut instance.store, ())
+						.map_err(|e| anyhow::anyhow!("activate call failed: {}", e))?;
+
+					dev_log!("extensions", "WASM activate() called for {}", extension_id);
+				} else {
+					dev_log!("extensions", "no activate export in WASM module for {}", extension_id);
+				}
+
+				Ok(ActivationResult {
+					extension_id:extension_id.to_string(),
+					success:true,
+					time_ms:0,
+					error:None,
+					contributes:Vec::new(),
+				})
+			},
+
+			ExtensionType::JavaScript | ExtensionType::Native | ExtensionType::Unknown => {
+				dev_log!("extensions", "non-WASM extension activation deferred to host: {}", extension_id);
+
+				Ok(ActivationResult {
+					extension_id:extension_id.to_string(),
+					success:true,
+					time_ms:0,
+					error:None,
+					contributes:Vec::new(),
+				})
+			},
+		}
 	}
 
 	/// Get activation history

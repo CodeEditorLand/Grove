@@ -24,7 +24,6 @@ use crate::{API::Types::*, Transport::Strategy::Transport, dev_log};
 /// removed when `Disposable::dispose()` is called on the returned handle.
 #[derive(Debug, Default)]
 struct ProviderStore {
-
 	/// Map from handle → (provider_type, selector) for diagnostics.
 	entries:Mutex<std::collections::HashMap<u32, (String, String)>>,
 
@@ -33,7 +32,6 @@ struct ProviderStore {
 }
 
 impl ProviderStore {
-
 	/// Returns the next unique handle and inserts a registration record.
 	fn insert(&self, provider_type:&str, selector:&str) -> u32 {
 		let Handle = self.next_handle.fetch_add(1, Ordering::Relaxed);
@@ -59,7 +57,6 @@ impl ProviderStore {
 /// VS Code API facade - the main entry point for extensions
 #[derive(Debug, Clone)]
 pub struct VSCodeAPI {
-
 	/// Commands namespace
 	pub commands:Arc<CommandNamespace>,
 
@@ -80,7 +77,6 @@ pub struct VSCodeAPI {
 }
 
 impl VSCodeAPI {
-
 	/// Create a new VS Code API facade (no transport - registrations stored
 	/// locally only)
 	pub fn new() -> Self {
@@ -104,11 +100,11 @@ impl VSCodeAPI {
 	/// `send_no_response`.
 	pub fn new_with_transport(transport:Arc<Transport>) -> Self {
 		Self {
-			commands:Arc::new(CommandNamespace::new()),
+			commands:Arc::new(CommandNamespace::new_with_transport(Arc::clone(&transport))),
 
-			window:Arc::new(Window::new()),
+			window:Arc::new(Window::new_with_transport(Arc::clone(&transport))),
 
-			workspace:Arc::new(Workspace::new()),
+			workspace:Arc::new(Workspace::new_with_transport(Arc::clone(&transport))),
 
 			languages:Arc::new(LanguageNamespace::new_with_transport(Arc::clone(&transport))),
 
@@ -120,34 +116,51 @@ impl VSCodeAPI {
 }
 
 impl Default for VSCodeAPI {
-
 	fn default() -> Self { Self::new() }
 }
 
 /// Commands namespace
 #[derive(Debug, Clone)]
-pub struct CommandNamespace;
+pub struct CommandNamespace {
+	/// Optional transport to Mountain for command forwarding.
+	transport:Option<Arc<Transport>>,
+}
 
 impl CommandNamespace {
+	/// Create a new CommandNamespace (no transport - execute_command returns
+	/// error).
+	pub fn new() -> Self { Self { transport:None } }
 
-	/// Create a new CommandNamespace instance
-	pub fn new() -> Self { Self }
+	/// Create a CommandNamespace wired to a Mountain transport.
+	pub fn new_with_transport(transport:Arc<Transport>) -> Self { Self { transport:Some(transport) } }
 
 	/// Register a command
 	pub fn register_command(&self, command_id:String, _callback:CommandCallback) -> Result<Command, String> {
 		Ok(Command { id:command_id.clone() })
 	}
 
-	/// Execute a command
+	/// Execute a command by forwarding `commands:execute` to Mountain.
+	/// When no transport is wired, returns an error so callers can fall back.
 	pub async fn execute_command<T:serde::de::DeserializeOwned>(
 		&self,
 
 		command_id:String,
 
-		_args:Vec<serde_json::Value>,
+		args:Vec<serde_json::Value>,
 	) -> Result<T, String> {
-		// Placeholder implementation
-		Err(format!("Command not implemented: {}", command_id))
+		let Some(transport) = &self.transport else {
+			return Err(format!("No transport - cannot execute command: {}", command_id));
+		};
+
+		let payload = serde_json::to_vec(&serde_json::json!({
+			"method": "commands:execute",
+			"parameters": [command_id, args],
+		}))
+		.map_err(|e| format!("serialise: {}", e))?;
+
+		let response = transport.send(&payload).await.map_err(|e| format!("transport: {}", e))?;
+
+		serde_json::from_slice::<T>(&response).map_err(|e| format!("deserialise: {}", e))
 	}
 }
 
@@ -157,58 +170,110 @@ pub type CommandCallback = Box<dyn Fn(Vec<serde_json::Value>) -> Result<serde_js
 /// Command representation
 #[derive(Debug, Clone)]
 pub struct Command {
-
 	/// The unique identifier of the command
 	pub id:String,
 }
 
 /// Window namespace
 #[derive(Debug, Clone)]
-pub struct Window;
+pub struct Window {
+	/// Transport for forwarding notifications to Mountain
+	transport:Option<Arc<Transport>>,
+}
 
 impl Window {
-
 	/// Create a new Window instance
-	pub fn new() -> Self { Self }
+	pub fn new() -> Self { Self { transport:None } }
+
+	/// Create a Window instance with a transport for notification forwarding
+	pub fn new_with_transport(transport:Arc<Transport>) -> Self { Self { transport:Some(transport) } }
 
 	/// Show an information message
-	pub async fn show_information_message(&self, _message:String) -> Result<String, String> {
-		// Placeholder implementation
+	pub async fn show_information_message(&self, message:String) -> Result<String, String> {
+		if let Some(t) = &self.transport {
+			let msg =
+				serde_json::json!({"method":"notification:show","parameters":{"message":message,"severity":"info"}});
+
+			if let Ok(bytes) = serde_json::to_vec(&msg) {
+				let t = Arc::clone(t);
+
+				tokio::spawn(async move {
+					let _ = t.send_no_response(&bytes).await;
+				});
+			}
+		}
+
 		Ok("OK".to_string())
 	}
 
 	/// Show a warning message
-	pub async fn show_warning_message(&self, _message:String) -> Result<String, String> {
-		// Placeholder implementation
+	pub async fn show_warning_message(&self, message:String) -> Result<String, String> {
+		if let Some(t) = &self.transport {
+			let msg =
+				serde_json::json!({"method":"notification:show","parameters":{"message":message,"severity":"warning"}});
+
+			if let Ok(bytes) = serde_json::to_vec(&msg) {
+				let t = Arc::clone(t);
+
+				tokio::spawn(async move {
+					let _ = t.send_no_response(&bytes).await;
+				});
+			}
+		}
+
 		Ok("OK".to_string())
 	}
 
 	/// Show an error message
-	pub async fn show_error_message(&self, _message:String) -> Result<String, String> {
-		// Placeholder implementation
+	pub async fn show_error_message(&self, message:String) -> Result<String, String> {
+		if let Some(t) = &self.transport {
+			let msg =
+				serde_json::json!({"method":"notification:show","parameters":{"message":message,"severity":"error"}});
+
+			if let Ok(bytes) = serde_json::to_vec(&msg) {
+				let t = Arc::clone(t);
+
+				tokio::spawn(async move {
+					let _ = t.send_no_response(&bytes).await;
+				});
+			}
+		}
+
 		Ok("OK".to_string())
 	}
 
 	/// Create and show a new output channel
-	pub fn create_output_channel(&self, name:String) -> OutputChannel { OutputChannel::new(name) }
+	pub fn create_output_channel(&self, name:String) -> OutputChannel {
+		match &self.transport {
+			Some(t) => OutputChannel::new_with_transport(name, Arc::clone(t)),
+
+			None => OutputChannel::new(name),
+		}
+	}
 }
 
 /// Output channel for logging
 #[derive(Debug, Clone)]
 pub struct OutputChannel {
-
 	/// The name of the output channel
 	name:String,
+
+	/// Transport for forwarding show/hide/dispose notifications to Mountain
+	transport:Option<Arc<Transport>>,
 }
 
 impl OutputChannel {
-
 	/// Create a new output channel
 	///
 	/// # Arguments
 	///
 	/// * `name` - The name of the output channel
-	pub fn new(name:String) -> Self { Self { name } }
+	pub fn new(name:String) -> Self { Self { name, transport:None } }
+
+	/// Create a new output channel with a transport for notification forwarding
+	pub fn new_with_transport(name:String, transport:Arc<Transport>) -> Self {
+		Self { name, transport:Some(transport) }
+	}
 
 	/// Append a line to the channel
 	pub fn append_line(&self, line:&str) {
@@ -222,48 +287,116 @@ impl OutputChannel {
 
 	/// Show the output channel
 	pub fn show(&self) {
+		if let Some(t) = &self.transport {
+			let msg = serde_json::json!({"method":"output:show","parameters":{"channel":self.name}});
 
-		// Placeholder - in real implementation, would show the channel
+			if let Ok(bytes) = serde_json::to_vec(&msg) {
+				let t = Arc::clone(t);
+
+				tokio::spawn(async move {
+					let _ = t.send_no_response(&bytes).await;
+				});
+			}
+		}
 	}
 
 	/// Hide the output channel
 	pub fn hide(&self) {
+		if let Some(t) = &self.transport {
+			let msg = serde_json::json!({"method":"output:hide","parameters":{"channel":self.name}});
 
-		// Placeholder - in real implementation, would hide the channel
+			if let Ok(bytes) = serde_json::to_vec(&msg) {
+				let t = Arc::clone(t);
+
+				tokio::spawn(async move {
+					let _ = t.send_no_response(&bytes).await;
+				});
+			}
+		}
 	}
 
 	/// Dispose the output channel
 	pub fn dispose(&self) {
+		if let Some(t) = &self.transport {
+			let msg = serde_json::json!({"method":"output:dispose","parameters":{"channel":self.name}});
 
-		// Placeholder - in real implementation, would dispose resources
+			if let Ok(bytes) = serde_json::to_vec(&msg) {
+				let t = Arc::clone(t);
+
+				tokio::spawn(async move {
+					let _ = t.send_no_response(&bytes).await;
+				});
+			}
+		}
 	}
 }
 
 /// Workspace namespace
 #[derive(Debug, Clone)]
-pub struct Workspace;
+pub struct Workspace {
+	/// Optional transport to Mountain for configuration calls.
+	transport:Option<Arc<Transport>>,
+}
 
 impl Workspace {
-
 	/// Create a new Workspace instance
-	pub fn new() -> Self { Self }
+	pub fn new() -> Self { Self { transport:None } }
 
-	/// Get workspace folders
+	/// Create a Workspace wired to a Mountain transport.
+	pub fn new_with_transport(transport:Arc<Transport>) -> Self { Self { transport:Some(transport) } }
+
+	/// Get workspace folders (sync).
+	///
+	/// Returns an empty vec when called from a synchronous context. Use
+	/// `workspace_folders_async` from an async context to retrieve live data
+	/// from Mountain.
 	pub fn workspace_folders(&self) -> Vec<WorkspaceFolder> {
-		// Placeholder implementation
+		dev_log!(
+			"workspace",
+			"[Workspace::workspace_folders] transport wired but called synchronously"
+		);
+
 		Vec::new()
+	}
+
+	/// Get workspace folders by querying Mountain via the transport.
+	///
+	/// Falls back to an empty vec on any transport or parse error.
+	pub async fn workspace_folders_async(&self) -> Vec<WorkspaceFolder> {
+		let Some(t) = &self.transport else {
+			return Vec::new();
+		};
+
+		let msg = serde_json::json!({"method":"workspaces:getFolders","parameters":{}});
+
+		let Ok(bytes) = serde_json::to_vec(&msg) else {
+			return Vec::new();
+		};
+
+		match t.send(&bytes).await {
+			Ok(response) => serde_json::from_slice::<Vec<WorkspaceFolder>>(&response).unwrap_or_default(),
+
+			Err(e) => {
+				dev_log!("workspace", "[workspace_folders_async] error: {}", e);
+
+				Vec::new()
+			},
+		}
 	}
 
 	/// Get workspace configuration
 	pub fn get_configuration(&self, section:Option<String>) -> WorkspaceConfiguration {
-		WorkspaceConfiguration::new(section)
+		match &self.transport {
+			Some(t) => WorkspaceConfiguration::new_with_transport(section, Arc::clone(t)),
+
+			None => WorkspaceConfiguration::new(section),
+		}
 	}
 }
 
 /// Workspace folder
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WorkspaceFolder {
-
 	/// The uri of the workspace folder
 	pub uri:String,
 
@@ -277,33 +410,79 @@ pub struct WorkspaceFolder {
 /// Workspace configuration
 #[derive(Debug, Clone)]
 pub struct WorkspaceConfiguration {
-
 	/// The configuration section name
 	section:Option<String>,
+
+	/// Optional transport to Mountain for live configuration calls.
+	transport:Option<Arc<Transport>>,
 }
 
 impl WorkspaceConfiguration {
-
-	/// Create a new workspace configuration
+	/// Create a new workspace configuration (no transport).
 	///
 	/// # Arguments
 	///
 	/// * `section` - Optional section name to retrieve
-	pub fn new(section:Option<String>) -> Self { Self { section } }
+	pub fn new(section:Option<String>) -> Self { Self { section, transport:None } }
 
-	/// Get a configuration value
+	/// Create a workspace configuration wired to a Mountain transport.
+	///
+	/// # Arguments
+	///
+	/// * `section` - Optional section name to retrieve
+	/// * `transport` - Active Mountain transport
+	pub fn new_with_transport(section:Option<String>, transport:Arc<Transport>) -> Self {
+		Self { section, transport:Some(transport) }
+	}
+
+	/// Get a configuration value (sync stub - returns Err; use
+	/// `get_async` when a transport is available).
 	pub fn get<T:serde::de::DeserializeOwned>(&self, _key:String) -> Result<T, String> {
-		// Placeholder implementation
 		Err("Configuration not implemented".to_string())
+	}
+
+	/// Get a configuration value via Mountain `configuration:get`.
+	pub async fn get_async<T:serde::de::DeserializeOwned>(&self, key:String) -> Result<T, String> {
+		let Some(t) = &self.transport else {
+			return Err("No transport wired".to_string());
+		};
+
+		let msg = serde_json::json!({
+			"method": "configuration:get",
+			"parameters": { "section": self.section, "key": key }
+		});
+
+		let bytes = serde_json::to_vec(&msg).map_err(|e| e.to_string())?;
+
+		let response = t.send(&bytes).await.map_err(|e| e.to_string())?;
+
+		serde_json::from_slice::<T>(&response).map_err(|e| e.to_string())
 	}
 
 	/// Check if a key exists in the configuration
 	pub fn has(&self, _key:String) -> bool { false }
 
-	/// Update a configuration value
-	pub async fn update(&self, _key:String, _value:serde_json::Value) -> Result<(), String> {
-		// Placeholder implementation
-		Err("Update configuration not implemented".to_string())
+	/// Update a configuration value via Mountain `configuration:update`
+	/// (fire-and-forget).
+	pub async fn update(&self, key:String, value:serde_json::Value) -> Result<(), String> {
+		let Some(t) = &self.transport else {
+			return Err("No transport wired".to_string());
+		};
+
+		let msg = serde_json::json!({
+			"method": "configuration:update",
+			"parameters": { "section": self.section, "key": key, "value": value }
+		});
+
+		let bytes = serde_json::to_vec(&msg).map_err(|e| e.to_string())?;
+
+		let t2 = Arc::clone(t);
+
+		tokio::spawn(async move {
+			let _ = t2.send_no_response(&bytes).await;
+		});
+
+		Ok(())
 	}
 }
 
@@ -318,7 +497,6 @@ impl WorkspaceConfiguration {
 /// 4. Returns a `Disposable` that removes the registration on dispose
 #[derive(Debug)]
 pub struct LanguageNamespace {
-
 	/// Active provider registration store.
 	store:Arc<ProviderStore>,
 
@@ -327,12 +505,10 @@ pub struct LanguageNamespace {
 }
 
 impl Clone for LanguageNamespace {
-
 	fn clone(&self) -> Self { Self { store:Arc::clone(&self.store), transport:self.transport.clone() } }
 }
 
 impl LanguageNamespace {
-
 	/// Create a new LanguageNamespace instance (local storage only).
 	pub fn new() -> Self { Self { store:Arc::new(ProviderStore::default()), transport:None } }
 
@@ -362,13 +538,9 @@ impl LanguageNamespace {
 
 		dev_log!(
 			"extensions",
-
 			"[LanguageNamespace] registered {} handle={} selector={}",
-
 			ProviderTypeOwned,
-
 			Handle,
-
 			SelectorStr
 		);
 
@@ -397,11 +569,8 @@ impl LanguageNamespace {
 
 			dev_log!(
 				"extensions",
-
 				"[LanguageNamespace] disposed {} handle={}",
-
 				ProviderTypeOwned,
-
 				Handle
 			);
 		}))
@@ -539,14 +708,17 @@ impl LanguageNamespace {
 
 	/// Register diagnostic collection
 	pub fn create_diagnostic_collection(&self, name:Option<String>) -> DiagnosticCollection {
-		DiagnosticCollection::new(name)
+		match &self.transport {
+			Some(t) => DiagnosticCollection::new_with_transport(name, Arc::clone(t)),
+
+			None => DiagnosticCollection::new(name),
+		}
 	}
 
 	/// Set language configuration
 	pub fn set_language_configuration(&self, language:String) -> Disposable {
 		self.register(
 			"languageConfiguration",
-
 			&vec![DocumentFilter { language:Some(language), scheme:None, pattern:None }],
 		)
 	}
@@ -555,7 +727,6 @@ impl LanguageNamespace {
 /// Document selector
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DocumentFilter {
-
 	/// A language id, like `typescript`
 	pub language:Option<String>,
 
@@ -571,7 +742,6 @@ pub type DocumentSelector = Vec<DocumentFilter>;
 
 /// Completion item provider
 pub trait CompletionItemProvider: Send + Sync {
-
 	/// Provide completion items at the given position
 	///
 	/// # Arguments
@@ -600,7 +770,6 @@ pub trait CompletionItemProvider: Send + Sync {
 /// Completion context
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CompletionContext {
-
 	/// How the completion was triggered
 	#[serde(rename = "triggerKind")]
 	pub trigger_kind:CompletionTriggerKind,
@@ -613,7 +782,6 @@ pub struct CompletionContext {
 /// Completion trigger kind
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum CompletionTriggerKind {
-
 	/// Completion was triggered by typing an identifier
 	#[serde(rename = "Invoke")]
 	Invoke = 0,
@@ -630,43 +798,55 @@ pub enum CompletionTriggerKind {
 /// Diagnostic collection
 #[derive(Debug, Clone)]
 pub struct DiagnosticCollection {
-
 	/// The name of the diagnostic collection
 	name:Option<String>,
+
+	/// Optional transport to Mountain for forwarding diagnostic notifications.
+	transport:Option<Arc<Transport>>,
 }
 
 impl DiagnosticCollection {
-
-	/// Create a new diagnostic collection
+	/// Create a new diagnostic collection (local only, no transport).
 	///
 	/// # Arguments
 	///
 	/// * `name` - Optional name for the collection
-	pub fn new(name:Option<String>) -> Self { Self { name } }
+	pub fn new(name:Option<String>) -> Self { Self { name, transport:None } }
+
+	/// Create a new diagnostic collection wired to a Mountain transport.
+	/// set/delete/clear/dispose calls are forwarded via `send_no_response`.
+	pub fn new_with_transport(name:Option<String>, transport:Arc<Transport>) -> Self {
+		Self { name, transport:Some(transport) }
+	}
+
+	/// Forward a notification to Mountain if a transport is wired.
+	fn fire(&self, method:&str, params:serde_json::Value) {
+		if let Some(t) = &self.transport {
+			let msg = serde_json::json!({"method": method, "parameters": params});
+
+			if let Ok(bytes) = serde_json::to_vec(&msg) {
+				let t = Arc::clone(t);
+
+				tokio::spawn(async move {
+					let _ = t.send_no_response(&bytes).await;
+				});
+			}
+		}
+	}
 
 	/// Set diagnostics for a resource
-	pub fn set(&self, _uri:String, _diagnostics:Vec<Diagnostic>) {
-
-		// Placeholder implementation
+	pub fn set(&self, uri:String, diagnostics:Vec<Diagnostic>) {
+		self.fire("diagnostics:set", serde_json::json!({"uri": uri, "diagnostics": diagnostics}));
 	}
 
 	/// Delete diagnostics for a resource
-	pub fn delete(&self, _uri:String) {
+	pub fn delete(&self, uri:String) { self.fire("diagnostics:delete", serde_json::json!({"uri": uri})); }
 
-		// Placeholder implementation
-	}
+	/// Clear all diagnostics in this collection
+	pub fn clear(&self) { self.fire("diagnostics:clear", serde_json::json!({"name": self.name})); }
 
-	/// Clear all diagnostics
-	pub fn clear(&self) {
-
-		// Placeholder implementation
-	}
-
-	/// Dispose the collection
-	pub fn dispose(&self) {
-
-		// Placeholder implementation
-	}
+	/// Dispose the collection and release Mountain-side resources
+	pub fn dispose(&self) { self.fire("diagnostics:dispose", serde_json::json!({"name": self.name})); }
 }
 
 /// Disposable resource handle.
@@ -674,12 +854,10 @@ impl DiagnosticCollection {
 /// Returned by all `register_*_provider` methods. Calling `dispose()` removes
 /// the provider registration from the `LanguageNamespace` store.
 pub struct Disposable {
-
 	callback:Option<Box<dyn FnOnce() + Send + Sync>>,
 }
 
 impl std::fmt::Debug for Disposable {
-
 	fn fmt(&self, f:&mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		f.debug_struct("Disposable")
 			.field("has_callback", &self.callback.is_some())
@@ -688,14 +866,12 @@ impl std::fmt::Debug for Disposable {
 }
 
 impl Clone for Disposable {
-
 	/// Cloning a Disposable produces a no-op copy.
 	/// The original disposable retains the callback.
 	fn clone(&self) -> Self { Self { callback:None } }
 }
 
 impl Disposable {
-
 	/// Create a no-op disposable.
 	pub fn new() -> Self { Self { callback:None } }
 
@@ -711,7 +887,6 @@ impl Disposable {
 }
 
 impl Default for Disposable {
-
 	fn default() -> Self { Self::new() }
 }
 
@@ -720,7 +895,6 @@ impl Default for Disposable {
 pub struct ExtensionNamespace;
 
 impl ExtensionNamespace {
-
 	/// Create a new ExtensionNamespace instance
 	pub fn new() -> Self { Self }
 
@@ -734,7 +908,6 @@ impl ExtensionNamespace {
 /// Extension representation
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Extension {
-
 	/// The canonical extension identifier in the form of `publisher.name`
 	pub id:String,
 
@@ -755,7 +928,6 @@ pub struct Extension {
 pub struct Env;
 
 impl Env {
-
 	/// Create a new Env instance
 	pub fn new() -> Self { Self }
 

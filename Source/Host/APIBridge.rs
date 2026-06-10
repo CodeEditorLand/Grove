@@ -58,15 +58,7 @@ pub struct APICall {
 	timestamp:u64,
 }
 
-/// API method handler callback
-type APIMethodHandler = fn(&str, Vec<serde_json::Value>) -> Result<serde_json::Value>;
-
-/// Async API method handler callback
-type AsyncAPIMethodHandler =
-	fn(&str, Vec<serde_json::Value>) -> Box<dyn std::future::Future<Output = Result<serde_json::Value>> + Send + Unpin>;
-
 /// API method registration
-#[derive(Clone)]
 pub struct APIMethodInfo {
 	/// Method name
 	name:String,
@@ -88,6 +80,9 @@ pub struct APIMethodInfo {
 
 	/// Total execution time in microseconds
 	total_time_us:u64,
+
+	/// Registered handler function
+	handler:Option<Arc<dyn Fn(&str, &[serde_json::Value]) -> Result<serde_json::Value> + Send + Sync>>,
 }
 
 /// VS Code API bridge for Grove
@@ -205,6 +200,8 @@ impl APIBridgeImpl {
 		returns:Option<serde_json::Value>,
 
 		is_async:bool,
+
+		handler:Option<Arc<dyn Fn(&str, &[serde_json::Value]) -> Result<serde_json::Value> + Send + Sync>>,
 	) -> Result<()> {
 		let mut methods = self.api_methods.write().await;
 
@@ -222,6 +219,7 @@ impl APIBridgeImpl {
 				is_async,
 				call_count:0,
 				total_time_us:0,
+				handler,
 			},
 		);
 
@@ -334,8 +332,6 @@ impl APIBridgeImpl {
 
 		stats.total_calls += 1;
 
-		stats.total_calls += 1;
-
 		if exists {
 			stats.successful_calls += 1;
 
@@ -380,32 +376,52 @@ impl APIBridgeImpl {
 		}
 	}
 
-	/// Execute an API method
+	/// Execute an API method by dispatching to its registered handler.
 	async fn execute_method(
 		&self,
 
-		_extension_id:&str,
+		extension_id:&str,
 
-		_method_name:&str,
+		method_name:&str,
 
-		_arguments:&[serde_json::Value],
+		arguments:&[serde_json::Value],
 	) -> Result<serde_json::Value> {
-		// In real implementation, this would:
-		// 1. Look up the method handler
-		// 2. Validate arguments against schema
-		// 3. Call the handler
-		// 4. Handle async methods
-		// 5. Return the result
+		let methods = self.api_methods.read().await;
 
-		// Placeholder implementation
-		Ok(serde_json::Value::Null)
+		if let Some(method_info) = methods.get(method_name) {
+			if let Some(handler) = &method_info.handler {
+				handler(extension_id, arguments)
+			} else {
+				Err(anyhow::anyhow!("Method '{}' has no handler", method_name))
+			}
+		} else {
+			Err(anyhow::anyhow!("Method not registered: {}", method_name))
+		}
 	}
 
 	/// Get API statistics
 	pub async fn stats(&self) -> APIStats { self.stats.read().await.clone() }
 
 	/// Get registered API methods
-	pub async fn get_methods(&self) -> Vec<APIMethodInfo> { self.api_methods.read().await.values().cloned().collect() }
+	pub async fn get_methods(&self) -> Vec<APIMethodInfo> {
+		self.api_methods
+			.read()
+			.await
+			.values()
+			.map(|m| {
+				APIMethodInfo {
+					name:m.name.clone(),
+					description:m.description.clone(),
+					parameters:m.parameters.clone(),
+					returns:m.returns.clone(),
+					is_async:m.is_async,
+					call_count:m.call_count,
+					total_time_us:m.total_time_us,
+					handler:m.handler.clone(),
+				}
+			})
+			.collect()
+	}
 
 	/// Unregister an API method
 	pub async fn unregister_method(&self, name:&str) -> Result<bool> {
@@ -456,7 +472,9 @@ mod tests {
 	async fn test_method_registration() {
 		let bridge = APIBridgeImpl::new();
 
-		let result:Result<()> = bridge.register_method("test.method", "Test method", None, None, false).await;
+		let result:Result<()> = bridge
+			.register_method("test.method", "Test method", None, None, false, None)
+			.await;
 
 		assert!(result.is_ok());
 

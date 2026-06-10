@@ -140,8 +140,19 @@ impl ServiceRegister {
 	pub async fn unregister_from_mountain(service_id:&str) -> Result<()> {
 		dev_log!("grove", "Unregistering service from Mountain: {}", service_id);
 
-		// Placeholder - in real implementation, call Mountain's unregister service
-		dev_log!("grove", "Service unregistered: {}", service_id);
+		let spine_config = ProtocolConfig::new().with_mountain_endpoint(service_id.to_string());
+
+		let mut connection = SpineConnectionImpl::new(spine_config);
+
+		connection.Connect().await.context("Failed to connect to Mountain")?;
+
+		let payload = serde_json::to_vec(&serde_json::json!({ "serviceId": service_id }))
+			.context("Failed to serialize unregister payload")?;
+
+		connection
+			.SendRequest("grove:unregisterService", payload)
+			.await
+			.context("Failed to send unregister request")?;
 
 		Ok(())
 	}
@@ -150,7 +161,25 @@ impl ServiceRegister {
 	pub async fn send_heartbeat(service_id:&str) -> Result<()> {
 		dev_log!("grove", "Sending heartbeat for service: {}", service_id);
 
-		// Placeholder - in real implementation, send heartbeat to Mountain
+		let spine_config = ProtocolConfig::new().with_mountain_endpoint(service_id.to_string());
+
+		let mut connection = SpineConnectionImpl::new(spine_config);
+
+		connection.Connect().await.context("Failed to connect to Mountain")?;
+
+		let timestamp = std::time::SystemTime::now()
+			.duration_since(std::time::UNIX_EPOCH)
+			.unwrap_or_default()
+			.as_secs();
+
+		let payload = serde_json::to_vec(&serde_json::json!({ "serviceId": service_id, "timestamp": timestamp }))
+			.context("Failed to serialize heartbeat payload")?;
+
+		connection
+			.SendRequest("grove:heartbeat", payload)
+			.await
+			.context("Failed to send heartbeat request")?;
+
 		Ok(())
 	}
 
@@ -175,27 +204,61 @@ impl ServiceRegister {
 		})
 	}
 
-	/// Query service information
+	/// Query service information from Mountain via SpineConnection.
 	pub async fn query_service(service_id:&str) -> Result<ServiceRegistration> {
 		dev_log!("grove", "Querying service information: {}", service_id);
 
-		// Placeholder - in real implementation, query Mountain for service info
-		Ok(ServiceRegistration {
-			name:service_id.to_string(),
-			service_type:ServiceType::ExtensionHost,
-			version:"0.1.0".to_string(),
-			endpoint:"127.0.0.1:50050".to_string(),
-			capabilities:Vec::new(),
-			metadata:serde_json::Value::Null,
-		})
+		let spine_config = ProtocolConfig::new().with_mountain_endpoint(service_id.to_string());
+
+		let mut connection = SpineConnectionImpl::new(spine_config);
+
+		connection.Connect().await.context("query_service: connect")?;
+
+		let payload =
+			serde_json::to_vec(&serde_json::json!({ "serviceId": service_id })).context("query_service: serialise")?;
+
+		let response_bytes = connection
+			.SendRequest("grove:getServiceInfo", payload)
+			.await
+			.context("query_service: SendRequest")?;
+
+		if response_bytes.is_empty() {
+			return Ok(ServiceRegistration {
+				name:service_id.to_string(),
+				service_type:ServiceType::ExtensionHost,
+				version:"unknown".to_string(),
+				endpoint:String::new(),
+				capabilities:Vec::new(),
+				metadata:serde_json::Value::Null,
+			});
+		}
+
+		serde_json::from_slice::<ServiceRegistration>(&response_bytes).context("query_service: deserialise response")
 	}
 
-	/// List all registered services
+	/// List all registered services from Mountain via SpineConnection.
 	pub async fn list_services() -> Result<Vec<ServiceRegistration>> {
 		dev_log!("grove", "Listing all registered services");
 
-		// Placeholder - in real implementation, query Mountain for all services
-		Ok(Vec::new())
+		let spine_config = ProtocolConfig::new().with_mountain_endpoint("grove:list".to_string());
+
+		let mut connection = SpineConnectionImpl::new(spine_config);
+
+		connection.Connect().await.context("list_services: connect")?;
+
+		let payload = serde_json::to_vec(&serde_json::json!({})).context("list_services: serialise")?;
+
+		let response_bytes = connection
+			.SendRequest("grove:getAllServices", payload)
+			.await
+			.context("list_services: SendRequest")?;
+
+		if response_bytes.is_empty() {
+			return Ok(Vec::new());
+		}
+
+		serde_json::from_slice::<Vec<ServiceRegistration>>(&response_bytes)
+			.context("list_services: deserialise response")
 	}
 
 	/// Start heartbeat loop

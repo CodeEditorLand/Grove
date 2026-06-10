@@ -131,6 +131,9 @@ pub struct ExtensionStats {
 }
 
 impl ExtensionManagerImpl {
+	/// Get a reference to the underlying WASM runtime
+	pub fn wasm_runtime(&self) -> &Arc<WASMRuntime> { &self.wasm_runtime }
+
 	/// Create a new extension manager
 	pub fn new(wasm_runtime:Arc<WASMRuntime>, config:HostConfig) -> Self {
 		Self {

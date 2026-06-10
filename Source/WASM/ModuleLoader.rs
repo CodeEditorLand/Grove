@@ -288,6 +288,9 @@ impl ModuleLoaderImpl {
 		Ok(WASMInstance { instance, store, id:instance_id, module:Arc::new(module.clone()) })
 	}
 
+	/// Get a reference to the underlying WASM runtime
+	pub fn runtime(&self) -> &Arc<WASMRuntime> { &self.runtime }
+
 	/// Get all loaded modules
 	pub async fn get_loaded_modules(&self) -> Vec<WASMModule> { self.loaded_modules.read().await.clone() }
 

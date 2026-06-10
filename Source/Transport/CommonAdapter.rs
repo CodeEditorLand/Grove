@@ -10,7 +10,7 @@
 use std::{collections::HashMap, sync::Arc, time::Duration};
 
 use async_trait::async_trait;
-
+use base64::Engine as _;
 use CommonLibrary::{
 	Environment::Environment,
 	Transport::{
@@ -59,7 +59,6 @@ use crate::Transport::{
 /// ```
 #[derive(Clone, Debug)]
 pub struct TransportAdapter {
-
 	/// The underlying Grove transport (wrapped in Arc for thread sharing)
 	transport:Arc<GroveTransport>,
 
@@ -75,7 +74,6 @@ pub struct TransportAdapter {
 }
 
 impl TransportAdapter {
-
 	/// Creates a new `TransportAdapter` from a Grove `Transport`.
 	///
 	/// # Parameters
@@ -198,7 +196,6 @@ impl TransportAdapter {
 
 #[async_trait]
 impl TransportStrategy for TransportAdapter {
-
 	async fn connect(&mut self) -> Result<(), TransportError> {
 		self.transport.connect().await.map_err(|e| {
 			TransportError::connection(format!("Failed to connect transport: {}", e)).with_transport_type("grove")
@@ -223,14 +220,20 @@ impl TransportStrategy for TransportAdapter {
 			.map(std::time::Duration::from_millis)
 			.unwrap_or(self.config.request_timeout);
 
-		// Serialize request to bytes (using TransportMessage format)
-		// For now, we'll use a simpler approach: the payload is already serialized,
-		// we just need to wrap it with method info and send.
-		let mut request_data = Vec::new();
+		// Serialize request as a JSON envelope: {"method": method, "payload":
+		// base64(payload)} so the receiver can dispatch to the right handler by
+		// method name.
+		let payload_b64 = base64::Engine::encode(&base64::engine::general_purpose::STANDARD, &request.payload);
 
-		// TODO: Proper serialization using TransportMessage
-		// For now, just send payload
-		request_data.extend_from_slice(&request.payload);
+		let envelope = serde_json::json!({
+			"method": request.method,
+			"correlationId": request.correlation_id,
+			"payload": payload_b64,
+		});
+
+		let request_data = serde_json::to_vec(&envelope).map_err(|e| {
+			TransportError::serialization(format!("envelope serialisation: {}", e)).with_transport_type("grove")
+		})?;
 
 		let result = self
 			.transport
@@ -368,7 +371,6 @@ impl TransportStrategy for TransportAdapter {
 
 // Implement conversion from Grove's TransportError to Common's TransportError
 impl From<crate::Transport::GrpcTransportError> for TransportError {
-
 	fn from(err:crate::Transport::GrpcTransportError) -> Self {
 		match err {
 			crate::Transport::GrpcTransportError::ConnectionFailed(msg) => TransportError::connection(msg),
@@ -378,7 +380,6 @@ impl From<crate::Transport::GrpcTransportError> for TransportError {
 			crate::Transport::GrpcTransportError::SendFailed(msg) => {
 				TransportError::new(
 					super::TransportErrorCode::MessageTooLarge, // Actually send failed
-
 					msg,
 				)
 			},
