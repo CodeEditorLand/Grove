@@ -128,7 +128,10 @@ pub struct CommandNamespace {
 
 impl CommandNamespace {
 	/// Create a new CommandNamespace instance
-	pub fn new() -> Self { Self }
+	pub fn new() -> Self { Self { transport:None } }
+
+	/// Create a CommandNamespace wired to a Mountain transport.
+	pub fn new_with_transport(transport:Arc<Transport>) -> Self { Self { transport:Some(transport) } }
 
 	/// Register a command
 	pub fn register_command(&self, command_id:String, _callback:CommandCallback) -> Result<Command, String> {
