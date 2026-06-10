@@ -70,6 +70,9 @@ pub struct TransportAdapter {
 
 	/// Correlation ID generator (use default UUID generator)
 	correlation_generator:fn() -> String,
+
+	/// Count of fire-and-forget notifications sent via send_notification.
+	notifications_sent:Arc<std::sync::atomic::AtomicU64>,
 }
 
 impl TransportAdapter {
@@ -95,6 +98,8 @@ impl TransportAdapter {
 			common_config:CommonConfig,
 
 			correlation_generator:|| uuid::Uuid::new_v4().to_string(),
+
+			notifications_sent:Arc::new(std::sync::atomic::AtomicU64::new(0)),
 		}
 	}
 
@@ -110,6 +115,8 @@ impl TransportAdapter {
 			common_config:CommonConfig,
 
 			correlation_generator:|| uuid::Uuid::new_v4().to_string(),
+
+			notifications_sent:Arc::new(std::sync::atomic::AtomicU64::new(0)),
 		}
 	}
 
@@ -162,7 +169,7 @@ impl TransportAdapter {
 	}
 
 	/// Converts a Grove `TransportStats` to a Common `TransportMetrics`.
-	fn translate_metrics(stats:GroveTransportStats) -> TransportMetrics {
+	fn translate_metrics(stats:GroveTransportStats, notifications_sent:u64) -> TransportMetrics {
 		TransportMetrics {
 			requests_total:stats.messages_sent + stats.messages_received,
 
@@ -170,7 +177,7 @@ impl TransportAdapter {
 
 			requests_failed:stats.errors,
 
-			notifications_sent:0, // TODO: track separately
+			notifications_sent,
 
 			connections_established:1, // Assume 1 connection
 
@@ -266,10 +273,16 @@ impl TransportStrategy for TransportAdapter {
 
 		data.extend_from_slice(&notification.payload);
 
-		self.transport
+		let result = self.transport
 			.send_no_response(&data)
 			.await
-			.map_err(|e| TransportError::from(e).with_transport_type("grove"))
+			.map_err(|e| TransportError::from(e).with_transport_type("grove"));
+
+		if result.is_ok() {
+			self.notifications_sent.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+		}
+
+		result
 	}
 
 	fn stream_events(
@@ -358,13 +371,11 @@ impl TransportStrategy for TransportAdapter {
 	}
 
 	fn metrics(&self) -> TransportMetrics {
-		// This is async in Grove but sync here. We can't block. We could spawn a
-		// blocking task but that would require runtime. For now, return empty or
-		// cached metrics. We could store metrics in an Arc<Mutex> that we update
-		// periodically. That's more complex. For a simple adapter, we might change
-		// the trait method to async, but it's defined as sync. Let's return a
-		// default.
-		TransportMetrics::new()
+		// Grove transport stats are async; the sync notifications_sent counter
+		// is the only metric we can read without blocking.
+		let mut m = TransportMetrics::new();
+		m.notifications_sent = self.notifications_sent.load(std::sync::atomic::Ordering::Relaxed);
+		m
 	}
 }
 
