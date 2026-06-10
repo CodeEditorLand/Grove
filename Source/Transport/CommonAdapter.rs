@@ -10,10 +10,6 @@
 use std::{collections::HashMap, sync::Arc, time::Duration};
 
 use async_trait::async_trait;
-<<<<<<< HEAD
-use base64::Engine as _;
-=======
->>>>>>> a30c17d612d84029606aa1ccde759b5dba63503a
 use CommonLibrary::{
 	Environment::Environment,
 	Transport::{
