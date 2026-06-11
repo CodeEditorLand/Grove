@@ -315,9 +315,9 @@ Grove is designed to be compatible with:
 
 ## See Also
 
-- [Grove Documentation](https://editor.land/Doc/grove)
-- [Architecture Overview](https://editor.land/Doc/architecture)
-- [Why WebAssembly](https://editor.land/Doc/why-webassembly)
+- [Grove Documentation](https://Editor.Land/Doc/grove)
+- [Architecture Overview](https://Editor.Land/Doc/architecture)
+- [Why WebAssembly](https://Editor.Land/Doc/why-webassembly)
 - [Mountain](https://github.com/CodeEditorLand/Mountain)
 - [Cocoon](https://github.com/CodeEditorLand/Cocoon)
 
