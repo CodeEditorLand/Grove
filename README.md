@@ -66,21 +66,21 @@ environment for running `Rust` and `WASM`-compiled VS Code extensions. Grove
 offers secure sandboxing through `WASMtime`, multiple transport strategies
 (`gRPC`, `IPC`, `WASM`), and full compatibility with the VS Code API surface.
 
-VS Code extensions run with full `Node.js` capabilities in a shared process — a
+VS Code extensions run with full `Node.js` capabilities in a shared process - a
 malicious or buggy extension can access any file, make any network request, and
 read another extension's state. Grove solves this by enforcing sandboxing at the
 hardware level: an extension can only touch what you explicitly grant.
 
 **Grove is engineered to:**
 
-1. **Provide Native Extension Hosting** — Execute `Rust` extensions with zero
+1. **Provide Native Extension Hosting** - Execute `Rust` extensions with zero
    overhead through static linking or `WASM` sandboxing.
-2. **Enable Secure Sandboxing** — Isolate untrusted extensions using
+2. **Enable Secure Sandboxing** - Isolate untrusted extensions using
    `WASMtime`'s capability-based security model with configurable memory limits
    and resource controls.
-3. **Support Multiple Transports** — Communicate with `Mountain` via `gRPC`,
+3. **Support Multiple Transports** - Communicate with `Mountain` via `gRPC`,
    `IPC`, or direct `WASM` host function calls for flexible deployment.
-4. **Maintain Cocoon Compatibility** — Share the same VS Code API surface and
+4. **Maintain Cocoon Compatibility** - Share the same VS Code API surface and
    activation semantics for seamless extension porting between the `Node.js` and
    native hosting environments.
 
@@ -88,30 +88,30 @@ hardware level: an extension can only touch what you explicitly grant.
 
 ## Key Features&#x2001;🔐
 
-**`WASM` Runtime Integration** — Full `WebAssembly` support through `WASMtime`,
+**`WASM` Runtime Integration** - Full `WebAssembly` support through `WASMtime`,
 with capability-based security, configurable memory limits, CPU throttling, and
 explicit host-function grants. Extensions are sandboxed at the hardware level.
 
-**Multiple Transport Strategies** — A strategy-pattern transport layer
+**Multiple Transport Strategies** - A strategy-pattern transport layer
 supporting `gRPC` (to `Mountain`'s `Vine` server on port 50052), `IPC` (Unix
 socket for local communication), `WASM` (direct host function calls), and `Mist`
 (message-bus integration with the `Mist` pub/sub system).
 
-**Standalone Operation** — Can run as an independent process with its own
+**Standalone Operation** - Can run as an independent process with its own
 lifecycle, or connect to `Mountain` via `gRPC` for distributed deployment. The
 `Transport/CommonAdapter` unifies all transport backends behind a single
 interface.
 
-**Cross-Platform** — Native support for `macOS`, `Linux`, and `Windows` with
+**Cross-Platform** - Native support for `macOS`, `Linux`, and `Windows` with
 platform-specific optimizations. The `Binary/Main/` entry point handles platform
 signal handling and daemon initialization.
 
-**`VS Code` API Compatibility** — Implements `vscode.d.ts` type definitions
+**`VS Code` API Compatibility** - Implements `vscode.d.ts` type definitions
 through the `APIBridge` facade, with `API/VSCode.rs` providing typed wrappers
 for the full VS Code extension API surface including commands, windows, and
 notifications.
 
-**Secure by Default** — `#![deny(unsafe_code)]` at the crate level, `WASMtime`
+**Secure by Default** - `#![deny(unsafe_code)]` at the crate level, `WASMtime`
 capability-based isolation, configurable memory limits per extension, and
 explicit host-function grants ensure no extension can escape its sandbox.
 
@@ -329,7 +329,7 @@ API surface as `Cocoon`, enabling seamless porting of extensions between the
 `Node.js` and native hosting environments.
 
 The `Transport/CommonAdapter` abstracts all communication strategies behind a
-single interface, allowing deployment flexibility — standalone process,
+single interface, allowing deployment flexibility - standalone process,
 distributed via `gRPC`, or integrated with `Mountain`'s `Vine` server.
 
 ---
@@ -401,11 +401,11 @@ Grove enforces security at multiple layers:
 
 | Layer              | Mechanism                                                                          |
 | ------------------ | ---------------------------------------------------------------------------------- |
-| **Crate level**    | `#![deny(unsafe_code)]` — no unsafe code permitted                                 |
-| **Runtime**        | `WASMtime` capability-based isolation — each extension gets an independent sandbox |
+| **Crate level**    | `#![deny(unsafe_code)]` - no unsafe code permitted                                 |
+| **Runtime**        | `WASMtime` capability-based isolation - each extension gets an independent sandbox |
 | **Memory**         | Configurable per-extension memory limits via `WASM/MemoryManager`                  |
 | **Resources**      | CPU throttling and resource controls per extension                                 |
-| **Host functions** | Explicit capability grants — extensions must declare required host functions       |
+| **Host functions** | Explicit capability grants - extensions must declare required host functions       |
 | **Type safety**    | Full `Rust` type system across the host-WASM boundary                              |
 
 ---
@@ -431,17 +431,17 @@ Grove is designed to be compatible with:
 
 ## Related Documentation
 
-- [Architecture Overview](https://Editor.Land/Doc/architecture) — Land system
+- [Architecture Overview](https://Editor.Land/Doc/architecture) - Land system
   architecture
-- [Why WebAssembly](https://Editor.Land/Doc/why-wasm) — Why `WASM` for extension
+- [Why WebAssembly](https://Editor.Land/Doc/why-wasm) - Why `WASM` for extension
   sandboxing
 - [CHANGELOG](https://github.com/CodeEditorLand/Grove/blob/Current/CHANGELOG.md)
-  — Version history and release notes
-- [Mountain](https://github.com/CodeEditorLand/Mountain) — Native desktop shell
+  - Version history and release notes
+- [Mountain](https://github.com/CodeEditorLand/Mountain) - Native desktop shell
   and `gRPC` backend
-- [Cocoon](https://github.com/CodeEditorLand/Cocoon) — `Node.js`/`Effect-TS`
+- [Cocoon](https://github.com/CodeEditorLand/Cocoon) - `Node.js`/`Effect-TS`
   extension host
-- [Mist](https://github.com/CodeEditorLand/Mist) — Pub/sub message bus for
+- [Mist](https://github.com/CodeEditorLand/Mist) - Pub/sub message bus for
   event-driven workflows
 
 ---
