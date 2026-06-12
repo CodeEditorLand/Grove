@@ -436,7 +436,7 @@ Grove is designed to be compatible with:
 - [Why WebAssembly](https://Editor.Land/Doc/why-wasm) - Why `WASM` for extension
   sandboxing
 - [CHANGELOG](https://github.com/CodeEditorLand/Grove/blob/Current/CHANGELOG.md)
-  - Version history and release notes
+    - Version history and release notes
 - [Mountain](https://github.com/CodeEditorLand/Mountain) - Native desktop shell
   and `gRPC` backend
 - [Cocoon](https://github.com/CodeEditorLand/Cocoon) - `Node.js`/`Effect-TS`

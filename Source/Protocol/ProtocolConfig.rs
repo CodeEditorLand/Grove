@@ -1,30 +1,31 @@
-//! Protocol configuration.
+//! Protocol configuration struct and builder.
 
+use super::{
+	DEFAULT_CONNECTION_TIMEOUT_MS,
+	DEFAULT_HEARTBEAT_INTERVAL_SEC,
+	DEFAULT_MESSAGE_BUFFER_SIZE,
+	DEFAULT_MOUNTAIN_ENDPOINT,
+	SPINE_PROTOCOL_VERSION,
+};
+
+#[derive(Debug, Clone)]
 pub struct ProtocolConfig {
-	/// Protocol version
 	pub version:String,
 
-	/// Mountain endpoint
 	pub mountain_endpoint:String,
 
-	/// Connection timeout
 	pub connection_timeout_ms:u64,
 
-	/// Heartbeat interval
 	pub heartbeat_interval_sec:u64,
 
-	/// Message buffer size
 	pub message_buffer_size:usize,
 
-	/// Enable TLS
 	pub enable_tls:bool,
 
-	/// Enable compression
 	pub enable_compression:bool,
 }
 
 impl ProtocolConfig {
-	/// Create a new protocol configuration
 	pub fn new() -> Self {
 		Self {
 			version:SPINE_PROTOCOL_VERSION.to_string(),
@@ -43,35 +44,30 @@ impl ProtocolConfig {
 		}
 	}
 
-	/// Set mountain endpoint
 	pub fn with_mountain_endpoint(mut self, endpoint:String) -> Self {
 		self.mountain_endpoint = endpoint;
 
 		self
 	}
 
-	/// Set connection timeout
 	pub fn with_connection_timeout(mut self, timeout_ms:u64) -> Self {
 		self.connection_timeout_ms = timeout_ms;
 
 		self
 	}
 
-	/// Set heartbeat interval
 	pub fn with_heartbeat_interval(mut self, interval_sec:u64) -> Self {
 		self.heartbeat_interval_sec = interval_sec;
 
 		self
 	}
 
-	/// Enable or disable TLS
 	pub fn with_tls(mut self, enable:bool) -> Self {
 		self.enable_tls = enable;
 
 		self
 	}
 
-	/// Enable or disable compression
 	pub fn with_compression(mut self, enable:bool) -> Self {
 		self.enable_compression = enable;
 
