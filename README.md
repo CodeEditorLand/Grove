@@ -1,4 +1,4 @@
-# **Grove** 🌳
+# **Grove**&#x2001;🌳
 
 <table>
 	<tr>
