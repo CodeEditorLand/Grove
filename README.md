@@ -24,7 +24,7 @@
 				<picture>
 					<source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/github/stars/CodeEditorLand/Grove?style=flat&label=Star&logo=github&color=black&labelColor=black&logoColor=white&logoWidth=0" />
 					<source media="(prefers-color-scheme: light)" srcset="https://img.shields.io/github/stars/CodeEditorLand/Grove?style=flat&label=Star&logo=github&color=white&labelColor=white&logoColor=black&logoWidth=0" />
-					<img src="https://img.shields.io/github/stars/CodeEditorLand/Grove?style=flat&label=Star&logo=github&color=black&labelColor=black&logoColor=white&logoWidth=0" alt="Star" />
+					<img src="https://img.shields.io/github/stars/CodeEditorLand/Grove?style=flat&label=Star&logo=github&color=black&labelColor=black&logoColor=white&logoWidth=0" alt="Star" title="Star" />
 				</picture>
 			</a>
 			<br />
@@ -52,7 +52,7 @@ enforced by the hardware, not a policy."_
 [![License: CC0-1.0](https://img.shields.io/badge/License-CC0_1.0-lightgrey.svg)](https://github.com/CodeEditorLand/Grove/blob/Current/LICENSE)
 [<img src="https://editor.land/Image/Rust.svg" width="14" alt="Rust" />](https://www.rust-lang.org/)&#x2001;[![Crates.io](https://img.shields.io/crates/v/Grove.svg)](https://crates.io/crates/Grove)
 [<img src="https://editor.land/Image/Rust.svg" width="14" alt="Rust" />](https://www.rust-lang.org/)&#x2001;[![Rust Version](https://img.shields.io/badge/Rust-1.75+-orange.svg)](https://www.rust-lang.org/)
-[<img src="https://editor.land/Image/WebAssembly.svg" width="14" alt="WebAssembly" />](https://webassembly.org/)&#x2001;[![WASMtime Version](https://img.shields.io/badge/WASMtime-v20-blue.svg)](https://wasmtime.dev/)
+[![WebAssembly](https://img.shields.io/badge/WebAssembly-WASM-blue.svg)](https://webassembly.org/)&#x2001;[![WASMtime Version](https://img.shields.io/badge/WASMtime-v20-blue.svg)](https://wasmtime.dev/)
 
 **[Rust API Documentation](https://rust.documentation.grove.editor.land/)**&#x2001;📖
 
@@ -142,35 +142,35 @@ graph LR
     subgraph GROVE["Grove 🌳 - Rust/WASM Extension Host"]
         direction TB
         subgraph HOST["Host/ - Extension Lifecycle"]
-            ExtHost["ExtensionHost.rs&#x2001;🏡&#x2001;main controller"]:::grove
-            ExtMgr["ExtensionManager.rs&#x2001;🔍&#x2001;discovery + loading"]:::grove
-            Activation["Activation.rs&#x2001;⚡&#x2001;activation events"]:::grove
+            ExtHost["ExtensionHost.rs 🏡 main controller"]:::grove
+            ExtMgr["ExtensionManager.rs 🔍 discovery + loading"]:::grove
+            Activation["Activation.rs ⚡ activation events"]:::grove
             Lifecycle["Lifecycle.rs"]:::grove
-            APIBridge["APIBridge.rs&#x2001;🌉&#x2001;vscode.d.ts facade"]:::grove
+            APIBridge["APIBridge.rs 🌉 vscode.d.ts facade"]:::grove
             ExtHost --> ExtMgr --> Activation --> Lifecycle
             Activation --> APIBridge
         end
         subgraph API["API/ - VS Code API Surface"]
-            VSCode["VSCode.rs&#x2001;📋&#x2001;typed API wrappers"]:::grove
-            Types["Types.rs&#x2001;🧱&#x2001;shared type definitions"]:::grove
+            VSCode["VSCode.rs 📋 typed API wrappers"]:::grove
+            Types["Types.rs 🧱 shared type definitions"]:::grove
             APIBridge --> VSCode --> Types
         end
         subgraph WASM_RT["WASM/ - WASMtime Runtime"]
-            WASMRuntime["Runtime/&#x2001;🚀&#x2001;WASMtime engine + store"]:::wasm
-            ModLoader["ModuleLoader/&#x2001;📦&#x2001;compile + instantiate"]:::wasm
-            MemMgr["MemoryManager/&#x2001;📏&#x2001;allocation + limits"]:::wasm
-            HostBridge["HostBridge/&#x2001;🔗&#x2001;host↔WASM calls"]:::wasm
+            WASMRuntime["Runtime/ 🚀 WASMtime engine + store"]:::wasm
+            ModLoader["ModuleLoader/ 📦 compile + instantiate"]:::wasm
+            MemMgr["MemoryManager/ 📏 allocation + limits"]:::wasm
+            HostBridge["HostBridge/ 🔗 host↔WASM calls"]:::wasm
             WASMRuntime --> ModLoader
             ModLoader --> MemMgr
             WASMRuntime --> HostBridge
         end
         subgraph TRANSPORT["Transport/ - Strategy Pattern"]
             Strategy["Strategy.rs - trait"]:::transport
-            CommonAdapter["CommonAdapter.rs&#x2001;🔌&#x2001;unified backend"]:::transport
+            CommonAdapter["CommonAdapter.rs 🔌 unified backend"]:::transport
             gRPC["gRPCTransport.rs"]:::transport
             IPC["IPCTransport.rs"]:::transport
             WASMTrans["WASMTransport.rs"]:::transport
-            MistTrans["MistTransport.rs&#x2001;💬&#x2001;pub/sub bus"]:::transport
+            MistTrans["MistTransport.rs 💬 pub/sub bus"]:::transport
             Strategy --- CommonAdapter
             CommonAdapter --- gRPC
             CommonAdapter --- IPC
@@ -178,8 +178,8 @@ graph LR
             CommonAdapter --- MistTrans
         end
         subgraph PROTO["Protocol/"]
-            SpineConn["SpineConnection.rs&#x2001;🦴&#x2001;Spine protocol"]:::grove
-            SpineAction["SpineActionClient.rs&#x2001;🎬&#x2001;action dispatch"]:::grove
+            SpineConn["SpineConnection.rs 🦴 Spine protocol"]:::grove
+            SpineAction["SpineActionClient.rs 🎬 action dispatch"]:::grove
             SpineConn --> SpineAction
         end
 
@@ -193,7 +193,7 @@ graph LR
     end
 
     subgraph COCOON["Cocoon 🦋 complementary host"]
-        CocoonRef["Node.js extension host&#x2001;same vscode API surface"]:::cocoon
+        CocoonRef["Node.js extension host same vscode API surface"]:::cocoon
     end
 
     gRPC -- gRPC :50052 --> VineGRPC
@@ -242,6 +242,9 @@ graph LR
 | Configuration Service | `Source/Services/ConfigurationService.rs` | Service for managing extension-level configuration |
 | Common Traits | `Source/Common/Traits.rs` | Shared trait definitions for the extension host |
 | Common Error | `Source/Common/Error.rs` | Unified error types for the host layer |
+| Runtime Build | `Source/Binary/Build/RuntimeBuild.rs` | Build-time runtime configuration |
+| Service Register | `Source/Binary/Build/ServiceRegister.rs` | Service registration at build time |
+| Entry | `Source/Binary/Main/Entry.rs` | Platform entry point and daemon initialization |
 
 ---
 
@@ -250,54 +253,62 @@ graph LR
 ```
 Element/Grove/
 ├── Source/
-│   ├── Library.rs              # Library root (cdylib + rlib)
-│   ├── main.rs                 # Binary entry point
-│   ├── DevLog.rs               # Development logging infrastructure
-│   ├── API/                    # VS Code API surface
-│   │   ├── mod.rs              # Module re-exports
-│   │   ├── VSCode.rs           # Typed VS Code extension API wrappers
-│   │   └── Types.rs            # Shared API type definitions
-│   ├── Binary/                 # Binary initialization
+│   ├── Library.rs                     # Library root (cdylib + rlib)
+│   ├── main.rs                        # Binary entry point
+│   ├── DevLog.rs                      # Development logging infrastructure
+│   ├── API/                           # VS Code API surface
+│   │   ├── mod.rs                     # Module re-exports
+│   │   ├── VSCode.rs                  # Typed VS Code extension API wrappers
+│   │   └── Types.rs                   # Shared API type definitions
+│   ├── Binary/                        # Binary initialization
 │   │   ├── mod.rs
-│   │   ├── Build/              # Build-time configuration
-│   │   └── Main/               # Main entry point + platform init
-│   ├── Common/                 # Shared traits and error types
+│   │   ├── Build/                     # Build-time configuration
+│   │   │   ├── mod.rs
+│   │   │   ├── RuntimeBuild.rs        # Build-time runtime configuration
+│   │   │   └── ServiceRegister.rs     # Service registration at build time
+│   │   └── Main/                      # Main entry point + platform init
+│   │       ├── mod.rs
+│   │       └── Entry.rs               # Platform entry point and daemon init
+│   ├── Common/                        # Shared traits and error types
 │   │   ├── mod.rs
-│   │   ├── Traits.rs           # Core trait definitions
-│   │   └── Error.rs            # Unified error types
-│   ├── Host/                   # Extension lifecycle management
+│   │   ├── Traits.rs                  # Core trait definitions
+│   │   └── Error.rs                   # Unified error types
+│   ├── Host/                          # Extension lifecycle management
 │   │   ├── mod.rs
-│   │   ├── ExtensionHost.rs    # Main host controller
-│   │   ├── ExtensionManager.rs # Discovery and loading
-│   │   ├── Activation.rs       # Activation events
-│   │   ├── Lifecycle.rs        # Lifecycle state machine
-│   │   └── APIBridge.rs        # VS Code API facade
-│   ├── Services/               # Extension-level services
+│   │   ├── ExtensionHost.rs           # Main host controller
+│   │   ├── ExtensionManager.rs        # Discovery and loading
+│   │   ├── Activation.rs              # Activation events
+│   │   ├── Lifecycle.rs               # Lifecycle state machine
+│   │   └── APIBridge.rs               # VS Code API facade
+│   ├── Services/                      # Extension-level services
 │   │   ├── mod.rs
-│   │   └── ConfigurationService.rs  # Extension configuration management
-│   ├── WASM/                   # WebAssembly runtime integration
+│   │   └── ConfigurationService.rs    # Extension configuration management
+│   ├── WASM/                          # WebAssembly runtime integration
 │   │   ├── mod.rs
-│   │   ├── Runtime.rs          # WASMtime engine and store
-│   │   ├── ModuleLoader.rs     # Module compilation + instantiation
-│   │   ├── MemoryManager.rs    # Memory allocation and limits
-│   │   ├── HostBridge.rs       # Host-to-WASM function calls
-│   │   └── FunctionExport.rs   # Host function export to WASM
-│   ├── Transport/              # Communication strategies
+│   │   ├── Runtime.rs                 # WASMtime engine and store
+│   │   ├── ModuleLoader.rs            # Module compilation + instantiation
+│   │   ├── MemoryManager.rs           # Memory allocation and limits
+│   │   ├── HostBridge.rs              # Host-to-WASM function calls
+│   │   └── FunctionExport.rs          # Host function export to WASM
+│   ├── Transport/                     # Communication strategies
 │   │   ├── mod.rs
-│   │   ├── Strategy.rs         # Transport strategy trait
-│   │   ├── CommonAdapter.rs    # Unified transport backend
-│   │   ├── gRPCTransport.rs    # gRPC to Mountain
-│   │   ├── IPCTransport.rs     # Inter-process (Unix only)
-│   │   ├── WASMTransport.rs    # Direct WASM communication
-│   │   └── MistTransport.rs    # Mist message-bus integration
-│   └── Protocol/               # Protocol handling
+│   │   ├── Strategy.rs                # Transport strategy trait
+│   │   ├── CommonAdapter.rs           # Unified transport backend
+│   │   ├── gRPCTransport.rs           # gRPC to Mountain
+│   │   ├── IPCTransport.rs            # Inter-process (Unix only)
+│   │   ├── WASMTransport.rs           # Direct WASM communication
+│   │   └── MistTransport.rs           # Mist message-bus integration
+│   └── Protocol/                      # Protocol handling
 │       ├── mod.rs
-│       ├── SpineConnection.rs  # Spine protocol client
-│       ├── SpineActionClient.rs # Action dispatch
-│       └── Generated/          # Code-generated protocol types
-└── Documentation/
-    └── Rust/
-        └── doc/                # Cargo doc output
+│       ├── SpineConnection.rs         # Spine protocol client
+│       ├── SpineActionClient.rs       # Action dispatch
+│       └── Generated/                 # Code-generated protocol types
+│           └── grove.rs               # Generated gRPC service definitions
+├── Documentation/
+│   └── Rust/
+│       └── doc/                       # Cargo doc output
+├── Cargo.toml
+└── LICENSE
 ```
 
 ---
@@ -423,6 +434,7 @@ Grove is designed to be compatible with:
 
 - [Architecture Overview](https://Editor.Land/Doc/architecture) — Land system architecture
 - [Why WebAssembly](https://Editor.Land/Doc/why-wasm) — Why `WASM` for extension sandboxing
+- [CHANGELOG](https://github.com/CodeEditorLand/Grove/blob/Current/CHANGELOG.md) — Version history and release notes
 - [Mountain](https://github.com/CodeEditorLand/Mountain) — Native desktop shell and `gRPC` backend
 - [Cocoon](https://github.com/CodeEditorLand/Cocoon) — `Node.js`/`Effect-TS` extension host
 - [Mist](https://github.com/CodeEditorLand/Mist) — Pub/sub message bus for event-driven workflows

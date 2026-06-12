@@ -6,7 +6,6 @@
 #[path = "Types.rs"]
 pub mod Types;
 
-#[path = "VSCode.rs"]
 pub mod VSCode;
 
 /// VS Code API version compatibility
