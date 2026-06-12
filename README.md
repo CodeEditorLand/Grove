@@ -280,7 +280,7 @@ Element/Grove/
 ## Related Documentation
 
 - [Architecture Overview](https://Editor.Land/Doc/architecture)
-- [Why WebAssembly](https://Editor.Land/Doc/why-webassembly)
+- [Why WebAssembly](https://Editor.Land/Doc/why-wasm)
 - [Mountain](https://github.com/CodeEditorLand/Mountain) - Native desktop shell
 - [Cocoon](https://github.com/CodeEditorLand/Cocoon) - Node.js extension host
 
