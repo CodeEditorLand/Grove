@@ -48,6 +48,63 @@ mod websocket {
 
 		/// Returns the stored client if connected, else `None`.
 		async fn GetClient(&self) -> Option<Arc<Mist::WebSocket::Client>> { self.Client.lock().await.clone() }
+
+		/// Opens a fresh Mist client to `Address`, attaching the
+		/// per-spawn shared secret from `MountainWebSocketSecret`
+		/// (inherited from Mountain's environment) when present.
+		async fn Dial(&self) -> anyhow::Result<Arc<Mist::WebSocket::Client>> {
+			match std::env::var("MountainWebSocketSecret")
+				.ok()
+				.and_then(|Hex| Mist::WebSocket::SharedSecret::from_hex(&Hex).ok())
+			{
+				Some(Secret) => Mist::WebSocket::Client::ConnectWithSecret(&self.Address, &Secret).await,
+
+				None => Mist::WebSocket::Client::connect(&self.Address).await,
+			}
+		}
+
+		/// Reconnects with exponential backoff (100/200/400/1000/2000 ms,
+		/// 5 attempts), storing and returning the fresh client. Propagates
+		/// the last connect error once the attempts are exhausted.
+		async fn Reconnect(&self) -> Result<Arc<Mist::WebSocket::Client>, MistTransportError> {
+			const BackoffMilliseconds:[u64; 5] = [100, 200, 400, 1000, 2000];
+
+			let mut LastError:Option<anyhow::Error> = None;
+
+			for Delay in BackoffMilliseconds {
+				tokio::time::sleep(std::time::Duration::from_millis(Delay)).await;
+
+				match self.Dial().await {
+					Ok(Client) => {
+						*self.Client.lock().await = Some(Client.clone());
+
+						return Ok(Client);
+					},
+
+					Err(Error) => LastError = Some(Error),
+				}
+			}
+
+			Err(MistTransportError::ConnectionFailed(
+				LastError.unwrap_or_else(|| anyhow::anyhow!("reconnect attempts exhausted")),
+			))
+		}
+
+		/// Returns the live client, transparently reconnecting when the
+		/// stored one has dropped its connection. A `None` slot means
+		/// `connect()` was never called (or `close()` was) - that stays
+		/// a hard `NotConnected` error rather than an implicit dial.
+		async fn LiveClient(&self) -> Result<Arc<Mist::WebSocket::Client>, MistTransportError> {
+			let Client = self.GetClient().await.ok_or(MistTransportError::NotConnected)?;
+
+			if Client.is_closed() { self.Reconnect().await } else { Ok(Client) }
+		}
+	}
+
+	/// Returns `true` when a Mist invoke/notify error string indicates a
+	/// dropped connection (as opposed to a server-side handler error).
+	fn IsDisconnect(Error:&str) -> bool {
+		Error.contains("connection closed") || Error.contains("send failed") || Error.contains("request cancelled")
 	}
 
 	/// Transport error type for MistTransport.
