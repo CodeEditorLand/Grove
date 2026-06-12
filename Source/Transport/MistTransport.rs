@@ -128,9 +128,7 @@ mod websocket {
 		type Error = MistTransportError;
 
 		async fn connect(&self) -> Result<(), Self::Error> {
-			let Client = Mist::WebSocket::Client::connect(&self.Address)
-				.await
-				.map_err(MistTransportError::ConnectionFailed)?;
+			let Client = self.Dial().await.map_err(MistTransportError::ConnectionFailed)?;
 
 			*self.Client.lock().await = Some(Client);
 
@@ -144,9 +142,19 @@ mod websocket {
 
 			let Params = Msg.get("params").cloned().unwrap_or(serde_json::Value::Null);
 
-			let Client = self.GetClient().await.ok_or(MistTransportError::NotConnected)?;
+			let Client = self.LiveClient().await?;
 
-			let Result = Client.invoke(Method, Params).await.map_err(MistTransportError::RequestFailed)?;
+			let Result = match Client.invoke(&Method, Params.clone()).await {
+				Ok(Result) => Result,
+
+				Err(Error) if IsDisconnect(&Error) => {
+					let Fresh = self.Reconnect().await?;
+
+					Fresh.invoke(&Method, Params).await.map_err(MistTransportError::RequestFailed)?
+				},
+
+				Err(Error) => return Err(MistTransportError::RequestFailed(Error)),
+			};
 
 			Ok(serde_json::to_vec(&Result)?)
 		}
@@ -158,11 +166,19 @@ mod websocket {
 
 			let Params = Msg.get("params").cloned().unwrap_or(serde_json::Value::Null);
 
-			let Client = self.GetClient().await.ok_or(MistTransportError::NotConnected)?;
+			let Client = self.LiveClient().await?;
 
-			Client.notify(Method, Params).await.map_err(MistTransportError::RequestFailed)?;
+			match Client.notify(&Method, Params.clone()).await {
+				Ok(()) => Ok(()),
 
-			Ok(())
+				Err(Error) if IsDisconnect(&Error) => {
+					let Fresh = self.Reconnect().await?;
+
+					Fresh.notify(&Method, Params).await.map_err(MistTransportError::RequestFailed)
+				},
+
+				Err(Error) => Err(MistTransportError::RequestFailed(Error)),
+			}
 		}
 
 		async fn close(&self) -> Result<(), Self::Error> {
