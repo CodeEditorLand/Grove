@@ -1,11 +1,53 @@
 # **Grove** 🌳
 
+<table>
+	<tr>
+		<td>
+			<a href="https://GitHub.Com/CodeEditorLand/Grove" target="_blank">
+				<picture>
+					<source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/github/last-commit/CodeEditorLand/Grove?label=Last-commit&color=black&labelColor=black&logoColor=white&logoWidth=0" />
+					<source media="(prefers-color-scheme: light)" srcset="https://img.shields.io/github/last-commit/CodeEditorLand/Grove?label=Last-commit&color=white&labelColor=white&logoColor=black&logoWidth=0" />
+					<img src="https://img.shields.io/github/last-commit/CodeEditorLand/Grove?label=Last-commit&color=black&labelColor=black&logoColor=white&logoWidth=0" alt="Last-commit" title="Last-commit" />
+				</picture>
+			</a>
+			<br />
+			<a href="https://GitHub.Com/CodeEditorLand/Grove" target="_blank">
+				<picture>
+					<source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/github/issues/CodeEditorLand/Grove?label=Issues&color=black&labelColor=black&logoColor=white&logoWidth=0" />
+					<source media="(prefers-color-scheme: light)" srcset="https://img.shields.io/github/issues/CodeEditorLand/Grove?label=Issues&color=white&labelColor=white&logoColor=black&logoWidth=0" />
+					<img src="https://img.shields.io/github/issues/CodeEditorLand/Grove?label=Issues&color=black&labelColor=black&logoColor=white&logoWidth=0" alt="Issues" title="Issues" />
+				</picture>
+			</a>
+		</td>
+		<td>
+			<a href="https://github.com/CodeEditorLand/Grove" target="_blank">
+				<picture>
+					<source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/github/stars/CodeEditorLand/Grove?style=flat&label=Star&logo=github&color=black&labelColor=black&logoColor=white&logoWidth=0" />
+					<source media="(prefers-color-scheme: light)" srcset="https://img.shields.io/github/stars/CodeEditorLand/Grove?style=flat&label=Star&logo=github&color=white&labelColor=white&logoColor=black&logoWidth=0" />
+					<img src="https://img.shields.io/github/stars/CodeEditorLand/Grove?style=flat&label=Star&logo=github&color=black&labelColor=black&logoColor=white&logoWidth=0" alt="Star" />
+				</picture>
+			</a>
+			<br />
+			<a href="https://GitHub.Com/CodeEditorLand/Grove" target="_blank">
+				<picture>
+					<source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/github/downloads/CodeEditorLand/Grove?label=Downloads&color=black&labelColor=black&logoColor=white&logoWidth=0" />
+					<source media="(prefers-color-scheme: light)" srcset="https://img.shields.io/github/downloads/CodeEditorLand/Grove?label=Downloads&color=white&labelColor=white&logoColor=black&logoWidth=0" />
+					<img src="https://img.shields.io/github/downloads/CodeEditorLand/Grove?label=Downloads&color=black&labelColor=black&logoColor=white&logoWidth=0" alt="Downloads" title="Downloads" />
+				</picture>
+			</a>
+		</td>
+	</tr>
+</table>
+
 The Native Rust/WASM Extension Host for Land 🏞️
 
 [![License: CC0-1.0](https://img.shields.io/badge/License-CC0_1.0-lightgrey.svg)](https://github.com/CodeEditorLand/Grove/blob/Current/LICENSE)
-[<img src="https://editor.land/Image/Rust.svg" width="14" alt="Rust" />](https://www.rust-lang.org/) [![Crates.io](https://img.shields.io/crates/v/Grove.svg)](https://crates.io/crates/Grove)
-[<img src="https://editor.land/Image/Rust.svg" width="14" alt="Rust" />](https://www.rust-lang.org/) [![Rust Version](https://img.shields.io/badge/Rust-1.75+-orange.svg)](https://www.rust-lang.org/)
-[<img src="https://editor.land/Image/WebAssembly.svg" width="14" alt="WebAssembly" />](https://webassembly.org/) [![WASMtime Version](https://img.shields.io/badge/WASMtime-v20-blue.svg)](https://wasmtime.dev/)
+[<img src="https://editor.land/Image/Rust.svg" width="14" alt="Rust" />](https://www.rust-lang.org/)
+[![Crates.io](https://img.shields.io/crates/v/Grove.svg)](https://crates.io/crates/Grove)
+[<img src="https://editor.land/Image/Rust.svg" width="14" alt="Rust" />](https://www.rust-lang.org/)
+[![Rust Version](https://img.shields.io/badge/Rust-1.75+-orange.svg)](https://www.rust-lang.org/)
+[<img src="https://editor.land/Image/WebAssembly.svg" width="14" alt="WebAssembly" />](https://webassembly.org/)
+[![WASMtime Version](https://img.shields.io/badge/WASMtime-v20-blue.svg)](https://wasmtime.dev/)
 
 **[Rust API Documentation](https://Rust.Documentation.editor.land/Grove/)**
 
@@ -13,14 +55,26 @@ The Native Rust/WASM Extension Host for Land 🏞️
 
 ## Overview
 
-Grove is a high-performance Rust/WebAssembly extension host for the Land Code Editor. It complements Cocoon (Node.js) by providing a native environment for running Rust and WASM-compiled VS Code extensions. Grove offers secure sandboxing through WASMtime, multiple transport strategies (gRPC, IPC, WASM), and full compatibility with the VS Code API surface. VS Code extensions run with full Node.js capabilities in a shared process — a malicious or buggy extension can access any file, make any network request, and read another extension's state. Grove solves this by enforcing sandboxing at the hardware level: an extension can only touch what you explicitly grant.
+Grove is a high-performance Rust/WebAssembly extension host for the Land Code
+Editor. It complements Cocoon (Node.js) by providing a native environment for
+running Rust and WASM-compiled VS Code extensions. Grove offers secure
+sandboxing through WASMtime, multiple transport strategies (gRPC, IPC, WASM),
+and full compatibility with the VS Code API surface. VS Code extensions run with
+full Node.js capabilities in a shared process - a malicious or buggy extension
+can access any file, make any network request, and read another extension's
+state. Grove solves this by enforcing sandboxing at the hardware level: an
+extension can only touch what you explicitly grant.
 
 **Grove is engineered to:**
 
-1. **Provide Native Extension Hosting:** Execute Rust extensions with zero overhead through static linking or WASM sandboxing.
-2. **Enable Secure Sandboxing:** Isolate untrusted extensions using WASMtime's capability-based security model.
-3. **Support Multiple Transports:** Communicate with Mountain via gRPC, IPC, or direct WASM host functions.
-4. **Maintain Cocoon Compatibility:** Share the same VS Code API surface and activation semantics for seamless extension porting.
+1. **Provide Native Extension Hosting:** Execute Rust extensions with zero
+   overhead through static linking or WASM sandboxing.
+2. **Enable Secure Sandboxing:** Isolate untrusted extensions using WASMtime's
+   capability-based security model.
+3. **Support Multiple Transports:** Communicate with Mountain via gRPC, IPC, or
+   direct WASM host functions.
+4. **Maintain Cocoon Compatibility:** Share the same VS Code API surface and
+   activation semantics for seamless extension porting.
 
 ## Architecture
 
@@ -85,28 +139,36 @@ graph LR
 
 ## Key Components
 
-| Component | Path | Description |
-| --------- | ---- | ----------- |
-| ExtensionHost | `Source/Host/ExtensionHost.rs` | Main extension host controller — manages extension lifecycle |
-| ExtensionManager | `Source/Host/ExtensionManager.rs` | Extension discovery and loading |
-| Activation | `Source/Host/Activation.rs` | Extension activation events and contribution points |
-| APIBridge | `Source/Host/APIBridge.rs` | VS Code API facade (vscode.d.ts compatibility) |
-| WASM Runtime | `Source/WASM/Runtime/` | WASMtime engine and store management |
-| ModuleLoader | `Source/WASM/ModuleLoader/` | WASM module compilation and instantiation |
-| MemoryManager | `Source/WASM/MemoryManager/` | WASM memory allocation and configurable limits |
-| HostBridge | `Source/WASM/HostBridge/` | Host-to-WASM function communication |
-| FunctionExport | `Source/WASM/FunctionExport/` | Export host functions to WASM |
-| Transport Strategy | `Source/Transport/Strategy.rs` | Transport strategy trait |
-| gRPC Transport | `Source/Transport/gRPCTransport.rs` | gRPC-based communication with Mountain |
-| IPC Transport | `Source/Transport/IPCTransport.rs` | Inter-process communication (Unix only) |
-| WASM Transport | `Source/Transport/WASMTransport.rs` | Direct WASM communication |
-| Spine Connection | `Source/Protocol/SpineConnection.rs` | Spine protocol client connection |
+| Component          | Path                                 | Description                                                  |
+| ------------------ | ------------------------------------ | ------------------------------------------------------------ |
+| ExtensionHost      | `Source/Host/ExtensionHost.rs`       | Main extension host controller - manages extension lifecycle |
+| ExtensionManager   | `Source/Host/ExtensionManager.rs`    | Extension discovery and loading                              |
+| Activation         | `Source/Host/Activation.rs`          | Extension activation events and contribution points          |
+| APIBridge          | `Source/Host/APIBridge.rs`           | VS Code API facade (vscode.d.ts compatibility)               |
+| WASM Runtime       | `Source/WASM/Runtime/`               | WASMtime engine and store management                         |
+| ModuleLoader       | `Source/WASM/ModuleLoader/`          | WASM module compilation and instantiation                    |
+| MemoryManager      | `Source/WASM/MemoryManager/`         | WASM memory allocation and configurable limits               |
+| HostBridge         | `Source/WASM/HostBridge/`            | Host-to-WASM function communication                          |
+| FunctionExport     | `Source/WASM/FunctionExport/`        | Export host functions to WASM                                |
+| Transport Strategy | `Source/Transport/Strategy.rs`       | Transport strategy trait                                     |
+| gRPC Transport     | `Source/Transport/gRPCTransport.rs`  | gRPC-based communication with Mountain                       |
+| IPC Transport      | `Source/Transport/IPCTransport.rs`   | Inter-process communication (Unix only)                      |
+| WASM Transport     | `Source/Transport/WASMTransport.rs`  | Direct WASM communication                                    |
+| Spine Connection   | `Source/Protocol/SpineConnection.rs` | Spine protocol client connection                             |
 
 ## In the Land Project
 
-Grove communicates with Mountain via gRPC (port 50052), IPC (Unix socket), or direct WASM host function calls. It shares the same VS Code API surface as Cocoon, enabling seamless porting of extensions between the Node.js and WASM/Native hosting environments. Grove's Transport layer abstracts communication strategies, allowing flexible deployment — standalone process or integrated with Mountain's Vine gRPC server.
+Grove communicates with Mountain via gRPC (port 50052), IPC (Unix socket), or
+direct WASM host function calls. It shares the same VS Code API surface as
+Cocoon, enabling seamless porting of extensions between the Node.js and
+WASM/Native hosting environments. Grove's Transport layer abstracts
+communication strategies, allowing flexible deployment - standalone process or
+integrated with Mountain's Vine gRPC server.
 
-- **Architecture Principles:** Security First (WASMtime capability-based isolation), Transport Agnosticism (gRPC, IPC, WASM), Performance (zero-cost Rust abstractions with LTO), Composability (modular Host/Transport separation).
+- **Architecture Principles:** Security First (WASMtime capability-based
+  isolation), Transport Agnosticism (gRPC, IPC, WASM), Performance (zero-cost
+  Rust abstractions with LTO), Composability (modular Host/Transport
+  separation).
 
 ## Getting Started
 
@@ -168,11 +230,18 @@ async fn main() -> anyhow::Result<()> {
 
 ### Security
 
-Grove provides security through WASM sandboxing (isolated execution via WASMtime), memory limits (configurable constraints for extensions), resource controls (CPU and resource throttling), type safety (Rust's ownership system), and secure API (controlled access to host functions via explicit capability grants).
+Grove provides security through WASM sandboxing (isolated execution via
+WASMtime), memory limits (configurable constraints for extensions), resource
+controls (CPU and resource throttling), type safety (Rust's ownership system),
+and secure API (controlled access to host functions via explicit capability
+grants).
 
 ### Compatibility
 
-Grove is designed to be compatible with Cocoon (shares VS Code API surface, activation semantics, and manifest parsing), VS Code (implements vscode.d.ts type definitions), and Mountain (integrates via GroveService gRPC protocol using Vine.proto).
+Grove is designed to be compatible with Cocoon (shares VS Code API surface,
+activation semantics, and manifest parsing), VS Code (implements vscode.d.ts
+type definitions), and Mountain (integrates via GroveService gRPC protocol using
+Vine.proto).
 
 ### Project Structure
 
@@ -212,18 +281,44 @@ Element/Grove/
 
 - [Architecture Overview](https://Editor.Land/Doc/architecture)
 - [Why WebAssembly](https://Editor.Land/Doc/why-webassembly)
-- [Mountain](https://github.com/CodeEditorLand/Mountain) — Native desktop shell
-- [Cocoon](https://github.com/CodeEditorLand/Cocoon) — Node.js extension host
+- [Mountain](https://github.com/CodeEditorLand/Mountain) - Native desktop shell
+- [Cocoon](https://github.com/CodeEditorLand/Cocoon) - Node.js extension host
 
 ---
 
 ## Funding
 
-This project is funded through [NGI0 Commons Fund](https://NLnet.NL/commonsfund), a fund established by [NLnet](https://NLnet.NL) with financial support from the European Commission's Next Generation Internet program, under grant agreement No 101135429.
+This project is funded through
+[NGI0 Commons Fund](https://NLnet.NL/commonsfund), a fund established by
+[NLnet](https://NLnet.NL) with financial support from the European Commission's
+Next Generation Internet program, under grant agreement No 101135429.
 
-The project is operated by PlayForm, based in Sofia, Bulgaria. PlayForm acts as the open-source steward for Code Editor Land under the NGI0 Commons Fund grant.
+The project is operated by PlayForm, based in Sofia, Bulgaria. PlayForm acts as
+the open-source steward for Code Editor Land under the NGI0 Commons Fund grant.
 
-| | |
-| --- | --- |
-| [![Land](https://raw.githubusercontent.com/CodeEditorLand/Asset/refs/heads/Current/Logo/Dual/Land.svg)](https://Editor.Land) | [![PlayForm](https://raw.githubusercontent.com/PlayForm/Asset/refs/heads/Current/Logo/PlayForm.svg)](https://PlayForm.Cloud) |
-| [![NLnet](https://raw.githubusercontent.com/CodeEditorLand/Asset/refs/heads/Current/Logo/NLnet.svg)](https://NLnet.NL) | [![NGI0](https://raw.githubusercontent.com/CodeEditorLand/Asset/refs/heads/Current/Logo/NGI0.svg)](https://NLnet.NL/commonsfund) |
+<table>
+	<tbody>
+		<tr>
+			<td align="left" valign="middle">
+				<a href="https://Editor.Land">
+					<img width="60" src="https://raw.githubusercontent.com/CodeEditorLand/Asset/refs/heads/Current/Logo/Land.svg" alt="Land" />
+				</a>
+			</td>
+			<td align="left" valign="middle">
+				<a href="https://PlayForm.Cloud">
+					<img width="76" src="https://raw.githubusercontent.com/PlayForm/Asset/refs/heads/Current/Logo/PlayForm.svg" alt="PlayForm" />
+				</a>
+			</td>
+			<td align="left" valign="middle">
+				<a href="https://NLnet.NL">
+					<img width="240" src="https://NLnet.NL/logo/banner.svg" alt="NLnet" />
+				</a>
+			</td>
+			<td align="left" valign="middle">
+				<a href="https://NLnet.NL/commonsfund">
+					<img width="240" src="https://NLnet.NL/image/logos/NGI0CommonsFund_tag_black_mono.svg" alt="NGI0 Commons Fund" />
+				</a>
+			</td>
+		</tr>
+	</tbody>
+</table>
