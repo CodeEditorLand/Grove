@@ -1,9 +1,27 @@
-# Grove: WASM Extension Host 🌿
+<table>
+	<tr>
+		<td colspan="1">
+			<h3 align="center">
+				<picture>
+					<source media="(prefers-color-scheme: dark)" srcset="https://editor.land/Dark/Image/GitHub/Land.svg">
+					<source media="(prefers-color-scheme: light)" srcset="https://editor.land/Image/GitHub/Land.svg">
+					<img width="28" alt="Land Logo" src="https://editor.land/Image/GitHub/Land.svg">
+				</picture>
+			</h3>
+		</td>
+		<td colspan="3" valign="top">
+			<h3 align="center"> Grove 🌿</h3>
+		</td>
+	</tr>
+</table>
 
-This document describes `Grove`, the native `Rust`/`WASM` extension host for
-`Land`. `Grove` provides a sandboxed environment for running `WASM`-compiled
-`VS Code` extensions via `WASMtime`, sharing the same `VS Code` API surface as
-`Cocoon`.
+---
+
+# **Grove** 🌿 Architecture
+
+`Grove` is the native `Rust`/`WASM` extension host for `Land`. It provides a
+sandboxed environment for running `WASM`-compiled `VS Code` extensions via
+`WASMtime`, sharing the same `VS Code` API surface as `Cocoon`.
 
 ---
 
