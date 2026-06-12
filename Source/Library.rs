@@ -12,13 +12,16 @@
 #![deny(unsafe_code)]
 #![warn(clippy::all)]
 
-//! Grove - Rust/WASM Extension Host for VS Code
+//! # Grove - Rust/WASM Extension Host for VS Code [🏞️ Land](https://editor.land)
 //!
 //! Grove provides a secure, sandboxed environment for running VS Code
 //! extensions compiled to WebAssembly or native Rust. It complements Cocoon
 //! (Node.js) by offering a native extension host with full WASM support.
 //!
 //! # Architecture
+//!
+//! See [`Documentation/GitHub/Architecture.md`](https://github.com/editor-land/Land/docs/Architecture.md)
+//! for the full Land system architecture.
 //!
 //! ```text
 //! +++++++++++++++++++++++++++++++++++++++++++
@@ -85,7 +88,7 @@ pub mod Transport;
 
 pub mod WASM;
 
-// Library version
+/// Library version string (from `CARGO_PKG_VERSION`).
 const VERSION:&str = env!("CARGO_PKG_VERSION");
 
 /// Grove library information
