@@ -1,0 +1,7 @@
+//! Protocol constants.
+
+pub const SPINE_PROTOCOL_VERSION:&str = "1.0.0";
+pub const DEFAULT_MOUNTAIN_ENDPOINT:&str = "127.0.0.1:50050";
+pub const DEFAULT_CONNECTION_TIMEOUT_MS:u64 = 5000;
+pub const DEFAULT_HEARTBEAT_INTERVAL_SEC:u64 = 30;
+pub const DEFAULT_MESSAGE_BUFFER_SIZE:usize = 8192;
