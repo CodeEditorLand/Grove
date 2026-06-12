@@ -54,7 +54,7 @@ enforced by the hardware, not a policy."_
 [<img src="https://editor.land/Image/Rust.svg" width="14" alt="Rust" />](https://www.rust-lang.org/)&#x2001;[![Rust Version](https://img.shields.io/badge/Rust-1.75+-orange.svg)](https://www.rust-lang.org/)
 [<img src="https://editor.land/Image/WebAssembly.svg" width="14" alt="WebAssembly" />](https://webassembly.org/)&#x2001;[![WASMtime Version](https://img.shields.io/badge/WASMtime-v20-blue.svg)](https://wasmtime.dev/)
 
-**[Rust API Documentation](https://Rust.Documentation.editor.land/Grove/)**&#x2001;📖
+**[Rust API Documentation](https://rust.documentation.grove.editor.land/)**&#x2001;📖
 
 ---
 
@@ -415,7 +415,7 @@ Grove is designed to be compatible with:
 
 ## API Reference
 
-- **[Rust API Documentation](https://Rust.Documentation.editor.land/Grove/)**&#x2001;📖
+- **[Rust API Documentation](https://rust.documentation.grove.editor.land/)**&#x2001;📖
 
 ---
 
