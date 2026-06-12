@@ -48,5 +48,3 @@ impl MessageType {
 		}
 	}
 }
-
-/// Protocol error types

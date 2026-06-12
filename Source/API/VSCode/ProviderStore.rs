@@ -1,9 +1,10 @@
-use std::sync::{Arc, atomic::{AtomicU32, Ordering}};
+use std::sync::{
+	Arc,
+	atomic::{AtomicU32, Ordering},
+};
 
 use crate::dev_log;
-
-use super::Disposable::Disposable;
-use super::DocumentSelector::DocumentSelector;
+use super::{Disposable::Disposable, DocumentSelector::DocumentSelector};
 
 /// Tracks all active language provider registrations with their handles.
 ///

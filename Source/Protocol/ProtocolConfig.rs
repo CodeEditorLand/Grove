@@ -82,5 +82,3 @@ impl ProtocolConfig {
 impl Default for ProtocolConfig {
 	fn default() -> Self { Self::new() }
 }
-
-/// Message types for Spine protocol

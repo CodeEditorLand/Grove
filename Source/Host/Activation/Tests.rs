@@ -22,9 +22,15 @@ mod tests {
 	fn test_activation_event_to_string() {
 		assert_eq!(ActivationEvent::ActivationEvent::Star.to_string(), "*");
 
-		assert_eq!(ActivationEvent::ActivationEvent::Command("test".to_string()).to_string(), "onCommand:test");
+		assert_eq!(
+			ActivationEvent::ActivationEvent::Command("test".to_string()).to_string(),
+			"onCommand:test"
+		);
 
-		assert_eq!(ActivationEvent::ActivationEvent::Language("rust".to_string()).to_string(), "onLanguage:rust");
+		assert_eq!(
+			ActivationEvent::ActivationEvent::Language("rust".to_string()).to_string(),
+			"onLanguage:rust"
+		);
 	}
 
 	#[test]

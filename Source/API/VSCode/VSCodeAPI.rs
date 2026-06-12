@@ -1,14 +1,14 @@
 use std::sync::Arc;
 
-use crate::API::Types::*;
-use crate::Transport::Strategy::Transport;
-
-use super::CommandNamespace::CommandNamespace;
-use super::Env::Env;
-use super::ExtensionNamespace::ExtensionNamespace;
-use super::LanguageNamespace::LanguageNamespace;
-use super::Window::Window;
-use super::Workspace::Workspace;
+use crate::{API::Types::*, Transport::Strategy::Transport};
+use super::{
+	CommandNamespace::CommandNamespace,
+	Env::Env,
+	ExtensionNamespace::ExtensionNamespace,
+	LanguageNamespace::LanguageNamespace,
+	Window::Window,
+	Workspace::Workspace,
+};
 
 /// VS Code API facade - the main entry point for extensions
 #[derive(Debug, Clone)]

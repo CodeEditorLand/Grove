@@ -2,9 +2,7 @@ use std::sync::Arc;
 
 use serde_json;
 
-use crate::Transport::Strategy::Transport;
-
-use crate::API::Types::Diagnostic;
+use crate::{API::Types::Diagnostic, Transport::Strategy::Transport};
 
 /// Diagnostic collection
 #[derive(Debug, Clone)]

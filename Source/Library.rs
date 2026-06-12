@@ -42,7 +42,8 @@
 //!
 //! # Features
 //!
-//! - **Standalone Operation** — Run independently or connect to Mountain via gRPC
+//! - **Standalone Operation** — Run independently or connect to Mountain via
+//!   gRPC
 //! - **WASM Support** — Full WebAssembly runtime with WASMtime
 //! - **Multiple Transports** — gRPC, IPC, and direct WASM communication
 //! - **Secure Sandboxing** — WASMtime-based isolation for untrusted extensions
@@ -55,10 +56,10 @@
 //!
 //! #[tokio::main]
 //! async fn main() -> anyhow::Result<()> {
-//!     let host = ExtensionHost::new(Transport::default()).await?;
-//!     host.load_extension("/path/to/extension").await?;
-//!     host.activate().await?;
-//!     Ok(())
+//! 	let host = ExtensionHost::new(Transport::default()).await?;
+//! 	host.load_extension("/path/to/extension").await?;
+//! 	host.activate().await?;
+//! 	Ok(())
 //! }
 //! ```
 //!
@@ -90,22 +91,22 @@ pub mod Transport;
 pub mod WASM;
 
 /// Library version string (from `CARGO_PKG_VERSION`).
-const VERSION: &str = env!("CARGO_PKG_VERSION");
+const VERSION:&str = env!("CARGO_PKG_VERSION");
 
 /// Grove library metadata.
 #[derive(Debug, Clone)]
 pub struct Struct {
 	/// Library version string.
-	pub version: &'static str,
+	pub version:&'static str,
 
 	/// Build timestamp (embedded at compile time via `VERGEN_BUILD_TIMESTAMP`).
 	#[allow(dead_code)]
-	build_timestamp: String,
+	build_timestamp:String,
 }
 
 impl Struct {
 	/// Creates a new `GroveInfo` with the current build information.
-	pub fn new() -> Self { Self { version: VERSION, build_timestamp: env!("VERGEN_BUILD_TIMESTAMP").to_string() } }
+	pub fn new() -> Self { Self { version:VERSION, build_timestamp:env!("VERGEN_BUILD_TIMESTAMP").to_string() } }
 
 	/// Returns the Grove library version string.
 	pub fn version(&self) -> &'static str { self.version }

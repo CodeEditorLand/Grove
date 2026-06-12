@@ -2,8 +2,7 @@ use std::sync::Arc;
 
 use serde_json;
 
-use crate::Transport::Strategy::Transport;
-use crate::dev_log;
+use crate::{Transport::Strategy::Transport, dev_log};
 
 /// Output channel for logging
 #[derive(Debug, Clone)]

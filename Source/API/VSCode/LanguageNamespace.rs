@@ -2,13 +2,13 @@ use std::sync::Arc;
 
 use serde_json;
 
-use crate::Transport::Strategy::Transport;
-use crate::dev_log;
-
-use super::DiagnosticCollection::DiagnosticCollection;
-use super::Disposable::Disposable;
-use super::DocumentSelector::DocumentSelector;
-use super::ProviderStore::ProviderStore;
+use crate::{Transport::Strategy::Transport, dev_log};
+use super::{
+	DiagnosticCollection::DiagnosticCollection,
+	Disposable::Disposable,
+	DocumentSelector::DocumentSelector,
+	ProviderStore::ProviderStore,
+};
 
 /// Languages namespace - mirrors the full vscode.languages API surface.
 ///

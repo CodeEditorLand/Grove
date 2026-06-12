@@ -2,9 +2,7 @@ use std::sync::Arc;
 
 use serde::{Deserialize, Serialize};
 
-use crate::Transport::Strategy::Transport;
-use crate::dev_log;
-
+use crate::{Transport::Strategy::Transport, dev_log};
 use super::WorkspaceConfiguration::WorkspaceConfiguration;
 
 /// Workspace namespace

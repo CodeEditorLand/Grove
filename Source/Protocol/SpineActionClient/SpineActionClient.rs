@@ -47,6 +47,7 @@ use tokio::sync::RwLock;
 use tonic::transport::Channel;
 
 use crate::{
+	Protocol::SpineActionClient::{ConnectionStatus, HostInfo, SpineConfig, calculate_backoff},
 	api::vscode::APIBridge,
 	dev_log,
 	vine::generated::vine::{
@@ -56,12 +57,6 @@ use crate::{
 		echo_action_service_client::EchoActionServiceClient,
 	},
 	wasm::Runtime as WASMRuntime,
-	Protocol::SpineActionClient::{
-		ConnectionStatus,
-		HostInfo,
-		SpineConfig,
-		calculate_backoff,
-	},
 };
 
 /// Grove Spine Action Client

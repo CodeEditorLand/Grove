@@ -137,7 +137,7 @@ pub trait Configurable {
 	type Config;
 
 	/// Configures the object with the given configuration.
-	fn configure(&mut self, config: Self::Config) -> anyhow::Result<()>;
+	fn configure(&mut self, config:Self::Config) -> anyhow::Result<()>;
 
 	/// Returns a reference to the current configuration.
 	fn config(&self) -> &Self::Config;
@@ -158,7 +158,7 @@ pub trait Disposable {
 /// Trait for objects that can be cloned with additional context.
 pub trait ContextClone {
 	/// Clones the object with additional context data.
-	fn clone_with_context(&self, context: &serde_json::Value) -> anyhow::Result<Self>
+	fn clone_with_context(&self, context:&serde_json::Value) -> anyhow::Result<Self>
 	where
 		Self: Sized;
 }
@@ -172,10 +172,10 @@ pub trait Stateful {
 	fn state(&self) -> Self::State;
 
 	/// Sets the state.
-	fn set_state(&mut self, state: Self::State) -> anyhow::Result<()>;
+	fn set_state(&mut self, state:Self::State) -> anyhow::Result<()>;
 
 	/// Restores the state from a previous snapshot.
-	fn restore_state(&mut self, state: Self::State) -> anyhow::Result<()>;
+	fn restore_state(&mut self, state:Self::State) -> anyhow::Result<()>;
 }
 
 /// Trait for objects that can emit events.
@@ -184,7 +184,7 @@ pub trait Observable {
 	type Event;
 
 	/// Subscribes to events with the given callback.
-	fn subscribe(&self, callback: fn(Self::Event)) -> anyhow::Result<()>;
+	fn subscribe(&self, callback:fn(Self::Event)) -> anyhow::Result<()>;
 
 	/// Unsubscribes from all events.
 	fn unsubscribe(&self) -> anyhow::Result<()>;
@@ -209,15 +209,15 @@ pub trait Serializable: Serialize + for<'de> Deserialize<'de> {
 	}
 
 	/// Deserializes from a JSON string.
-	fn from_json(json: &str) -> anyhow::Result<Self>
+	fn from_json(json:&str) -> anyhow::Result<Self>
 	where
-		Self: Sized,
-	{
+		Self: Sized, {
 		serde_json::from_str(json).map_err(|e| anyhow::anyhow!("Deserialization failed: {}", e))
 	}
 }
 
-/// Blanket implementation of `Serializable` for all `Serialize + Deserialize` types.
+/// Blanket implementation of `Serializable` for all `Serialize + Deserialize`
+/// types.
 impl<T> Serializable for T where T: Serialize + for<'de> Deserialize<'de> {}
 
 /// Trait for objects with version information.
@@ -226,7 +226,7 @@ pub trait Versioned {
 	fn version(&self) -> &str;
 
 	/// Returns `true` if this version is compatible with the given version.
-	fn is_compatible_with(&self, other_version: &str) -> bool;
+	fn is_compatible_with(&self, other_version:&str) -> bool;
 }
 
 /// Trait for operations that can be retried on failure.
@@ -242,12 +242,11 @@ pub trait Retryable {
 	/// ## Returns
 	///
 	/// The operation result, or an error after all retries are exhausted.
-	fn execute_with_retry<F, T, E>(&self, mut operation: F, max_retries: u32, delay_ms: u64) -> anyhow::Result<T>
+	fn execute_with_retry<F, T, E>(&self, mut operation:F, max_retries:u32, delay_ms:u64) -> anyhow::Result<T>
 	where
 		F: FnMut() -> Result<T, E> + Send,
 		E: std::fmt::Display + Send + 'static,
-		T: Send,
-	{
+		T: Send, {
 		let mut last_error = None;
 
 		for attempt in 0..=max_retries {
@@ -292,14 +291,14 @@ mod tests {
 	fn test_serializable_trait() {
 		#[derive(Serialize, Deserialize, PartialEq, Debug)]
 		struct TestStruct {
-			value: i32,
+			value:i32,
 		}
 
-		let test = TestStruct { value: 42 };
+		let test = TestStruct { value:42 };
 
 		let json = test.to_json().unwrap();
 
-		let deserialized: TestStruct = TestStruct::from_json(&json).unwrap();
+		let deserialized:TestStruct = TestStruct::from_json(&json).unwrap();
 
 		assert_eq!(test, deserialized);
 	}

@@ -13,28 +13,28 @@ pub mod Traits;
 pub type Result<T> = anyhow::Result<T>;
 
 /// Grove library version (from `CARGO_PKG_VERSION`).
-pub const VERSION: &str = env!("CARGO_PKG_VERSION");
+pub const VERSION:&str = env!("CARGO_PKG_VERSION");
 
 /// Default configuration values.
 pub mod config {
 
 	/// Default timeout for operations in milliseconds.
-	pub const DEFAULT_TIMEOUT_MS: u64 = 30000;
+	pub const DEFAULT_TIMEOUT_MS:u64 = 30000;
 
 	/// Default buffer size for I/O operations (8 KiB).
-	pub const DEFAULT_BUFFER_SIZE: usize = 8192;
+	pub const DEFAULT_BUFFER_SIZE:usize = 8192;
 
 	/// Default maximum number of retries.
-	pub const DEFAULT_MAX_RETRIES: u32 = 3;
+	pub const DEFAULT_MAX_RETRIES:u32 = 3;
 
 	/// Default connection timeout in milliseconds.
-	pub const DEFAULT_CONNECTION_TIMEOUT_MS: u64 = 5000;
+	pub const DEFAULT_CONNECTION_TIMEOUT_MS:u64 = 5000;
 
 	/// Default heartbeat interval in seconds.
-	pub const DEFAULT_HEARTBEAT_INTERVAL_SEC: u64 = 30;
+	pub const DEFAULT_HEARTBEAT_INTERVAL_SEC:u64 = 30;
 
 	/// Default maximum concurrent operations.
-	pub const DEFAULT_MAX_CONCURRENT: usize = 100;
+	pub const DEFAULT_MAX_CONCURRENT:usize = 100;
 }
 
 /// Utility functions for common operations.
@@ -59,10 +59,10 @@ pub mod utils {
 	pub fn generate_id() -> String { format!("{}-{}", now_unix_timestamp_ms(), uuid::Uuid::new_v4()) }
 
 	/// Sleeps for the specified duration in milliseconds.
-	pub async fn sleep_ms(ms: u64) { tokio::time::sleep(tokio::time::Duration::from_millis(ms)).await }
+	pub async fn sleep_ms(ms:u64) { tokio::time::sleep(tokio::time::Duration::from_millis(ms)).await }
 
 	/// Sleeps for the specified duration in seconds.
-	pub async fn sleep_sec(sec: u64) { tokio::time::sleep(tokio::time::Duration::from_secs(sec)).await }
+	pub async fn sleep_sec(sec:u64) { tokio::time::sleep(tokio::time::Duration::from_secs(sec)).await }
 }
 
 #[cfg(test)]

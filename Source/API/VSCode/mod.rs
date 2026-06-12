@@ -5,18 +5,31 @@
 //! compatibility.
 
 pub mod CommandNamespace;
+
 pub mod CompletionItemProvider;
+
 pub mod DiagnosticCollection;
+
 pub mod Disposable;
+
 pub mod DocumentSelector;
+
 pub mod Env;
+
 pub mod ExtensionNamespace;
+
 pub mod LanguageNamespace;
+
 pub mod OutputChannel;
+
 pub mod ProviderStore;
+
 pub mod VSCodeAPI;
+
 pub mod Window;
+
 pub mod Workspace;
+
 pub mod WorkspaceConfiguration;
 
 #[cfg(test)]

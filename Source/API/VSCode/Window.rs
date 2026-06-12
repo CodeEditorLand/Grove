@@ -3,7 +3,6 @@ use std::sync::Arc;
 use serde_json;
 
 use crate::Transport::Strategy::Transport;
-
 use super::OutputChannel::OutputChannel;
 
 /// Window namespace

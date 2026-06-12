@@ -5,11 +5,17 @@
 //! Bidirectional gRPC connection with EchoAction support.
 
 pub mod ConnectionStatus;
+
 pub mod GroveCapabilities;
+
 pub mod HostInfo;
+
 pub mod ReconnectStrategy;
+
 pub mod SpineActionClient;
+
 pub mod SpineConfig;
+
 pub mod calculate_backoff;
 
 #[cfg(test)]
