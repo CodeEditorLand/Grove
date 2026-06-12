@@ -187,7 +187,9 @@ impl ActivationEngine {
 	/// Trigger activation for certain events
 	pub async fn trigger_activation(
 		&self,
+
 		event:&str,
+
 		_context:&ActivationContext::ActivationContext,
 	) -> Result<Vec<ActivationResult>> {
 		dev_log!("extensions", "Triggering activation for event: {}", event);
@@ -229,7 +231,9 @@ impl ActivationEngine {
 	/// Check if extension should activate for given event
 	fn should_activate(
 		&self,
+
 		activation_event:&ActivationEvent::ActivationEvent,
+
 		events:&[ActivationEvent::ActivationEvent],
 	) -> bool {
 		events.iter().any(|e| {
@@ -249,7 +253,9 @@ impl ActivationEngine {
 	/// Non-WASM extensions are deferred to the host (Cocoon/Node).
 	async fn perform_activation(
 		&self,
+
 		extension_id:&str,
+
 		_context:&ActivationContext::ActivationContext,
 	) -> Result<ActivationResult> {
 		let extension_info = match self.extension_manager.get_extension(extension_id).await {
@@ -321,6 +327,7 @@ impl ActivationEngine {
 	/// Get activation history for a specific extension
 	pub async fn get_activation_history_for_extension(
 		&self,
+
 		extension_id:&str,
 	) -> Vec<ActivationRecord::ActivationRecord> {
 		self.activation_history

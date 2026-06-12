@@ -1,9 +1,9 @@
 # Grove - Deep Dive
 
-Grove provides the technical foundation Rust/WASM
-extension host within the Land ecosystem. **Grove** provides a native, sandboxed
-environment for running VS Code extensions compiled to WebAssembly or native
-Rust, complementing the Node.js-based Cocoon host.
+Grove provides the technical foundation Rust/WASM extension host within the Land
+ecosystem. **Grove** provides a native, sandboxed environment for running VS
+Code extensions compiled to WebAssembly or native Rust, complementing the
+Node.js-based Cocoon host.
 
 ---
 
