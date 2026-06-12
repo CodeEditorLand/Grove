@@ -34,10 +34,10 @@ pub struct ActivationEngine {
 	config:HostConfig,
 
 	/// Event handlers mapping
-	event_handlers:Arc<RwLock<HashMap<String, ActivationHandler>>>,
-
+	event_handlers:Arc<RwLock<HashMap<String, ActivationHandler::ActivationHandler>>>,
+	
 	/// Activation history
-	activation_history:Arc<RwLock<Vec<ActivationRecord>>>,
+	activation_history:Arc<RwLock<Vec<ActivationRecord::ActivationRecord>>>,
 }
 
 impl ActivationEngine {
@@ -96,16 +96,16 @@ impl ActivationEngine {
 		drop(handlers);
 
 		// Parse activation events
-		let activation_events:Result<Vec<ActivationEvent>> = extension_info
+		let activation_events:Result<Vec<ActivationEvent::ActivationEvent>> = extension_info
 			.activation_events
 			.iter()
-			.map(|e| ActivationEvent::from_str(e))
+			.map(|e| ActivationEvent::ActivationEvent::from_str(e))
 			.collect();
 
 		let activation_events = activation_events.with_context(|| "Failed to parse activation events")?;
 
 		// Create activation context
-		let context = ActivationContext::default();
+		let context = ActivationContext::ActivationContext::default();
 
 		// Perform activation (in real implementation, this would call the extension's
 		// activate function)
@@ -117,7 +117,7 @@ impl ActivationEngine {
 		let elapsed_ms = start.elapsed().as_millis() as u64;
 
 		// Record activation
-		let record = ActivationRecord {
+		let record = ActivationRecord::ActivationRecord {
 			extension_id:extension_id.to_string(),
 
 			events:extension_info.activation_events.clone(),
@@ -149,7 +149,7 @@ impl ActivationEngine {
 
 		handlers.insert(
 			extension_id.to_string(),
-			ActivationHandler {
+			ActivationHandler::ActivationHandler {
 				extension_id:extension_id.to_string(),
 				events:activation_events,
 				activation_function:"activate".to_string(),
@@ -191,10 +191,10 @@ impl ActivationEngine {
 	}
 
 	/// Trigger activation for certain events
-	pub async fn trigger_activation(&self, event:&str, _context:&ActivationContext) -> Result<Vec<ActivationResult>> {
+	pub async fn trigger_activation(&self, event:&str, _context:&ActivationContext::ActivationContext) -> Result<Vec<ActivationResult>> {
 		dev_log!("extensions", "Triggering activation for event: {}", event);
 
-		let activation_event = ActivationEvent::from_str(event)?;
+		let activation_event = ActivationEvent::ActivationEvent::from_str(event)?;
 
 		let handlers = self.event_handlers.read().await;
 
@@ -229,12 +229,12 @@ impl ActivationEngine {
 	}
 
 	/// Check if extension should activate for given event
-	fn should_activate(&self, activation_event:&ActivationEvent, events:&[ActivationEvent]) -> bool {
+	fn should_activate(&self, activation_event:&ActivationEvent::ActivationEvent, events:&[ActivationEvent::ActivationEvent]) -> bool {
 		events.iter().any(|e| {
 			match (e, activation_event) {
-				(ActivationEvent::Star, _) => true,
-				(ActivationEvent::Custom(pattern), _) => {
-					WildMatch::new(pattern).matches(activation_event.to_string().as_str())
+				(ActivationEvent::ActivationEvent::Star, _) => true,
+				(ActivationEvent::ActivationEvent::Custom(pattern), _) => {
+					WildMatch::WildMatch::new(pattern).matches(activation_event.to_string().as_str())
 				},
 				_ => e == activation_event,
 			}
@@ -245,7 +245,7 @@ impl ActivationEngine {
 	/// WASM extensions are loaded via ModuleLoaderImpl and their exported
 	/// `activate` function is called through a wasmtime typed func.
 	/// Non-WASM extensions are deferred to the host (Cocoon/Node).
-	async fn perform_activation(&self, extension_id:&str, _context:&ActivationContext) -> Result<ActivationResult> {
+	async fn perform_activation(&self, extension_id:&str, _context:&ActivationContext::ActivationContext) -> Result<ActivationResult> {
 		let extension_info = match self.extension_manager.get_extension(extension_id).await {
 			Some(info) => info,
 
@@ -308,10 +308,10 @@ impl ActivationEngine {
 	}
 
 	/// Get activation history
-	pub async fn get_activation_history(&self) -> Vec<ActivationRecord> { self.activation_history.read().await.clone() }
+	pub async fn get_activation_history(&self) -> Vec<ActivationRecord::ActivationRecord> { self.activation_history.read().await.clone() }
 
 	/// Get activation history for a specific extension
-	pub async fn get_activation_history_for_extension(&self, extension_id:&str) -> Vec<ActivationRecord> {
+	pub async fn get_activation_history_for_extension(&self, extension_id:&str) -> Vec<ActivationRecord::ActivationRecord> {
 		self.activation_history
 			.read()
 			.await

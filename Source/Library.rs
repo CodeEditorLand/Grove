@@ -12,16 +12,14 @@
 #![deny(unsafe_code)]
 #![warn(clippy::all)]
 
-//! # Grove - Rust/WASM Extension Host for VS Code [🏞️ Land](https://editor.land)
+//! # Grove — Rust/WASM Extension Host for VS Code
 //!
 //! Grove provides a secure, sandboxed environment for running VS Code
-//! extensions compiled to WebAssembly or native Rust. It complements Cocoon
-//! (Node.js) by offering a native extension host with full WASM support.
+//! extensions compiled to WebAssembly or native Rust. It complements the
+//! Node.js-based extension host (Cocoon) by offering a native extension
+//! host with full WASM support via WASMtime.
 //!
 //! # Architecture
-//!
-//! See [`Documentation/GitHub/Architecture.md`](https://github.com/editor-land/Land/docs/Architecture.md)
-//! for the full Land system architecture.
 //!
 //! ```text
 //! +++++++++++++++++++++++++++++++++++++++++++
@@ -44,36 +42,39 @@
 //!
 //! # Features
 //!
-//! - **Standalone Operation**: Run independently or connect to Mountain via
-//!   gRPC
-//! - **WASM Support**: Full WebAssembly runtime with WASMtime
-//! - **Multiple Transport**: gRPC, IPC, and direct WASM communication
-//! - **Secure Sandboxing**: WASMtime-based isolation for untrusted extensions
-//! - **Cocoon Compatible**: Shares API surface with Node.js host
+//! - **Standalone Operation** — Run independently or connect to Mountain via gRPC
+//! - **WASM Support** — Full WebAssembly runtime with WASMtime
+//! - **Multiple Transports** — gRPC, IPC, and direct WASM communication
+//! - **Secure Sandboxing** — WASMtime-based isolation for untrusted extensions
+//! - **Cocoon-Compatible** — Shares API surface with the Node.js extension host
 //!
-//! # Example: Standalone Usage
+//! # Quick Start
 //!
 //! ```rust,no_run
 //! use grove::{ExtensionHost, Transport};
 //!
 //! #[tokio::main]
 //! async fn main() -> anyhow::Result<()> {
-//! 	let host = ExtensionHost::new(Transport::default()).await?;
-//! 	host.load_extension("/path/to/extension").await?;
-//! 	host.activate().await?;
-//! 	Ok(())
+//!     let host = ExtensionHost::new(Transport::default()).await?;
+//!     host.load_extension("/path/to/extension").await?;
+//!     host.activate().await?;
+//!     Ok(())
 //! }
 //! ```
 //!
 //! # Module Organization
 //!
-//! - [`Host`] - Extension hosting core (ExtensionHost, ExtensionManager, etc.)
-//! - [`WASM`] - WebAssembly runtime integration
-//! - [`Transport`] - Communication strategies (gRPC, IPC, WASM)
-//! - [`API`] - VS Code API facade and types
-//! - [`Protocol`] - Protocol handling (Spine connection)
-//! - [`Services`] - Host services (configuration, etc.)
-//! - [`Common`] - Shared utilities and error types
+//! | Module | Purpose |
+//! |--------|---------|
+//! | [`Host`] | Extension hosting core (ExtensionHost, ExtensionManager, Activation) |
+//! | [`WASM`] | WebAssembly runtime integration (WASMtime) |
+//! | [`Transport`] | Communication strategies (gRPC, IPC, WASM) |
+//! | [`API`] | VS Code API facade and common types |
+//! | [`Protocol`] | Spine protocol and Mountain communication |
+//! | [`Services`] | Host services (configuration, etc.) |
+//! | [`Common`] | Shared utilities, traits, and error types |
+//! | [`Binary`] | Standalone executable entry points |
+//! | [`DevLog`] | Tag-filtered development logging |
 
 // Public module declarations
 pub mod Binary;
@@ -89,35 +90,39 @@ pub mod Transport;
 pub mod WASM;
 
 /// Library version string (from `CARGO_PKG_VERSION`).
-const VERSION:&str = env!("CARGO_PKG_VERSION");
+const VERSION: &str = env!("CARGO_PKG_VERSION");
 
-/// Grove library information
+/// Grove library metadata.
 #[derive(Debug, Clone)]
-pub struct GroveInfo {
-	/// Version string
-	pub version:&'static str,
+pub struct Struct {
+	/// Library version string.
+	pub version: &'static str,
 
-	/// Build timestamp
+	/// Build timestamp (embedded at compile time via `VERGEN_BUILD_TIMESTAMP`).
 	#[allow(dead_code)]
-	build_timestamp:String,
+	build_timestamp: String,
 }
 
-impl GroveInfo {
-	/// Create new GroveInfo with current build information
-	pub fn new() -> Self { Self { version:VERSION, build_timestamp:env!("VERGEN_BUILD_TIMESTAMP").to_string() } }
+impl Struct {
+	/// Creates a new `GroveInfo` with the current build information.
+	pub fn new() -> Self { Self { version: VERSION, build_timestamp: env!("VERGEN_BUILD_TIMESTAMP").to_string() } }
 
-	/// Get the Grove version
+	/// Returns the Grove library version string.
 	pub fn version(&self) -> &'static str { self.version }
 }
 
-impl Default for GroveInfo {
+impl Default for Struct {
 	fn default() -> Self { Self::new() }
 }
 
-/// Initialize Grove library
+/// Initializes the Grove library.
 ///
-/// This sets up logging and other global state.
-/// Call once at application startup.
+/// Sets up logging and other global state. Should be called once at
+/// application startup.
+///
+/// ## Errors
+///
+/// Returns an error if initialization fails (e.g., logger setup failure).
 pub fn init() -> anyhow::Result<()> {
 	use crate::dev_log;
 

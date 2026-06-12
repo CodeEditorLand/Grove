@@ -39,6 +39,16 @@ mod websocket {
 		Client:Arc<Mutex<Option<Arc<Mist::WebSocket::Client>>>>,
 	}
 
+	impl std::fmt::Debug for MistTransport {
+		fn fmt(&self, Formatter:&mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+			Formatter
+				.debug_struct("MistTransport")
+				.field("Address", &self.Address)
+				.field("Connected", &self.is_connected())
+				.finish()
+		}
+	}
+
 	impl MistTransport {
 		/// Creates a new `MistTransport` targeting `address`
 		/// (e.g. `"ws://127.0.0.1:5051"`).

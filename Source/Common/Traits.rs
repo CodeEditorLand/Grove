@@ -1,240 +1,253 @@
-//! Shared Traits Module
+//! # Shared Traits
 //!
-//! Defines common traits used across the Grove codebase.
+//! Defines common traits used across the Grove codebase, including extension
+//! metadata, configuration, lifecycle, serialization, and observability.
 
 use serde::{Deserialize, Serialize};
 
-/// Extension context trait for providing extension-specific information
+/// Provides extension-specific context information.
 pub trait ExtensionContext: Send + Sync {
-	/// Get the extension ID
+	/// Returns the extension ID.
 	fn extension_id(&self) -> &str;
 
-	/// Get the extension version
+	/// Returns the extension version.
 	fn version(&self) -> &str;
 
-	/// Get the extension publisher
+	/// Returns the extension publisher.
 	fn publisher(&self) -> &str;
 
-	/// Get the extension display name
+	/// Returns the extension display name.
 	fn display_name(&self) -> &str;
 
-	/// Get the extension description
+	/// Returns the extension description.
 	fn description(&self) -> &str;
 
-	/// Check if the extension is in development mode
+	/// Returns `true` if the extension is in development mode.
 	fn is_development(&self) -> bool;
 }
 
-/// Extension metadata trait for package.json information
+/// Provides metadata from an extension's `package.json` manifest.
 pub trait ExtensionMetadata: Send + Sync {
-	/// Get the extension name
+	/// Returns the extension name.
 	fn name(&self) -> &str;
 
-	/// Get the extension publisher
+	/// Returns the extension publisher.
 	fn publisher(&self) -> &str;
 
-	/// Get the extension version
+	/// Returns the extension version.
 	fn version(&self) -> &str;
 
-	/// Get the extension description
+	/// Returns the extension description.
 	fn description(&self) -> &str;
 
-	/// Get the main entry point
+	/// Returns the main entry point path.
 	fn main(&self) -> &str;
 
-	/// Get activation events
+	/// Returns the activation events.
 	fn activation_events(&self) -> &[String];
 
-	/// Get extension capabilities
+	/// Returns the extension capabilities.
 	fn capabilities(&self) -> &[String];
 
-	/// Get extension dependencies
+	/// Returns the extension dependencies.
 	fn dependencies(&self) -> &[String];
 
-	/// Get the engine compatibility
+	/// Returns the engine compatibility string.
 	fn engine(&self) -> &str;
 }
 
-/// Result type for Grove operations
+/// Result type for Grove operations.
 pub type GroveResult<T> = Result<T, GroveError>;
 
-/// Grove error type
+/// Grove error type.
 #[derive(Debug, thiserror::Error)]
 pub enum GroveError {
-	/// Extension not found
+	/// Extension not found.
 	#[error("Extension not found: {0}")]
 	ExtensionNotFound(String),
 
-	/// Extension activation failed
+	/// Extension activation failed.
 	#[error("Extension activation failed: {0}")]
 	ActivationFailed(String),
 
-	/// Extension deactivation failed
+	/// Extension deactivation failed.
 	#[error("Extension deactivation failed: {0}")]
 	DeactivationFailed(String),
 
-	/// Transport error
+	/// Transport error.
 	#[error("Transport error: {0}")]
 	TransportError(String),
 
-	/// WASM runtime error
+	/// WASM runtime error.
 	#[error("WASM runtime error: {0}")]
 	WASMError(String),
 
-	/// API error
+	/// API error.
 	#[error("API error: {0}")]
 	APIError(String),
 
-	/// Configuration error
+	/// Configuration error.
 	#[error("Configuration error: {0}")]
 	ConfigurationError(String),
 
-	/// I/O error
+	/// I/O error.
 	#[error("I/O error: {0}")]
 	IoError(#[from] std::io::Error),
 
-	/// Serialization error
+	/// Serialization error.
 	#[error("Serialization error: {0}")]
 	SerializationError(String),
 
-	/// Deserialization error
+	/// Deserialization error.
 	#[error("Deserialization error: {0}")]
 	DeserializationError(String),
 
-	/// Timeout error
+	/// Operation timed out.
 	#[error("Operation timed out")]
 	Timeout,
 
-	/// Invalid argument
+	/// Invalid argument.
 	#[error("Invalid argument: {0}")]
 	InvalidArgument(String),
 
-	/// Not implemented
+	/// Not implemented.
 	#[error("Not implemented: {0}")]
 	NotImplemented(String),
 
-	/// Generic error
+	/// Generic error.
 	#[error("{0}")]
 	Other(String),
 }
 
-/// Identifiable trait for objects with unique IDs
+/// Trait for objects with a unique identifier.
 pub trait Identifiable {
-	/// Get the unique identifier
+	/// Returns the unique identifier.
 	fn id(&self) -> &str;
 }
 
-/// Named trait for objects with names
+/// Trait for objects with a name.
 pub trait Named {
-	/// Get the name
+	/// Returns the name.
 	fn name(&self) -> &str;
 }
 
-/// Configurable trait for objects with configuration
+/// Trait for objects that can be configured.
 pub trait Configurable {
-	/// Configuration type
+	/// The configuration type.
 	type Config;
 
-	/// Configure the object
-	fn configure(&mut self, config:Self::Config) -> anyhow::Result<()>;
+	/// Configures the object with the given configuration.
+	fn configure(&mut self, config: Self::Config) -> anyhow::Result<()>;
 
-	/// Get current configuration
+	/// Returns a reference to the current configuration.
 	fn config(&self) -> &Self::Config;
 }
 
-/// Resettable trait for objects that can be reset
+/// Trait for objects that can be reset to their initial state.
 pub trait Resettable {
-	/// Reset the object to its initial state
+	/// Resets the object to its initial state.
 	fn reset(&mut self) -> anyhow::Result<()>;
 }
 
-/// Disposable trait for objects with cleanup
+/// Trait for objects that require cleanup when disposed.
 pub trait Disposable {
-	/// Dispose and cleanup resources
+	/// Disposes of the object, releasing resources.
 	fn dispose(&mut self) -> anyhow::Result<()>;
 }
 
-/// Cloneable trait for objects that can be cloned with context
+/// Trait for objects that can be cloned with additional context.
 pub trait ContextClone {
-	/// Clone the object with additional context
-	fn clone_with_context(&self, context:&serde_json::Value) -> anyhow::Result<Self>
+	/// Clones the object with additional context data.
+	fn clone_with_context(&self, context: &serde_json::Value) -> anyhow::Result<Self>
 	where
 		Self: Sized;
 }
 
-/// Stateful trait for objects with state
+/// Trait for objects with observable state.
 pub trait Stateful {
-	/// State type
+	/// The state type.
 	type State: Clone;
 
-	/// Get current state
+	/// Returns the current state.
 	fn state(&self) -> Self::State;
 
-	/// Set state
-	fn set_state(&mut self, state:Self::State) -> anyhow::Result<()>;
+	/// Sets the state.
+	fn set_state(&mut self, state: Self::State) -> anyhow::Result<()>;
 
-	/// Restore state
-	fn restore_state(&mut self, state:Self::State) -> anyhow::Result<()>;
+	/// Restores the state from a previous snapshot.
+	fn restore_state(&mut self, state: Self::State) -> anyhow::Result<()>;
 }
 
-/// Observable trait for objects that can emit events
+/// Trait for objects that can emit events.
 pub trait Observable {
-	/// Event type
+	/// The event type.
 	type Event;
 
-	/// Subscribe to events
-	fn subscribe(&self, callback:fn(Self::Event)) -> anyhow::Result<()>;
+	/// Subscribes to events with the given callback.
+	fn subscribe(&self, callback: fn(Self::Event)) -> anyhow::Result<()>;
 
-	/// Unsubscribe from events
+	/// Unsubscribes from all events.
 	fn unsubscribe(&self) -> anyhow::Result<()>;
 }
 
-/// Validation trait for objects that can be validated
+/// Trait for objects that can be validated.
 pub trait Validatable {
-	/// Validate the object
+	/// Validates the object, returning an error if invalid.
 	fn validate(&self) -> anyhow::Result<()>;
 }
 
-/// Serializable trait for objects that can be serialized
+/// Trait for objects that can be serialized to/from JSON.
 pub trait Serializable: Serialize + for<'de> Deserialize<'de> {
-	/// Serialize to JSON string
+	/// Serializes to a JSON string.
 	fn to_json(&self) -> anyhow::Result<String> {
 		serde_json::to_string(self).map_err(|e| anyhow::anyhow!("Serialization failed: {}", e))
 	}
 
-	/// Serialize to JSON pretty string
+	/// Serializes to a pretty-printed JSON string.
 	fn to_json_pretty(&self) -> anyhow::Result<String> {
 		serde_json::to_string_pretty(self).map_err(|e| anyhow::anyhow!("Serialization failed: {}", e))
 	}
 
-	/// Deserialize from JSON string
-	fn from_json(json:&str) -> anyhow::Result<Self>
+	/// Deserializes from a JSON string.
+	fn from_json(json: &str) -> anyhow::Result<Self>
 	where
-		Self: Sized, {
+		Self: Sized,
+	{
 		serde_json::from_str(json).map_err(|e| anyhow::anyhow!("Deserialization failed: {}", e))
 	}
 }
 
-/// Extend Serializable for serializable types
+/// Blanket implementation of `Serializable` for all `Serialize + Deserialize` types.
 impl<T> Serializable for T where T: Serialize + for<'de> Deserialize<'de> {}
 
-/// Versioned trait for objects with version information
+/// Trait for objects with version information.
 pub trait Versioned {
-	/// Get version
+	/// Returns the version string.
 	fn version(&self) -> &str;
 
-	/// Check compatibility with another version
-	fn is_compatible_with(&self, other_version:&str) -> bool;
+	/// Returns `true` if this version is compatible with the given version.
+	fn is_compatible_with(&self, other_version: &str) -> bool;
 }
 
-/// Retryable trait for operations that can be retried
+/// Trait for operations that can be retried on failure.
 pub trait Retryable {
-	/// Execute with retry
-	fn execute_with_retry<F, T, E>(&self, mut operation:F, max_retries:u32, delay_ms:u64) -> anyhow::Result<T>
+	/// Executes an operation with retry logic.
+	///
+	/// ## Parameters
+	///
+	/// * `operation` — The operation to execute.
+	/// * `max_retries` — Maximum number of retry attempts.
+	/// * `delay_ms` — Delay between retries in milliseconds.
+	///
+	/// ## Returns
+	///
+	/// The operation result, or an error after all retries are exhausted.
+	fn execute_with_retry<F, T, E>(&self, mut operation: F, max_retries: u32, delay_ms: u64) -> anyhow::Result<T>
 	where
 		F: FnMut() -> Result<T, E> + Send,
 		E: std::fmt::Display + Send + 'static,
-		T: Send, {
+		T: Send,
+	{
 		let mut last_error = None;
 
 		for attempt in 0..=max_retries {
@@ -279,14 +292,14 @@ mod tests {
 	fn test_serializable_trait() {
 		#[derive(Serialize, Deserialize, PartialEq, Debug)]
 		struct TestStruct {
-			value:i32,
+			value: i32,
 		}
 
-		let test = TestStruct { value:42 };
+		let test = TestStruct { value: 42 };
 
 		let json = test.to_json().unwrap();
 
-		let deserialized:TestStruct = TestStruct::from_json(&json).unwrap();
+		let deserialized: TestStruct = TestStruct::from_json(&json).unwrap();
 
 		assert_eq!(test, deserialized);
 	}

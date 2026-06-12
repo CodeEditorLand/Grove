@@ -5,31 +5,31 @@ mod tests {
 
 	#[test]
 	fn test_activation_event_parsing() {
-		let event = ActivationEvent::from_str("*").unwrap();
+		let event = ActivationEvent::ActivationEvent::Struct::from_str("*").unwrap();
 
-		assert_eq!(event, ActivationEvent::Star);
+		assert_eq!(event, ActivationEvent::ActivationEvent::Star);
 
-		let event = ActivationEvent::from_str("onCommand:test.command").unwrap();
+		let event = ActivationEvent::ActivationEvent::Struct::from_str("onCommand:test.command").unwrap();
 
-		assert_eq!(event, ActivationEvent::Command("test.command".to_string()));
+		assert_eq!(event, ActivationEvent::ActivationEvent::Command("test.command".to_string()));
 
-		let event = ActivationEvent::from_str("onLanguage:rust").unwrap();
+		let event = ActivationEvent::ActivationEvent::Struct::from_str("onLanguage:rust").unwrap();
 
-		assert_eq!(event, ActivationEvent::Language("rust".to_string()));
+		assert_eq!(event, ActivationEvent::ActivationEvent::Language("rust".to_string()));
 	}
 
 	#[test]
 	fn test_activation_event_to_string() {
-		assert_eq!(ActivationEvent::Star.to_string(), "*");
+		assert_eq!(ActivationEvent::ActivationEvent::Star.to_string(), "*");
 
-		assert_eq!(ActivationEvent::Command("test".to_string()).to_string(), "onCommand:test");
+		assert_eq!(ActivationEvent::ActivationEvent::Command("test".to_string()).to_string(), "onCommand:test");
 
-		assert_eq!(ActivationEvent::Language("rust".to_string()).to_string(), "onLanguage:rust");
+		assert_eq!(ActivationEvent::ActivationEvent::Language("rust".to_string()).to_string(), "onLanguage:rust");
 	}
 
 	#[test]
 	fn test_activation_context_default() {
-		let context = ActivationContext::default();
+		let context = ActivationContext::ActivationContext::Struct::default();
 
 		assert!(context.workspace_path.is_none());
 
@@ -40,17 +40,17 @@ mod tests {
 
 	#[test]
 	fn test_wildcard_matching() {
-		let matcher = WildMatch::new("*");
+		let matcher = WildMatch::WildMatch::Struct::new("*");
 
 		assert!(matcher.matches("anything"));
 
-		let matcher = WildMatch::new("prefix*");
+		let matcher = WildMatch::WildMatch::Struct::new("prefix*");
 
 		assert!(matcher.matches("prefix_suffix"));
 
 		assert!(!matcher.matches("noprefix_suffix"));
 
-		let matcher = WildMatch::new("*suffix");
+		let matcher = WildMatch::WildMatch::Struct::new("*suffix");
 
 		assert!(matcher.matches("prefix_suffix"));
 

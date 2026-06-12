@@ -9,7 +9,7 @@ pub(crate) struct ActivationHandler {
 	pub extension_id:String,
 
 	/// Activation events
-	pub events:Vec<ActivationEvent>,
+	pub events:Vec<ActivationEvent::ActivationEvent>,
 
 	/// Activation function path
 	pub activation_function:String,

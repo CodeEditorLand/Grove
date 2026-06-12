@@ -28,7 +28,7 @@ pub struct ExtensionHostImpl {
 	extension_manager:Arc<ExtensionManagerImpl>,
 
 	/// Activation engine
-	activation_engine:Arc<Activation::ActivationEngine>,
+	activation_engine:Arc<Activation::ActivationEngine::ActivationEngine>,
 
 	/// WASM runtime
 	wasm_runtime:Arc<WASMRuntime>,
@@ -120,7 +120,7 @@ impl ExtensionHostImpl {
 		let extension_manager = Arc::new(ExtensionManagerImpl::new(Arc::clone(&wasm_runtime), config.clone()));
 
 		// Create activation engine
-		let activation_engine = Arc::new(Activation::ActivationEngine::new(
+		let activation_engine = Arc::new(Activation::ActivationEngine::ActivationEngine::new(
 			Arc::clone(&extension_manager),
 			config.clone(),
 		));
@@ -304,7 +304,7 @@ impl ExtensionHostImpl {
 	pub fn extension_manager(&self) -> &Arc<ExtensionManagerImpl> { &self.extension_manager }
 
 	/// Get the activation engine
-	pub fn activation_engine(&self) -> &Arc<Activation::ActivationEngine> { &self.activation_engine }
+	pub fn activation_engine(&self) -> &Arc<Activation::ActivationEngine::ActivationEngine> { &self.activation_engine }
 
 	/// Get the WASM runtime
 	pub fn wasm_runtime(&self) -> &Arc<WASMRuntime> { &self.wasm_runtime }

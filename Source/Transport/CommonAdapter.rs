@@ -322,11 +322,9 @@ impl TransportStrategy for TransportAdapter {
 	}
 
 	fn latency_ms(&self) -> u64 {
-		// Grove doesn't expose latency directly; we could estimate from stats
-		// For now return 0 or compute from avg_latency_us if available
-		// We'd need to fetch stats which is async. This method is sync, so we can't
-		// easily get it. We could store cached metrics, but for now return 0.
-		// TODO: Implement proper metrics caching if needed
+		// Grove transport latency is only available via async stats.
+		// A cached metric would be required for synchronous access.
+		// TODO: Cache average latency metric from async stats for sync access.
 		0
 	}
 
@@ -404,9 +402,9 @@ impl From<crate::Transport::GrpcTransportError> for TransportError {
 	}
 }
 
-// Similarly for other error types if they exist
-// TODO: Implement From<IPCTransportError> and From<WasmTransportError> when
-// those are defined
+// TODOs for additional From implementations:
+// From<IPCTransportError> and From<WasmTransportError> should be implemented
+// when those error types are defined.
 
 #[cfg(test)]
 mod tests {

@@ -56,7 +56,7 @@ impl Default for Range {
 	fn default() -> Self { Self::empty(Position::zero()) }
 }
 
-/// Represents a location inside a resource
+/// A location inside a resource.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct Location {
 	/// The resource identifier of this location
@@ -71,7 +71,7 @@ impl Location {
 	pub fn new(uri:String, range:Range) -> Self { Self { uri, range } }
 }
 
-/// Represents a diagnostic message
+/// A diagnostic message.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Diagnostic {
 	/// The range at which the message applies
@@ -164,7 +164,7 @@ pub struct DiagnosticRelatedInformation {
 	pub message:String,
 }
 
-/// Represents a text change
+/// A text change for a document range.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TextEdit {
 	/// The range of the text document to be manipulated
@@ -426,7 +426,7 @@ pub struct CreateFileParams {
 	pub files:Vec<FileCreate>,
 }
 
-/// Represents information to create a file
+/// Information to create a file.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FileCreate {
 	/// A file or folder uri

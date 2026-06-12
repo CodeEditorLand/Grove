@@ -1,7 +1,7 @@
-//! Grove Standalone Binary
+//! # Grove Standalone Binary
 //!
-//! This is the entry point for running Grove as a standalone extension host.
-//! It can operate independently or connect to Mountain via gRPC.
+//! Entry point for running Grove as a standalone extension host.
+//! Operates independently or connects to Mountain via gRPC.
 
 use std::path::PathBuf;
 
@@ -155,10 +155,24 @@ async fn main() -> Result<()> {
 	}
 }
 
-/// Initialize logging with appropriate level and format
+/// Initializes logging with the specified verbosity level and format.
+///
+/// ## Parameters
+///
+/// * `_verbose` — Verbosity level (0–3).
+/// * `_format` — Log format (`"plain"` or `"json"`).
 fn init_logging(_verbose:u8, _format:&str) -> Result<()> { Ok(()) }
 
-/// Run Grove in standalone mode
+/// Runs Grove in standalone mode.
+///
+/// ## Parameters
+///
+/// * `extension` — Path to extension directory or manifest.
+/// * `transport_type` — Transport type (`"grpc"`, `"ipc"`, `"wasm"`).
+/// * `grpc_address` — Listen address for the gRPC server.
+/// * `wasi` — Enables WASM WASI support.
+/// * `memory_limit_mb` — Memory limit in MB for WASM modules.
+/// * `max_execution_time_ms` — Maximum execution time in milliseconds.
 async fn run_standalone(
 	extension:Option<PathBuf>,
 
