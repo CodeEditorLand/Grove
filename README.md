@@ -50,9 +50,9 @@ _"An extension can only touch what you explicitly grant. The sandbox is enforced
 by the hardware, not a policy."_
 
 [![License: CC0-1.0](https://img.shields.io/badge/License-CC0_1.0-lightgrey.svg)](https://github.com/CodeEditorLand/Grove/blob/Current/LICENSE)
-[<img src="https://editor.land/Image/Rust.svg" width="14" alt="Rust" />](https://www.rust-lang.org/)&#x2001;[![Rust Version](https://img.shields.io/badge/Rust-1.95.0+-orange.svg)](https://www.rust-lang.org/)
-[<img src="https://editor.land/Image/Rust.svg" width="14" alt="Rust" />](https://www.rust-lang.org/)&#x2001;[![Rust Edition](https://img.shields.io/badge/Edition-2024-orange.svg)](https://www.rust-lang.org/)
-[![WebAssembly](https://img.shields.io/badge/WebAssembly-WASM-blue.svg)](https://webassembly.org/)&#x2001;[![WASMtime Version](https://img.shields.io/badge/WASMtime-v45-blue.svg)](https://wasmtime.dev/)
+[<img src="https://editor.land/Image/Rust.svg" width="14" alt="Rust" />](https://www.rust-lang.org/) [![Rust Version](https://img.shields.io/badge/Rust-1.95.0+-orange.svg)](https://www.rust-lang.org/)
+[<img src="https://editor.land/Image/Rust.svg" width="14" alt="Rust" />](https://www.rust-lang.org/) [![Rust Edition](https://img.shields.io/badge/Edition-2024-orange.svg)](https://www.rust-lang.org/)
+[![WebAssembly](https://img.shields.io/badge/WebAssembly-WASM-blue.svg)](https://webassembly.org/) [![WASMtime Version](https://img.shields.io/badge/WASMtime-v45-blue.svg)](https://wasmtime.dev/)
 
 **[Rust API Documentation](https://rust.documentation.grove.editor.land/)**&#x2001;📖
 
@@ -131,7 +131,7 @@ explicit host-function grants ensure no extension can escape its sandbox.
 
 ---
 
-## System Architecture&#x2001;
+## System Architecture
 
 ```mermaid
 graph LR
