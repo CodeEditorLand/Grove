@@ -9,13 +9,13 @@
 				</picture>
 			</h3>
 		</td>
-		<td colspan="3" valign="top"><h3 align="center">Grove&#x2001;🌿</h3></td>
+		<td colspan="3" valign="top"><h3 align="center">Grove&#x2001;🌳</h3></td>
 	</tr>
 </table>
 
 ---
 
-# **Grove**&#x2001;🌿&#x2001;Architecture
+# **Grove**&#x2001;🌳&#x2001;Architecture
 
 `Grove` is the native `Rust`/`WASM` extension host for `Land`. It provides a
 sandboxed environment for running `WASM`-compiled `VS Code` extensions via
