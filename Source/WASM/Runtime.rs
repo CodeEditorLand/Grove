@@ -76,12 +76,14 @@ impl WASMConfig {
 		builder.wasm_component_model(false);
 
 		// WASI support is configured later through the linker
-		// In Wasmtime 20.0.2, WASI is enabled via wasmtime_wasi crate integration
-		// The actual WASI preview1 and preview2 support is added at runtime
-		// when the linker is configured with WASI modules
+		// In Wasmtime 20.0.2, WASI is enabled via wasmtime_wasi crate
+		// integration The actual WASI preview1 and preview2 support is
+		// added at runtime when the linker is configured with WASI
+		// modules
 		if self.enable_wasi {
-			// WASI preview1 support is now handled through wasmtime_wasi::add_to_linker
-			// which will be called in create_linker()
+			// WASI preview1 support is now handled through
+			// wasmtime_wasi::add_to_linker which will be called in
+			// create_linker()
 			dev_log!("wasm", "[WASMRuntime] WASI support enabled, will be configured in linker");
 		}
 
@@ -188,7 +190,8 @@ impl WASMRuntime {
 		let mut store = Store::new(&self.engine, store_limits);
 
 		if self.config.enable_fuel_metering {
-			// Set fuel based on execution time (rough approximation: 1 unit = 1000 ns)
+			// Set fuel based on execution time (rough approximation: 1 unit =
+			// 1000 ns)
 			let fuel = self.config.max_execution_time_ms * 1_000; // Convert ms to fuel
 
 			store
@@ -213,7 +216,8 @@ impl WASMRuntime {
 			// 2. Adding it to the linker using wasmtime_wasi::add_to_linker
 			//
 			// Note: Actual WASI implementation requires:
-			// - Runtime-dependent context (stdin, stdout, stderr, filesystem, etc.)
+			// - Runtime-dependent context (stdin, stdout, stderr, filesystem,
+			//   etc.)
 			// - This is typically done per-store when creating WASM instances
 			//
 			// For now, we log that WASI is available and will be configured
@@ -366,7 +370,8 @@ mod tests {
 			0x01, 0x00, 0x00, 0x00, // Version 1
 		];
 
-		// This will fail validation because it's incomplete, but tests the method
+		// This will fail validation because it's incomplete, but tests the
+		// method
 		let result = runtime.validate_module(&empty_wasm);
 
 		// We don't assert on the result since it depends on WASMtime

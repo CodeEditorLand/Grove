@@ -290,34 +290,40 @@ impl TransportStrategy for TransportAdapter {
 		&self,
 	) -> std::result::Result<futures::stream::BoxStream<'static, UnifiedResponse>, TransportError> {
 		// Grove transports currently don't support streaming in the same way.
-		// This would need to be implemented if any transport supports server push.
+		// This would need to be implemented if any transport supports server
+		// push.
 		Err(TransportError::not_supported("Streaming not implemented in Grove transports"))
 	}
 
 	fn is_connected(&self) -> bool {
-		// Unfortunately Grove's `is_connected` requires `&self`, not `&self` with
-		// interior mutability? Let's check the trait again - it takes `&self` which
-		// is fine. But `Transport` enum's `is_connected` method takes `&self`, which
-		// is also fine. However, we have `Arc<Transport>`, so we can call it.
-		// Wait, `Transport` enum's `is_connected` method is defined on `&self` and
-		// doesn't require mut. But we have `transport: Arc<GroveTransport>`, we can
-		// call `self.transport.is_connected()`. But in the method signature above we
-		// have `self.transport` as `Arc<GroveTransport>`, not `&GroveTransport`.
-		// We need to deref.
+		// Unfortunately Grove's `is_connected` requires `&self`, not `&self`
+		// with interior mutability? Let's check the trait again - it
+		// takes `&self` which is fine. But `Transport` enum's
+		// `is_connected` method takes `&self`, which is also fine.
+		// However, we have `Arc<Transport>`, so we can call it.
+		// Wait, `Transport` enum's `is_connected` method is defined on `&self`
+		// and doesn't require mut. But we have `transport:
+		// Arc<GroveTransport>`, we can call `self.transport.
+		// is_connected()`. But in the method signature above we
+		// have `self.transport` as `Arc<GroveTransport>`, not
+		// `&GroveTransport`. We need to deref.
 		// Let's check: `self.transport.is_connected()` should work because
-		// `Arc<GroveTransport>` derefs to `GroveTransport`. But `is_connected` takes
-		// `&self`. `Arc` deref to `T`, so `&self.transport` is `&&GroveTransport`,
-		// that's fine. Actually `self.transport.is_connected()` means we're calling
-		// `is_connected` on `Arc<GroveTransport>`, which uses deref coercion to call
-		// `is_connected` on `&GroveTransport`? Let's think: `Arc<T>` implements
-		// `Deref<Target = T>`, so `&Arc<T>` can be used as `&T`. But here we have
-		// `self.transport` which is `Arc<GroveTransport>`, not `&Arc<...>`.
-		// So we need to either do `(&*self.transport).is_connected()` or simply
-		// `self.transport.is_connected()` doesn't work because `is_connected` expects
-		// `&self` and we have an owned `Arc`. Actually `Arc<T>` does not automatically
-		// deref to `&T` when you have an owned `Arc`. You need to pass a reference:
-		// `(&*self.transport).is_connected()`. So I'll fix:
-		// `(&*self.transport).is_connected()`
+		// `Arc<GroveTransport>` derefs to `GroveTransport`. But `is_connected`
+		// takes `&self`. `Arc` deref to `T`, so `&self.transport` is
+		// `&&GroveTransport`, that's fine. Actually
+		// `self.transport.is_connected()` means we're calling
+		// `is_connected` on `Arc<GroveTransport>`, which uses deref coercion to
+		// call `is_connected` on `&GroveTransport`? Let's think:
+		// `Arc<T>` implements `Deref<Target = T>`, so `&Arc<T>` can be
+		// used as `&T`. But here we have `self.transport` which is
+		// `Arc<GroveTransport>`, not `&Arc<...>`. So we need to either
+		// do `(&*self.transport).is_connected()` or simply
+		// `self.transport.is_connected()` doesn't work because `is_connected`
+		// expects `&self` and we have an owned `Arc`. Actually `Arc<T>`
+		// does not automatically deref to `&T` when you have an owned
+		// `Arc`. You need to pass a reference: `(&*self.transport).
+		// is_connected()`. So I'll fix: `(&*self.transport).
+		// is_connected()`
 		(&*self.transport).is_connected()
 	}
 

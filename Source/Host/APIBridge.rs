@@ -319,8 +319,8 @@ impl APIBridgeImpl {
 			});
 		}
 
-		// Execute the API method (in real implementation, this would call the actual
-		// handler)
+		// Execute the API method (in real implementation, this would call the
+		// actual handler)
 		let result = self
 			.execute_method(&request.extension_id, &request.api_method, &request.arguments)
 			.await;

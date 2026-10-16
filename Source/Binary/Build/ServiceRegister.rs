@@ -117,7 +117,8 @@ impl ServiceRegister {
 
 		dev_log!("grove", "Service registration: {:?}", registration);
 
-		// Send registration request (placeholder - in real implementation, use gRPC)
+		// Send registration request (placeholder - in real implementation, use
+		// gRPC)
 		let result = ServiceRegistrationResult {
 			success:true,
 

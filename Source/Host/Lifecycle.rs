@@ -226,7 +226,8 @@ impl LifecycleManager {
 		// Determine new state based on event
 		let new_state = self.determine_next_state(current_state, event)?;
 
-		// Perform state transition (in real implementation, this would call extension)
+		// Perform state transition (in real implementation, this would call
+		// extension)
 		self.perform_state_transition(extension_id, event_clone.clone(), new_state)
 			.await?;
 

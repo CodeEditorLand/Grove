@@ -239,9 +239,9 @@ impl FunctionExportImpl {
 		// Define the function signature for WASMtime
 		let _wasmparser_signature = wasmparser::FuncType::new([wasmparser::ValType::I32], [wasmparser::ValType::I32]);
 
-		// Register host function with the linker using simple i32->i32 signature
-		// In Wasmtime 20, func_wrap expects parameters to be inferred from the closure
-		// signature
+		// Register host function with the linker using simple i32->i32
+		// signature In Wasmtime 20, func_wrap expects parameters to be
+		// inferred from the closure signature
 		let func_name_for_logging = func_name.clone();
 
 		linker
@@ -370,8 +370,9 @@ impl FunctionExportImpl {
 
 	/// Convert our signature to WASMtime signature type
 	fn wasmtime_signature_from_signature(&self, _sig:&FunctionSignature) -> Result<wasmparser::FuncType> {
-		// This is a placeholder - actual implementation depends on the exact types
-		// In production, this would map ParamType and ReturnType to WASMtime types
+		// This is a placeholder - actual implementation depends on the exact
+		// types In production, this would map ParamType and ReturnType
+		// to WASMtime types
 		Ok(wasmparser::FuncType::new([], []))
 	}
 

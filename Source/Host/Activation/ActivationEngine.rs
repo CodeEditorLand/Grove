@@ -101,8 +101,8 @@ impl ActivationEngine {
 		// Create activation context
 		let context = ActivationContext::ActivationContext::default();
 
-		// Perform activation (in real implementation, this would call the extension's
-		// activate function)
+		// Perform activation (in real implementation, this would call the
+		// extension's activate function)
 		let activation_result = self
 			.perform_activation(extension_id, &context)
 			.await

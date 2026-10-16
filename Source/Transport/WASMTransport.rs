@@ -277,7 +277,8 @@ impl TransportStrategy for WASMTransportImpl {
 		dev_log!("transport", "Sending WASM transport request ({} bytes)", request.len());
 
 		// Parse request - it should contain module ID and function name
-		// For simplicity, we use a minimal format: module_id:function_name:base64_args
+		// For simplicity, we use a minimal format:
+		// module_id:function_name:base64_args
 		let request_str =
 			std::str::from_utf8(request).map_err(|e| WASMTransportError::InvalidRequest(e.to_string()))?;
 

@@ -186,6 +186,7 @@ async fn test_spine_connection() {
 fn main() {
 	println!("Running Grove integration tests...");
 
-	// Note: These tests are meant to be run with `cargo test --test integration`
+	// Note: These tests are meant to be run with `cargo test --test
+	// integration`
 	println!("Run integration tests with: cargo test --test integration");
 }
