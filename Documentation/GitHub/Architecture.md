@@ -9,13 +9,13 @@
 				</picture>
 			</h3>
 		</td>
-		<td colspan="3" valign="top"><h3 align="center">Grove&#x2001;🌳</h3></td>
+		<td colspan="3" valign="top"><h3 align="center">Grove 🌳</h3></td>
 	</tr>
 </table>
 
 ---
 
-# **Grove**&#x2001;🌳&#x2001;Architecture
+# **Grove** 🌳 Architecture
 
 `Grove` is the native `Rust`/`WASM` extension host for `Land`. It provides a
 sandboxed environment for running `WASM`-compiled `VS Code` extensions via
@@ -54,7 +54,7 @@ graph TB
     LAYER1 <-->|"gRPC"| MOUNTAIN["Mountain<br/>gRPC Server"]
 ```
 
-## Overview&#x2001;📋
+## Overview 📋
 
 `Grove` is a `Rust` binary and library with these characteristics:
 
@@ -73,7 +73,7 @@ graph TB
 
 ---
 
-## Architecture&#x2001;🏗️
+## Architecture 🏗️
 
 `Grove` is organized into five layers:
 
@@ -106,7 +106,7 @@ graph TB
 +----------------------------------------------------------------+
 ```
 
-### Module Map&#x2001;🗺️
+### Module Map 🗺️
 
 | Path                                    | Purpose                                |
 | --------------------------------------- | -------------------------------------- |
@@ -131,7 +131,7 @@ graph TB
 
 ---
 
-## Transport Strategies&#x2001;🔗
+## Transport Strategies 🔗
 
 `Grove` supports three transport strategies for communicating with `Mountain`:
 
@@ -141,7 +141,7 @@ graph TB
 | **IPC**  | `--features ipc`  | ~0.1ms  | Same-machine communication      |
 | **WASM** | `--features wasm` | ~0.01ms | In-process WASM host functions  |
 
-### Transport Selection&#x2001;🎯
+### Transport Selection 🎯
 
 ```rust
 pub enum TransportStrategy {
@@ -159,7 +159,7 @@ pub enum TransportStrategy {
 
 ---
 
-## WASM Runtime&#x2001;⚡
+## WASM Runtime ⚡
 
 `Grove` uses `WASMtime` as its `WebAssembly` runtime:
 
@@ -171,7 +171,7 @@ pub enum TransportStrategy {
 | Host functions | Registered via HostBridge for VS Code API calls |
 | Module cache   | Compiled module caching for faster startup      |
 
-### Sandbox Properties&#x2001;🔒
+### Sandbox Properties 🔒
 
 | Property    | Setting                                    |
 | ----------- | ------------------------------------------ |
@@ -181,7 +181,7 @@ pub enum TransportStrategy {
 | Memory      | Isolated linear memory per module          |
 | CPU         | Bounded by WASMtime execution limits       |
 
-### Host Function Bridge&#x2001;🌉
+### Host Function Bridge 🌉
 
 The `HostBridge` registers `VS Code` API functions as `WASM` imports:
 
@@ -197,7 +197,7 @@ linker.func_wrap("vscode", "readFile", |path_ptr: i32, path_len: i32| {
 
 ---
 
-## VS Code API Surface&#x2001;📦
+## VS Code API Surface 📦
 
 `Grove` implements a subset of the `VS Code` API for `WASM` extensions:
 
@@ -211,7 +211,7 @@ linker.func_wrap("vscode", "readFile", |path_ptr: i32, path_len: i32| {
 
 ---
 
-## Extension Lifecycle&#x2001;🔄
+## Extension Lifecycle 🔄
 
 ```
 1. ExtensionManager discovers WASM extension (.wasm file + package.json)
@@ -241,7 +241,7 @@ linker.func_wrap("vscode", "readFile", |path_ptr: i32, path_len: i32| {
 
 ---
 
-## Feature Gates&#x2001;🚩
+## Feature Gates 🚩
 
 `Grove`'s `Cargo` features control build configuration:
 
@@ -263,7 +263,7 @@ grove = ["dep:grove"]
 
 ---
 
-## Related Documentation&#x2001;📚
+## Related Documentation 📚
 
 - [Common](https://github.com/CodeEditorLand/Common/tree/Current/Documentation/GitHub/Architecture.md) -
   Shared traits and `ActionEffect` system

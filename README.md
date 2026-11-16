@@ -1,4 +1,4 @@
-# **Grove**&#x2001;🌳
+# **Grove** 🌳
 
 <table>
 	<tr>
@@ -39,7 +39,7 @@
 	</tr>
 </table>
 
-The Native `Rust`/`WebAssembly` Extension Host for Land&#x2001;🏞️
+The Native `Rust`/`WebAssembly` Extension Host for Land 🏞️
 
 > **VS Code extensions run with full `Node.js` capabilities in a shared process.
 > A malicious or buggy extension can access any file, make any network request,
@@ -54,14 +54,14 @@ by the hardware, not a policy."_
 [<img src="https://editor.land/Image/Rust.svg" width="14" alt="Rust" />](https://www.rust-lang.org/) [![Rust Edition](https://img.shields.io/badge/Edition-2024-orange.svg)](https://www.rust-lang.org/)
 [![WebAssembly](https://img.shields.io/badge/WebAssembly-WASM-blue.svg)](https://webassembly.org/) [![WASMtime Version](https://img.shields.io/badge/WASMtime-v45-blue.svg)](https://wasmtime.dev/)
 
-**[Rust API Documentation](https://rust.documentation.grove.editor.land/)**&#x2001;📖
+**[Rust API Documentation](https://rust.documentation.grove.editor.land/)** 📖
 
 ---
 
 ## Overview
 
-**Grove**&#x2001;🌳 is the high-performance `Rust`/`WebAssembly` extension host
-for the **Land**&#x2001;🏞️ Code Editor. It complements `Cocoon`&#x2001;🦋
+**Grove** 🌳 is the high-performance `Rust`/`WebAssembly` extension host
+for the **Land** 🏞️ Code Editor. It complements `Cocoon` 🦋
 (`Node.js`) by providing a native environment for running `Rust` and
 `WASM`-compiled VS Code extensions. Grove offers secure sandboxing through
 `WASMtime`, multiple transport strategies (`gRPC`, `IPC`, `WASM`), and full
@@ -79,7 +79,7 @@ hardware level: an extension can only touch what you explicitly grant.
 2. **Enable Secure Sandboxing** - Isolate untrusted extensions using
    `WASMtime`'s capability-based security model with configurable memory limits
    and resource controls.
-3. **Support Multiple Transports** - Communicate with `Mountain`&#x2001;⛰️ via
+3. **Support Multiple Transports** - Communicate with `Mountain` ⛰️ via
    `gRPC`, `IPC`, or direct `WASM` host function calls for flexible deployment.
 4. **Maintain Cocoon Compatibility** - Share the same VS Code API surface and
    activation semantics for seamless extension porting between the `Node.js` and
@@ -87,7 +87,7 @@ hardware level: an extension can only touch what you explicitly grant.
 
 ---
 
-## Key Features&#x2001;🔐
+## Key Features 🔐
 
 **`WASM` Runtime Integration** - Full `WebAssembly` support through `WASMtime`,
 with capability-based security, configurable memory limits, `WASMtime` fuel
@@ -95,13 +95,13 @@ metering to bound execution time, and explicit host-function grants. Extensions
 are sandboxed at the hardware level.
 
 **Multiple Transport Strategies** - A strategy-pattern transport layer
-supporting `gRPC` (to `Mountain`&#x2001;⛰️'s `Vine`&#x2001;🌿 server on port
+supporting `gRPC` (to `Mountain` ⛰️'s `Vine` 🌿 server on port
 50051), `IPC` (Unix socket for local communication), `WASM` (direct host
-function calls), and `Mist`&#x2001;🌫️ (message-bus integration with the `Mist`
+function calls), and `Mist` 🌫️ (message-bus integration with the `Mist`
 pub/sub system, behind the `websocket` Cargo feature).
 
 **Standalone Operation** - Can run as an independent process with its own
-lifecycle, or connect to `Mountain`&#x2001;⛰️ via `gRPC` for distributed
+lifecycle, or connect to `Mountain` ⛰️ via `gRPC` for distributed
 deployment. The `Transport/CommonAdapter` unifies all transport backends behind
 a single interface.
 
@@ -120,13 +120,13 @@ explicit host-function grants ensure no extension can escape its sandbox.
 
 ---
 
-## Core Architecture Principles&#x2001;🏗️
+## Core Architecture Principles 🏗️
 
 | Principle                 | Description                                                                                                                                    | Key Components                                                                                                                                             |
 | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Security First**        | Isolate extensions via `WASMtime`'s capability model with configurable resource limits. Unsafe code is denied at the crate level.              | `WASM/Runtime`, `WASM/MemoryManager`, `WASM/HostBridge`                                                                                                    |
 | **Transport Agnosticism** | Multiple communication strategies behind a unified `Transport/Strategy` trait so deployment choice is a config flag, not a code change.        | `Transport/Strategy`, `Transport/CommonAdapter`, `Transport/gRPCTransport`, `Transport/IPCTransport`, `Transport/WASMTransport`, `Transport/MistTransport` |
-| **API Surface Parity**    | Implement the full VS Code extension API (`vscode.d.ts`) so extensions port seamlessly between `Cocoon`&#x2001;🦋 and `Grove`&#x2001;🌳.       | `API/VSCode`, `API/Types`, `Host/APIBridge`, `Host/Activation`                                                                                             |
+| **API Surface Parity**    | Implement the full VS Code extension API (`vscode.d.ts`) so extensions port seamlessly between `Cocoon` 🦋 and `Grove` 🌳.       | `API/VSCode`, `API/Types`, `Host/APIBridge`, `Host/Activation`                                                                                             |
 | **Composability**         | Modular separation of host core, `WASM` runtime, transport layer, and protocol handling. Each module can be compiled and tested independently. | `Host/*`, `WASM/*`, `Transport/*`, `Protocol/*`, `API/*`                                                                                                   |
 
 ---
@@ -208,10 +208,10 @@ graph LR
 
 | Path                                            | Protocol                                  | Use Case                                                 |
 | ----------------------------------------------- | ----------------------------------------- | -------------------------------------------------------- |
-| Grove&#x2001;🌳 → Mountain&#x2001;⛰️ via `gRPC` | Protobuf over `gRPC` on port 50051        | Distributed deployment, remote extensions                |
+| Grove 🌳 → Mountain ⛰️ via `gRPC` | Protobuf over `gRPC` on port 50051        | Distributed deployment, remote extensions                |
 | Grove → Mountain via `IPC`                      | Unix domain socket                        | Local single-machine communication                       |
-| Grove → Mountain via `Mist`&#x2001;🌫️           | Message-bus pub/sub (`websocket` feature) | Event-driven, decoupled workflows                        |
-| Grove → Cocoon&#x2001;🦋                        | Shared API surface                        | Extension portability between native and `Node.js` hosts |
+| Grove → Mountain via `Mist` 🌫️           | Message-bus pub/sub (`websocket` feature) | Event-driven, decoupled workflows                        |
+| Grove → Cocoon 🦋                        | Shared API surface                        | Extension portability between native and `Node.js` hosts |
 | Extension → `WASMtime`                          | `WASM` host functions                     | Sandboxed extension execution                            |
 | `APIBridge` → `API/VSCode`                      | Direct call                               | Typed VS Code API wrappers                               |
 
@@ -250,7 +250,7 @@ graph LR
 
 ---
 
-## Project Structure&#x2001;🗺️
+## Project Structure 🗺️
 
 ```
 Element/Grove/
@@ -363,16 +363,16 @@ Element/Grove/
 ## In the Land Project
 
 Grove serves as the native `Rust`/`WASM` extension host alongside
-`Cocoon`&#x2001;🦋 (the `Node.js` host). Together they provide the two execution
-environments for the Land&#x2001;🏞️ editor's extension model:
+`Cocoon` 🦋 (the `Node.js` host). Together they provide the two execution
+environments for the Land 🏞️ editor's extension model:
 
 | Host                 | Language                   | Runtime                   | Sandboxing                             |
 | -------------------- | -------------------------- | ------------------------- | -------------------------------------- |
-| **Grove**&#x2001;🌳  | `Rust`, `WASM`             | `WASMtime`                | Hardware-enforced via capability model |
-| **Cocoon**&#x2001;🦋 | `TypeScript`, `JavaScript` | `Node.js` via `Effect-TS` | Fiber-level process isolation          |
+| **Grove** 🌳  | `Rust`, `WASM`             | `WASMtime`                | Hardware-enforced via capability model |
+| **Cocoon** 🦋 | `TypeScript`, `JavaScript` | `Node.js` via `Effect-TS` | Fiber-level process isolation          |
 
-Grove communicates with `Mountain`&#x2001;⛰️ via `gRPC` (port 50051), `IPC`
-(Unix socket), or the `Mist`&#x2001;🌫️ message bus for event-driven workflows.
+Grove communicates with `Mountain` ⛰️ via `gRPC` (port 50051), `IPC`
+(Unix socket), or the `Mist` 🌫️ message bus for event-driven workflows.
 It shares the same VS Code API surface as `Cocoon`, enabling seamless porting of
 extensions between the `Node.js` and native hosting environments.
 
@@ -382,7 +382,7 @@ distributed via `gRPC`, or integrated with `Mountain`'s `Vine` server.
 
 ---
 
-## Getting Started&#x2001;🚀
+## Getting Started 🚀
 
 ### Prerequisites
 
@@ -446,7 +446,7 @@ async fn main() -> anyhow::Result<()> {
 
 ---
 
-## Security&#x2001;🔒
+## Security 🔒
 
 Grove enforces security at multiple layers:
 
@@ -467,35 +467,35 @@ Grove is designed to be compatible with:
 
 | Target                 | Integration                                                                      |
 | ---------------------- | -------------------------------------------------------------------------------- |
-| **Cocoon**&#x2001;🦋   | Shares VS Code API surface, activation semantics, and manifest parsing           |
+| **Cocoon** 🦋   | Shares VS Code API surface, activation semantics, and manifest parsing           |
 | **VS Code**            | Implements `vscode.d.ts` type definitions                                        |
-| **Mountain**&#x2001;⛰️ | Integrates via the `GroveService` `gRPC` protocol defined in `Proto/Grove.proto` |
-| **Mist**&#x2001;🌫️     | Connects via `MistTransport` for event-driven pub/sub workflows                  |
+| **Mountain** ⛰️ | Integrates via the `GroveService` `gRPC` protocol defined in `Proto/Grove.proto` |
+| **Mist** 🌫️     | Connects via `MistTransport` for event-driven pub/sub workflows                  |
 
 ---
 
 ## API Reference
 
-- **[Rust API Documentation](https://rust.documentation.grove.editor.land/)**&#x2001;📖
+- **[Rust API Documentation](https://rust.documentation.grove.editor.land/)** 📖
 
 ---
 
 ## Related Documentation
 
-- [Architecture Overview](https://Editor.Land/Doc/architecture) - Land&#x2001;🏞️
+- [Architecture Overview](https://Editor.Land/Doc/architecture) - Land 🏞️
   system architecture
 - [Why WebAssembly](https://Editor.Land/Doc/why-wasm) - Why `WASM` for extension
   sandboxing
-- [Mountain](https://github.com/CodeEditorLand/Mountain)&#x2001;⛰️ - Native
+- [Mountain](https://github.com/CodeEditorLand/Mountain) ⛰️ - Native
   desktop shell and `gRPC` backend
-- [Cocoon](https://github.com/CodeEditorLand/Cocoon)&#x2001;🦋 -
+- [Cocoon](https://github.com/CodeEditorLand/Cocoon) 🦋 -
   `Node.js`/`Effect-TS` extension host
-- [Mist](https://github.com/CodeEditorLand/Mist)&#x2001;🌫️ - Pub/sub message bus
+- [Mist](https://github.com/CodeEditorLand/Mist) 🌫️ - Pub/sub message bus
   for event-driven workflows
 
 ---
 
-## License&#x2001;⚖️
+## License ⚖️
 
 This project is released into the public domain under the **Creative Commons CC0
 Universal** license. You are free to use, modify, distribute, and build upon
@@ -505,7 +505,7 @@ file.
 
 ---
 
-## Changelog&#x2001;📜
+## Changelog 📜
 
 Stay updated with our progress! See
 [`CHANGELOG.md`](https://github.com/CodeEditorLand/Grove/tree/Current/CHANGELOG.md)
@@ -513,9 +513,9 @@ for a history of changes.
 
 ---
 
-## Funding & Acknowledgements&#x2001;🙏🏻
+## Funding & Acknowledgements 🙏🏻
 
-**Land**&#x2001;🏞️ is proud to be an open-source endeavor. Our journey is
+**Land** 🏞️ is proud to be an open-source endeavor. Our journey is
 significantly supported by the organizations and projects that believe in the
 future of open-source software.
 
