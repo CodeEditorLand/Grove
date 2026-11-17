@@ -12,7 +12,7 @@
 #![deny(unsafe_code)]
 #![warn(clippy::all)]
 
-//! # Grove — Rust/WASM Extension Host for VS Code
+//! # Grove - Rust/WASM Extension Host for VS Code
 //!
 //! Grove provides a secure, sandboxed environment for running VS Code
 //! extensions compiled to WebAssembly or native Rust. It complements the
@@ -42,23 +42,25 @@
 //!
 //! # Features
 //!
-//! - **Standalone Operation** — Run independently or connect to Mountain via
+//! - **Standalone Operation** - Run independently or connect to Mountain via
 //!   gRPC
-//! - **WASM Support** — Full WebAssembly runtime with WASMtime
-//! - **Multiple Transports** — gRPC, IPC, and direct WASM communication
-//! - **Secure Sandboxing** — WASMtime-based isolation for untrusted extensions
-//! - **Cocoon-Compatible** — Shares API surface with the Node.js extension host
+//! - **WASM Support** - Full WebAssembly runtime with WASMtime
+//! - **Multiple Transports** - gRPC, IPC, and direct WASM communication
+//! - **Secure Sandboxing** - WASMtime-based isolation for untrusted extensions
+//! - **Cocoon-Compatible** - Shares API surface with the Node.js extension host
 //!
 //! # Quick Start
 //!
 //! ```rust,no_run
-//! use grove::{ExtensionHost, Transport};
+//! use Grove::{init, Struct};
 //!
-//! #[tokio::main]
-//! async fn main() -> anyhow::Result<()> {
-//! 	let host = ExtensionHost::new(Transport::default()).await?;
-//! 	host.load_extension("/path/to/extension").await?;
-//! 	host.activate().await?;
+//! fn main() -> anyhow::Result<()> {
+//! 	init()?;
+//!
+//! 	let info = Struct::new();
+//!
+//! 	println!("Grove {}", info.version());
+//!
 //! 	Ok(())
 //! }
 //! ```
@@ -79,6 +81,15 @@
 
 // Public module declarations
 pub mod Binary;
+
+/// VS Code-compatible API facade and shared API value types.
+pub mod API;
+
+/// Shared errors, traits, configuration constants and utilities.
+pub mod Common;
+
+/// Host services such as configuration management.
+pub mod Services;
 
 pub mod DevLog;
 
@@ -105,7 +116,7 @@ pub struct Struct {
 }
 
 impl Struct {
-	/// Creates a new `GroveInfo` with the current build information.
+	/// Creates a new `Struct` with the current build information.
 	pub fn new() -> Self { Self { version:VERSION, build_timestamp:env!("VERGEN_BUILD_TIMESTAMP").to_string() } }
 
 	/// Returns the Grove library version string.
@@ -146,7 +157,7 @@ mod tests {
 
 	#[test]
 	fn test_grove_info() {
-		let info = GroveInfo::new();
+		let info = Struct::new();
 
 		assert_eq!(info.version(), VERSION);
 	}
