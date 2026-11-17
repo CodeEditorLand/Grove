@@ -1,4 +1,4 @@
-# **Grove** 🌳
+# **Grove**
 
 <table>
 	<tr>
@@ -58,7 +58,7 @@ by the hardware, not a policy."_
 
 ---
 
-## Overview
+## Overview 📋
 
 **Grove** 🌳 is the high-performance `Rust`/`WebAssembly` extension host
 for the **Land** 🏞️ Code Editor. It complements `Cocoon` 🦋
@@ -77,7 +77,7 @@ hardware level: an extension can only touch what you explicitly grant.
 1. **Provide Native Extension Hosting** - Execute `Rust` extensions with zero
    overhead through static linking or `WASM` sandboxing.
 2. **Enable Secure Sandboxing** - Isolate untrusted extensions using
-   `WASMtime`'s capability-based security model with configurable memory limits
+   `WASMtime`'s capability-based isolation with configurable memory limits
    and resource controls.
 3. **Support Multiple Transports** - Communicate with `Mountain` ⛰️ via
    `gRPC`, `IPC`, or direct `WASM` host function calls for flexible deployment.
@@ -131,7 +131,7 @@ explicit host-function grants ensure no extension can escape its sandbox.
 
 ---
 
-## System Architecture
+## System Architecture 🏗️
 
 ```mermaid
 graph LR
@@ -217,7 +217,7 @@ graph LR
 
 ---
 
-## Key Components
+## Key Components 🧩
 
 | Component             | Path                                      | Description                                                                                                                                                          |
 | --------------------- | ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -349,8 +349,8 @@ Element/Grove/
 │       │   ├── HostInfo.rs
 │       │   ├── calculate_backoff.rs
 │       │   └── Tests.rs
-│       └── Generated/                 # Code-generated protocol types
-│           └── grove.rs               # Generated gRPC service definitions
+│       └── Generated/                 # Protocol type bindings
+│           └── grove.rs               # gRPC service definitions
 ├── Documentation/
 │   └── Rust/
 │       └── doc/                       # Cargo doc output
@@ -360,15 +360,15 @@ Element/Grove/
 
 ---
 
-## In the Land Project
+## In the Land Project 🔌
 
 Grove serves as the native `Rust`/`WASM` extension host alongside
 `Cocoon` 🦋 (the `Node.js` host). Together they provide the two execution
-environments for the Land 🏞️ editor's extension model:
+environments for the Land 🏞️ editor's extension system:
 
 | Host                 | Language                   | Runtime                   | Sandboxing                             |
 | -------------------- | -------------------------- | ------------------------- | -------------------------------------- |
-| **Grove** 🌳  | `Rust`, `WASM`             | `WASMtime`                | Hardware-enforced via capability model |
+| **Grove** 🌳  | `Rust`, `WASM`             | `WASMtime`                | Hardware-enforced capabilities |
 | **Cocoon** 🦋 | `TypeScript`, `JavaScript` | `Node.js` via `Effect-TS` | Fiber-level process isolation          |
 
 Grove communicates with `Mountain` ⛰️ via `gRPC` (port 50051), `IPC`
@@ -384,27 +384,27 @@ distributed via `gRPC`, or integrated with `Mountain`'s `Vine` server.
 
 ## Getting Started 🚀
 
-### Prerequisites
+### Prerequisites 📦
 
 - **Rust** 1.95.0 or later (edition 2024)
 - Protocol Buffer compiler (optional, for proto file modifications)
 - For `WASM` builds: `rustup target add wasm32-wasi`
 
-### Build for Native
+### Build for Native 📦
 
 ```bash
 cd Element/Grove
 cargo build --release
 ```
 
-### Build for WASM
+### Build for WASM 📦
 
 ```bash
 cd Element/Grove
 cargo build --target wasm32-wasi --release
 ```
 
-### Build with Features
+### Build with Features 📦
 
 ```bash
 # All features enabled
@@ -417,7 +417,7 @@ cargo build --release --features wasm
 cargo build --release --features grpc
 ```
 
-### Available Features
+### Available Features ⚙️
 
 | Feature     | Description                                                  |
 | ----------- | ------------------------------------------------------------ |
@@ -430,7 +430,7 @@ cargo build --release --features grpc
 | `debug`     | Enables `dev`                                                |
 | `all`       | `grpc` + `wasm` + `telemetry`                                |
 
-### As a Library
+### As a Library 📦
 
 ```rust
 use Grove::{Host::ExtensionHost::ExtensionHostImpl, Transport::Strategy::Transport};
@@ -461,7 +461,7 @@ Grove enforces security at multiple layers:
 
 ---
 
-## Compatibility
+## Compatibility 🔌
 
 Grove is designed to be compatible with:
 
@@ -474,13 +474,15 @@ Grove is designed to be compatible with:
 
 ---
 
-## API Reference
+## API Reference 📖
+
+- [Architecture](https://github.com/CodeEditorLand/Grove/tree/Current/Documentation/GitHub/Architecture.md) - transport strategies, WASM runtime and feature gates
 
 - **[Rust API Documentation](https://rust.documentation.grove.editor.land/)** 📖
 
 ---
 
-## Related Documentation
+## Related Documentation 📖
 
 - [Architecture Overview](https://Editor.Land/Doc/architecture) - Land 🏞️
   system architecture

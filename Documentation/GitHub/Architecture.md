@@ -15,7 +15,7 @@
 
 ---
 
-# **Grove** 🌳 Architecture
+# **Grove** Architecture
 
 `Grove` is the native `Rust`/`WASM` extension host for `Land`. It provides a
 sandboxed environment for running `WASM`-compiled `VS Code` extensions via
@@ -23,7 +23,7 @@ sandboxed environment for running `WASM`-compiled `VS Code` extensions via
 
 ---
 
-## Table of Contents
+## Table of Contents 📖
 
 1. [Overview](#overview)
 2. [Architecture](#architecture)
@@ -132,6 +132,18 @@ graph TB
 ---
 
 ## Transport Strategies 🔗
+
+```mermaid
+graph LR
+    HOST["Grove extension host"] --> CLAP["CLI mode selection"]
+    CLAP --> GRPC["gRPCTransport<br/>127.0.0.1:50051"]
+    CLAP --> IPC["IPCTransport"]
+    CLAP --> WASM["WASMTransportImpl"]
+    GRPC --> MOUNTAIN["Mountain"]
+    IPC --> MOUNTAIN
+    WASM --> ENGINE["WASMtime engine"]
+```
+
 
 `Grove` supports three transport strategies for communicating with `Mountain`:
 
@@ -278,7 +290,7 @@ grove = ["dep:grove"]
 
 ---
 
-## Shim Compatibility
+## Shim Compatibility 🛡️
 
 | 🟠 Low-Level Shim                              | 🔵 Coverage Shim                   |
 | ---------------------------------------------- | ---------------------------------- |
