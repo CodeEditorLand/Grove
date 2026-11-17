@@ -77,7 +77,7 @@ graph TB
 
 `Grove` is organized into five layers:
 
-```
+```text
 +----------------------------------------------------------------+
 |                      Grove                                      |
 |                                                                |
@@ -225,7 +225,7 @@ linker.func_wrap("vscode", "readFile", |path_ptr: i32, path_len: i32| {
 
 ## Extension Lifecycle 🔄
 
-```
+```text
 1. ExtensionManager discovers WASM extension (.wasm file + package.json)
     |
     v

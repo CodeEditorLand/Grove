@@ -124,7 +124,7 @@ explicit host-function grants ensure no extension can escape its sandbox.
 
 | Principle                 | Description                                                                                                                                    | Key Components                                                                                                                                             |
 | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Security First**        | Isolate extensions via `WASMtime`'s capability model with configurable resource limits. Unsafe code is denied at the crate level.              | `WASM/Runtime`, `WASM/MemoryManager`, `WASM/HostBridge`                                                                                                    |
+| **Security First**        | Isolate extensions via `WASMtime`'s capability-based isolation with configurable resource limits. Unsafe code is denied at the crate level.              | `WASM/Runtime`, `WASM/MemoryManager`, `WASM/HostBridge`                                                                                                    |
 | **Transport Agnosticism** | Multiple communication strategies behind a unified `Transport/Strategy` trait so deployment choice is a config flag, not a code change.        | `Transport/Strategy`, `Transport/CommonAdapter`, `Transport/gRPCTransport`, `Transport/IPCTransport`, `Transport/WASMTransport`, `Transport/MistTransport` |
 | **API Surface Parity**    | Implement the full VS Code extension API (`vscode.d.ts`) so extensions port seamlessly between `Cocoon` 🦋 and `Grove` 🌳.       | `API/VSCode`, `API/Types`, `Host/APIBridge`, `Host/Activation`                                                                                             |
 | **Composability**         | Modular separation of host core, `WASM` runtime, transport layer, and protocol handling. Each module can be compiled and tested independently. | `Host/*`, `WASM/*`, `Transport/*`, `Protocol/*`, `API/*`                                                                                                   |
@@ -252,7 +252,7 @@ graph LR
 
 ## Project Structure 🗺️
 
-```
+```text
 Element/Grove/
 ├── Source/
 │   ├── Library.rs                     # Library root (cdylib + rlib)
