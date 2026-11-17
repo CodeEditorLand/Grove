@@ -26,12 +26,14 @@ use CommonLibrary::{
 
 use crate::Transport::{
 	GrpcTransport as GroveGrpcTransport,
+	IPCTransport::IPCTransportError,
 	IPCTransportImpl as GroveIpcTransport,
 	Transport as GroveTransport,
 	TransportConfig as GroveTransportConfig,
 	TransportStats as GroveTransportStats,
 	TransportStrategy as GroveTransportStrategy,
 	TransportType as GroveTransportType,
+	WASMTransport::WASMTransportError,
 	WASMTransportImpl as GroveWasmTransport,
 };
 
@@ -73,6 +75,12 @@ pub struct TransportAdapter {
 
 	/// Count of fire-and-forget notifications sent via send_notification.
 	notifications_sent:Arc<std::sync::atomic::AtomicU64>,
+
+	/// Most recent successful round-trip latency, in milliseconds. `0` is the
+	/// "no sample yet" sentinel, never a measurement: a real sub-millisecond
+	/// exchange is recorded as `1` so the dashboard can tell "fast" from
+	/// "not observed". Shared across clones of this adapter.
+	last_latency_ms:Arc<std::sync::atomic::AtomicU64>,
 }
 
 impl TransportAdapter {
@@ -100,6 +108,8 @@ impl TransportAdapter {
 			correlation_generator:|| uuid::Uuid::new_v4().to_string(),
 
 			notifications_sent:Arc::new(std::sync::atomic::AtomicU64::new(0)),
+
+			last_latency_ms:Arc::new(std::sync::atomic::AtomicU64::new(0)),
 		}
 	}
 
@@ -117,6 +127,8 @@ impl TransportAdapter {
 			correlation_generator:|| uuid::Uuid::new_v4().to_string(),
 
 			notifications_sent:Arc::new(std::sync::atomic::AtomicU64::new(0)),
+
+			last_latency_ms:Arc::new(std::sync::atomic::AtomicU64::new(0)),
 		}
 	}
 
@@ -198,6 +210,28 @@ impl TransportAdapter {
 			pending_requests:0,
 		}
 	}
+
+	/// Records one latency sample from the async request/response path.
+	///
+	/// Only a successful exchange contributes a sample. A failed, cancelled or
+	/// closed-transport exchange leaves the previous good sample untouched:
+	/// a failure must never fabricate a faster or slower latency reading.
+	fn record_latency(&self, Started:std::time::Instant, Succeeded:bool) {
+		if !Succeeded {
+			return;
+		}
+
+		let RawMillis = u64::try_from(Started.elapsed().as_millis()).unwrap_or_else(|_| {
+			tracing::warn!("Grove transport latency exceeded u64 milliseconds; clamping sample");
+			u64::MAX
+		});
+
+		// `0` is reserved for "no sample yet"; a sub-millisecond exchange is
+		// still a fast sample and must not look like an empty metric.
+		let Sample = RawMillis.max(1);
+
+		self.last_latency_ms.store(Sample, std::sync::atomic::Ordering::SeqCst);
+	}
 }
 
 #[async_trait]
@@ -241,11 +275,21 @@ impl TransportStrategy for TransportAdapter {
 			TransportError::serialization(format!("envelope serialisation: {}", e)).with_transport_type("grove")
 		})?;
 
+		let Started = std::time::Instant::now();
+
 		let result = self
 			.transport
 			.send(&request_data)
 			.await
 			.map_err(|e| TransportError::from(e).with_transport_type("grove"));
+
+		// Async stats path: a successful exchange is the only source of a
+		// latency sample. Failures keep the last good sample (if any).
+		self.record_latency(Started, result.is_ok());
+
+		if result.is_err() && !self.is_connected() {
+			tracing::warn!("Grove transport is closed; latency metric keeps its last sample");
+		}
 
 		// Build response
 		match result {
@@ -328,10 +372,17 @@ impl TransportStrategy for TransportAdapter {
 	}
 
 	fn latency_ms(&self) -> u64 {
-		// Grove transport latency is only available via async stats.
-		// A cached metric would be required for synchronous access.
-		// TODO: Cache average latency metric from async stats for sync access.
-		0
+		let Sample = self.last_latency_ms.load(std::sync::atomic::Ordering::SeqCst);
+
+		if Sample == 0 {
+			// No async stats sample has been recorded yet. `0` is a documented
+			// "no sample" sentinel, not a claim that the transport is fast:
+			// real samples are clamped to at least 1 ms.
+			tracing::warn!("Grove latency requested before any successful sample; returning 0 (no sample)");
+			0
+		} else {
+			Sample
+		}
 	}
 
 	fn transport_type(&self) -> CommonTransportType {
@@ -386,31 +437,163 @@ impl TransportStrategy for TransportAdapter {
 	}
 }
 
-// Implement conversion from Grove's TransportError to Common's TransportError
+// --- Grove -> Common error classification --------------------------------
+//
+// Common's `TransportErrorCode` has no cancellation variant, so a
+// cancellation is tagged in the public `Context` map under `kind`. Callers
+// must read that key before treating an `InternalError` as a real fault.
+const ERROR_KIND_KEY:&str = "kind";
+
+/// Deadline exceeded: a real timeout, retryable in Common.
+fn timeout(Message:impl Into<String>) -> TransportError {
+	TransportError::Timeout(Message)
+		.WithContext(ERROR_KIND_KEY, "timeout")
+		.WithTransportKind("grove")
+}
+
+/// The caller or the peer ended the exchange. Common has no cancellation
+/// code, so the `kind` context key is the distinguishing signal.
+fn canceled(Message:impl Into<String>) -> TransportError {
+	TransportError::New(
+		CommonLibrary::Transport::TransportStrategy::TransportErrorCode::InternalError,
+		Message,
+	)
+	.WithContext(ERROR_KIND_KEY, "canceled")
+	.WithTransportKind("grove")
+}
+
+/// A genuine internal fault (unknown variant or corrupted state).
+fn internal(Message:impl Into<String>) -> TransportError {
+	TransportError::Internal(Message)
+		.WithContext(ERROR_KIND_KEY, "internal")
+		.WithTransportKind("grove")
+}
+
+/// Connection fault, including a transport that has already been closed.
+fn connection(Message:impl Into<String>) -> TransportError {
+	TransportError::Connection(Message)
+		.WithContext(ERROR_KIND_KEY, "connection")
+		.WithTransportKind("grove")
+}
+
+/// None of Grove's error enums has a `Canceled` variant: cancellation arrives
+/// as free-form text from the RPC/dispose path. Keep the probe narrow so an
+/// internal fault is not relabelled by an incidental word.
+fn message_is_canceled(Message:&str) -> bool {
+	let Lower = Message.to_ascii_lowercase();
+	Lower.contains("canceled") || Lower.contains("cancelled") || Lower.contains("disposed")
+}
+
+/// An unknown kind warns, then degrades to `internal`; it is never flattened
+/// into a success or into a more specific known variant.
+fn unknown(Kind:&str, Message:&str) -> TransportError {
+	tracing::warn!("Unclassified Grove transport error kind '{}': {}", Kind, Message);
+	internal(format!("{} transport error: {}", Kind, Message))
+}
+
+// Implement conversion from Grove's gRPC TransportError to Common's TransportError
 impl From<crate::Transport::GrpcTransportError> for TransportError {
 	fn from(err:crate::Transport::GrpcTransportError) -> Self {
 		match err {
-			crate::Transport::GrpcTransportError::ConnectionFailed(msg) => TransportError::connection(msg),
+			crate::Transport::GrpcTransportError::Timeout => timeout("gRPC operation timed out"),
 
-			crate::Transport::GrpcTransportError::NotConnected => TransportError::connection("Not connected"),
+			crate::Transport::GrpcTransportError::ConnectionFailed(msg) => connection(msg),
 
-			crate::Transport::GrpcTransportError::SendFailed(msg) => {
-				TransportError::new(
-					super::TransportErrorCode::MessageTooLarge, // Actually send failed
-					msg,
-				)
+			crate::Transport::GrpcTransportError::NotConnected => {
+				connection("gRPC transport is closed")
 			},
 
-			crate::Transport::GrpcTransportError::Timeout => TransportError::timeout("Operation timed out"),
+			crate::Transport::GrpcTransportError::SendFailed(msg)
+			| crate::Transport::GrpcTransportError::ReceiveFailed(msg)
+			| crate::Transport::GrpcTransportError::Error(msg) => {
+				if message_is_canceled(&msg) {
+					canceled(msg)
+				} else {
+					internal(format!("gRPC transport error: {}", msg))
+				}
+			},
 
-			_ => TransportError::internal(format!("gRPC transport error: {}", err)),
+			// Catch-all LAST: a future variant is reported as unknown rather
+			// than silently mislabelled as a known kind.
+			Other => unknown("gRPC", &Other.to_string()),
 		}
 	}
 }
 
-// TODOs for additional From implementations:
-// From<IPCTransportError> and From<WasmTransportError> should be implemented
-// when those error types are defined.
+// IPC transport errors -> Common errors; timeout and cancellation stay
+// distinguishable from a real internal fault.
+impl From<IPCTransportError> for TransportError {
+	fn from(err:IPCTransportError) -> Self {
+		match err {
+			IPCTransportError::Timeout => timeout("IPC operation timed out"),
+
+			IPCTransportError::NotSupported => TransportError::NotSupported(
+				"IPC is not supported on this platform",
+			)
+			.WithTransportKind("grove"),
+
+			IPCTransportError::ConnectionFailed(msg)
+			| IPCTransportError::SocketError(msg) => connection(msg),
+
+			IPCTransportError::NotConnected => connection("IPC transport is closed"),
+
+			IPCTransportError::SendFailed(msg)
+			| IPCTransportError::ReceiveFailed(msg)
+			| IPCTransportError::CleanupFailed(msg) => {
+				if message_is_canceled(&msg) {
+					canceled(msg)
+				} else {
+					internal(format!("IPC transport error: {}", msg))
+				}
+			},
+
+			// Catch-all LAST: no future variant may become a silent internal.
+			Other => unknown("IPC", &Other.to_string()),
+		}
+	}
+}
+
+// WASM transport errors -> Common errors; timeout and cancellation stay
+// distinguishable from a real internal fault.
+impl From<WASMTransportError> for TransportError {
+	fn from(err:WASMTransportError) -> Self {
+		match err {
+			WASMTransportError::Timeout => timeout("WASM operation timed out"),
+
+			WASMTransportError::InvalidRequest(msg) => {
+				TransportError::InvalidRequest(msg).WithTransportKind("grove")
+			},
+
+			WASMTransportError::ModuleNotFound(Name) => TransportError::NotFound(format!(
+				"WASM module not found: {}",
+				Name
+			))
+			.WithTransportKind("grove"),
+
+			WASMTransportError::FunctionNotFound(Name) => TransportError::NotFound(format!(
+				"WASM function not found: {}",
+				Name
+			))
+			.WithTransportKind("grove"),
+
+			WASMTransportError::NotConnected => connection("WASM transport is closed"),
+
+			WASMTransportError::FunctionCallFailed(msg)
+			| WASMTransportError::MemoryError(msg)
+			| WASMTransportError::RuntimeError(msg)
+			| WASMTransportError::CompilationFailed(msg) => {
+				if message_is_canceled(&msg) {
+					canceled(msg)
+				} else {
+					internal(format!("WASM transport error: {}", msg))
+				}
+			},
+
+			// Catch-all LAST: no future variant may become a silent internal.
+			Other => unknown("WASM", &Other.to_string()),
+		}
+	}
+}
 
 #[cfg(test)]
 mod tests {

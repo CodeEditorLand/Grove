@@ -3,12 +3,24 @@
 //! Provides WASMtime engine and store management for executing WebAssembly
 //! modules. This module handles the core WASM runtime infrastructure.
 
-use std::sync::Arc;
+use std::{
+	sync::{
+		atomic::{AtomicBool, Ordering},
+		Arc,
+	},
+	time::Duration,
+};
 
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use tokio::sync::RwLock;
 use wasmtime::{Engine, Linker, Module, Store, StoreLimits, StoreLimitsBuilder, WasmBacktraceDetails};
+
+/// Wall-clock granularity, in milliseconds, of the epoch ticker that drives
+/// Wasmtime's epoch-interruption deadline. The configured
+/// `max_execution_time_ms` is converted into a count of these ticks. This is a
+/// mechanism parameter (the resolution of the bound), not a limit default.
+const EPOCH_TICK_MS:u64 = 100;
 
 use crate::{
 	WASM::{
@@ -92,6 +104,11 @@ impl WASMConfig {
 			builder.consume_fuel(true);
 		}
 
+		// Enable epoch interruption so a wall-clock deadline can trap a guest
+		// that blocks inside a host import (fuel only bounds executed
+		// instructions and cannot interrupt a blocked host call).
+		builder.epoch_interruption(true);
+
 		// Enable multi-memory if needed
 		builder.wasm_multi_memory(false);
 
@@ -128,6 +145,15 @@ pub struct WASMRuntime {
 	memory_manager:Arc<RwLock<MemoryManagerImpl>>,
 
 	instances:Arc<RwLock<Vec<String>>>,
+
+	/// Shared stop flag set by `shutdown()` so the epoch ticker exits promptly
+	/// instead of lingering until the runtime is dropped.
+	epoch_ticker_stop:Arc<AtomicBool>,
+
+	/// Keepalive held only by this runtime. The ticker holds a `Weak` to it, so
+	/// the ticker's lifetime ends together with the last handle to this runtime
+	/// (and therefore with the engine it drives).
+	ticker_keepalive:Arc<()>,
 }
 
 impl WASMRuntime {
@@ -162,9 +188,59 @@ impl WASMRuntime {
 
 		let memory_manager = Arc::new(RwLock::new(MemoryManagerImpl::new(memory_limits)));
 
+		let epoch_ticker_stop = Arc::new(AtomicBool::new(false));
+		let ticker_keepalive = Arc::new(());
+
+		// Drive Wasmtime's epoch counter on a wall-clock ticker so that the
+		// per-store epoch deadline installed in `create_store` is actually
+		// reached. The task holds only a `Weak` keepalive and a stop flag, so it
+		// exits when the last runtime handle drops or `shutdown()` is called;
+		// its lifetime is therefore tied to the engine it drives.
+		match tokio::runtime::Handle::try_current() {
+			Ok(handle) => {
+				let tick_engine = engine.clone();
+				let tick_stop = Arc::clone(&epoch_ticker_stop);
+				let tick_keepalive = Arc::downgrade(&ticker_keepalive);
+				let _ = handle.spawn(async move {
+					let mut ticker =
+						tokio::time::interval(Duration::from_millis(EPOCH_TICK_MS));
+					// `interval` fires immediately once; consume that tick so the
+					// epoch only advances with real elapsed time.
+					ticker.tick().await;
+					loop {
+						ticker.tick().await;
+						if tick_stop.load(Ordering::Relaxed)
+							|| tick_keepalive.upgrade().is_none()
+						{
+							dev_log!("wasm", "epoch ticker stopping");
+							break;
+						}
+						tick_engine.increment_epoch();
+					}
+				});
+				dev_log!("wasm", "epoch ticker started ({}ms ticks)", EPOCH_TICK_MS);
+			},
+			Err(e) => {
+				// No reactor to drive the ticker: degrade gracefully. Fuel
+				// metering still bounds executed instructions.
+				dev_log!(
+					"wasm",
+					"warn: no tokio runtime available for epoch ticker ({}); wall-clock bound falls back to fuel only",
+					e
+				);
+			},
+		}
+
 		dev_log!("wasm", "WASM runtime created successfully");
 
-		Ok(Self { engine, config, memory_manager, instances:Arc::new(RwLock::new(Vec::new())) })
+		Ok(Self {
+			engine,
+			config,
+			memory_manager,
+			instances:Arc::new(RwLock::new(Vec::new())),
+			epoch_ticker_stop,
+			ticker_keepalive,
+		})
 	}
 
 	/// Get a reference to the WASMtime engine
@@ -186,9 +262,51 @@ impl WASMRuntime {
 	        .tables(10)
 	        .build();
 
-		// Set fuel limit if enabled
 		let mut store = Store::new(&self.engine, store_limits);
 
+		// Install the ResourceLimiter accessor. `StoreLimits` is the store data
+		// and implements `ResourceLimiter`, but Wasmtime only enforces the
+		// configured memory/table/instance ceilings once this is called.
+		store.limiter(|limits: &mut StoreLimits| limits);
+
+		// Install a wall-clock epoch deadline derived from the existing
+		// configured execution budget. `epoch_interruption` is enabled on the
+		// engine and the ticker in `new()` advances the epoch, so a guest that
+		// runs past this budget traps - including one blocked in a host import.
+		let deadline_ms = self.config.max_execution_time_ms;
+		let ticks = if deadline_ms == 0 {
+			dev_log!(
+				"wasm",
+				"warn: max_execution_time_ms is 0; epoch deadline set to 0 ticks (guest will trap immediately)"
+			);
+			0u64
+		} else {
+			// Ceiling division so any non-zero budget gets at least one tick.
+			deadline_ms.saturating_add(EPOCH_TICK_MS - 1) / EPOCH_TICK_MS
+		};
+		store.set_epoch_deadline(ticks);
+		// The activation call is synchronous, so it cannot yield: expiry must
+		// terminate with a trap. Log a clear warning at the moment of expiry and
+		// return an error, which Wasmtime turns into that trap (no panic, no
+		// hang). This is the synchronous-trap behaviour of `epoch_deadline_trap`
+		// with an explicit warning attached.
+		store.epoch_deadline_callback(|_ctx| {
+			dev_log!(
+				"wasm",
+				"warn: WASM epoch deadline exceeded (wall-clock execution budget exhausted); trapping guest"
+			);
+			Err(anyhow::anyhow!("WASM epoch deadline exceeded: wall-clock execution budget exhausted"))
+		});
+		dev_log!(
+			"wasm",
+			"store limits installed: {}MiB memory ceiling (limiter active), epoch deadline {} ticks (~{}ms), fuel metering {}",
+			self.config.memory_limit_mb,
+			ticks,
+			deadline_ms,
+			self.config.enable_fuel_metering
+		);
+
+		// Set fuel limit if enabled (kept alongside the epoch deadline).
 		if self.config.enable_fuel_metering {
 			// Set fuel based on execution time (rough approximation: 1 unit =
 			// 1000 ns)
@@ -301,6 +419,9 @@ impl WASMRuntime {
 	/// Shutdown the runtime and cleanup resources
 	pub async fn shutdown(&self) -> Result<()> {
 		dev_log!("wasm", "Shutting down WASM runtime");
+
+		// End the epoch ticker's lifetime along with the engine it drives.
+		self.epoch_ticker_stop.store(true, Ordering::Relaxed);
 
 		let instance_count = self.instance_count().await;
 
